@@ -1,4 +1,4 @@
-.PHONY: test integration check up down smoke
+.PHONY: test integration check up down smoke desktop-test
 
 test:
 	@for service in staff catalog clinical; do (cd services/$$service && go test -race ./...) || exit 1; done
@@ -17,3 +17,6 @@ smoke:
 
 integration:
 	./scripts/test-integration.sh
+
+desktop-test:
+	./scripts/test-desktop.sh

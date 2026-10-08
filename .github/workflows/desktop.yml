@@ -1,0 +1,76 @@
+name: Desktop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Flutter / ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: macos
+          - os: windows-latest
+            platform: windows
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build ${{ matrix.platform }} --release
+      - name: Package macOS app
+        if: matrix.platform == 'macos'
+        run: ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/his_desktop.app his-macos.zip
+      - name: Upload macOS app
+        if: matrix.platform == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: his-macos
+          path: desktop/his-macos.zip
+      - name: Upload Windows app
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: his-windows
+          path: desktop/build/windows/x64/runner/Release/
+
+  integration:
+    name: Desktop / Go API integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+          channel: stable
+          cache: true
+      - run: docker compose -p his-frontend-tests -f compose.yaml -f deploy/frontend-test.compose.yaml up --build -d --wait
+      - run: flutter pub get
+        working-directory: desktop
+      - run: flutter test test/backend_flow_test.dart --dart-define=HIS_INTEGRATION=true --dart-define=SAVE_PREVIEWS=true --dart-define=API_BASE_URL=http://localhost:8090
+        working-directory: desktop
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-previews
+          path: desktop/build/previews/
+      - run: docker compose -p his-frontend-tests -f compose.yaml -f deploy/frontend-test.compose.yaml down
+        if: always()
