@@ -11,6 +11,10 @@ import (
 func TestUpsertBatchIsIdempotentAndRestoresDeletedEntries(t *testing.T) {
 	r := testRepository(t)
 	ctx := context.Background()
+	_, total, err := r.List(ctx, platform.Page{Limit: 50})
+	if err != nil || total != 0 {
+		t.Fatalf("new catalog must be empty: count=%d, error=%v", total, err)
+	}
 	diagnoses := []models.Diagnosis{
 		{Code: "TEST01", Name: "Первый диагноз"},
 		{Code: "TEST02", Name: "Второй диагноз"},
@@ -31,7 +35,7 @@ func TestUpsertBatchIsIdempotentAndRestoresDeletedEntries(t *testing.T) {
 			t.Fatal("batch duplicated or failed to restore")
 		}
 	}
-	_, total, err := r.List(ctx, platform.Page{Limit: 50})
+	_, total, err = r.List(ctx, platform.Page{Limit: 50})
 	if err != nil || total != len(diagnoses) {
 		t.Fatalf("batch count=%d err=%v", total, err)
 	}

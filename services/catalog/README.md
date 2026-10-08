@@ -11,6 +11,8 @@ docker build -t his-catalog .
 
 Перед запуском задайте `DATABASE_URL`, указывающий на собственную PostgreSQL-базу сервиса. Примените миграции `go run ./cmd/catalog-service migrate`, затем запустите `go run ./cmd/catalog-service`. Адрес HTTP-сервера задаётся `HTTP_ADDR` (по умолчанию `:8080`).
 
-API: `/api/v1/diagnoses` и `/api/v1/diagnoses/seed`. Спецификация — `api/openapi.json`, работающий сервис отдаёт её через `GET /openapi.json`. Диагностика: `GET /live`, `GET /ready`.
+API: `/api/v1/diagnoses` и `/api/v1/diagnoses/import`. Спецификация — `api/openapi.json`, работающий сервис отдаёт её через `GET /openapi.json`. Диагностика: `GET /live`, `GET /ready`.
 
 Интеграционные тесты выполняются при наличии `TEST_DATABASE_URL`: `go test -race -count=1 ./...`. Они используют собственные временные схемы и удаляют их после завершения. При отсутствии переменной выполняются доступные тесты без БД, PostgreSQL-тесты пропускаются.
+
+Новый справочник пуст. Для импорта клиент отправляет содержимое выбранного JSON-файла с `Content-Type: application/json`: `{"diagnoses":[{"code":"TEST01","name":"Учебный диагноз"}]}`. В сервисе нет фиксированного набора диагнозов. Размер файла ограничен 1 MiB, число записей — 1–1000; валидация выполняется до сохранения, весь список сохраняется одной транзакцией.

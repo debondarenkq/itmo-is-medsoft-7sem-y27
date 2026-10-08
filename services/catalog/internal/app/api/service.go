@@ -23,7 +23,7 @@ func (i *Implementation) Register(r *mux.Router) {
 	r.HandleFunc("/openapi.json", func(w http.ResponseWriter, _ *http.Request) {
 		platform.JSON(w, http.StatusOK, json.RawMessage(contract.Specification()))
 	}).Methods("GET")
-	r.HandleFunc("/api/v1/diagnoses/seed", platform.Handle(i.Seed)).Methods("POST")
+	r.HandleFunc("/api/v1/diagnoses/import", platform.Handle(i.Import)).Methods("POST")
 	r.HandleFunc("/api/v1/diagnoses", platform.Handle(i.List)).Methods("GET")
 	r.HandleFunc("/api/v1/diagnoses", platform.Handle(i.Create)).Methods("POST")
 	r.HandleFunc("/api/v1/diagnoses/{id}", platform.Handle(i.Get)).Methods("GET")

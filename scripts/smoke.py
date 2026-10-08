@@ -7,6 +7,7 @@ Run against a disposable Compose project when checking a clean database.
 import argparse
 import datetime as dt
 import json
+from pathlib import Path
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -38,9 +39,13 @@ def main():
         spec = call('GET', f'/docs/{service}/openapi.json')
         assert spec['openapi'] == '3.0.3'
 
-    seeded = call('POST', '/api/v1/diagnoses/seed')['items']
-    seeded_again = call('POST', '/api/v1/diagnoses/seed')['items']
-    assert len(seeded) == 5 and [d['id'] for d in seeded] == [d['id'] for d in seeded_again]
+    file_data = json.loads((Path(__file__).resolve().parent.parent / 'examples' / 'diagnoses.json').read_text())
+    imported = call('POST', '/api/v1/diagnoses/import', file_data)['items']
+    imported_again = call('POST', '/api/v1/diagnoses/import', file_data)['items']
+    assert len(imported) == 5 and [d['id'] for d in imported] == [d['id'] for d in imported_again]
+    call('POST', '/api/v1/diagnoses/import', {'diagnoses': []}, 400)
+    call('POST', '/api/v1/diagnoses/import', {'diagnoses': [{'code': 'E11.900', 'name': 'Диагноз'}]}, 400)
+    call('POST', '/api/v1/diagnoses/import', {'diagnoses': [file_data['diagnoses'][0], file_data['diagnoses'][0]]}, 400)
     call('POST', '/api/v1/staff', {'first_name': 'А', 'last_name': 'Иванов', 'position': 'Врач'}, 400)
     staff_input = {'first_name': 'Анна', 'last_name': 'Петрова', 'position': 'Терапевт'}
     staff = call('POST', '/api/v1/staff', staff_input, 201)
