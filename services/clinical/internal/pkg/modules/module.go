@@ -12,8 +12,8 @@ import (
 type Storage interface {
 	ListPatients(context.Context, platform.Page) ([]models.Patient, int, error)
 	GetPatient(context.Context, string) (models.Patient, error)
-	CreatePatient(context.Context, models.PatientInput) (models.Patient, error)
-	UpdatePatient(context.Context, string, models.PatientInput) (models.Patient, error)
+	CreatePatient(context.Context, models.PatientData) (models.Patient, error)
+	UpdatePatient(context.Context, string, models.PatientData) (models.Patient, error)
 	DeletePatient(context.Context, string) error
 	CreateRecord(context.Context, string, models.Actor) (models.Record, error)
 	GetPatientRecord(context.Context, string) (models.Record, error)
@@ -42,7 +42,7 @@ func New(deps Deps) *Module {
 	return &Module{Deps: deps}
 }
 
-func ValidatePatient(v models.PatientInput) (models.PatientInput, error) {
+func ValidatePatient(v models.PatientData) (models.PatientData, error) {
 	v.FirstName = strings.TrimSpace(v.FirstName)
 	v.LastName = strings.TrimSpace(v.LastName)
 	if err := platform.Text("first_name", v.FirstName, 1, 64); err != nil {
@@ -83,7 +83,7 @@ func (m *Module) GetPatient(ctx context.Context, id string) (models.Patient, err
 	return m.Storage.GetPatient(ctx, id)
 }
 
-func (m *Module) CreatePatient(ctx context.Context, v models.PatientInput) (models.Patient, error) {
+func (m *Module) CreatePatient(ctx context.Context, v models.PatientData) (models.Patient, error) {
 	v, err := ValidatePatient(v)
 	if err != nil {
 		return models.Patient{}, err
@@ -91,7 +91,7 @@ func (m *Module) CreatePatient(ctx context.Context, v models.PatientInput) (mode
 	return m.Storage.CreatePatient(ctx, v)
 }
 
-func (m *Module) UpdatePatient(ctx context.Context, id string, v models.PatientInput) (models.Patient, error) {
+func (m *Module) UpdatePatient(ctx context.Context, id string, v models.PatientData) (models.Patient, error) {
 	v, err := ValidatePatient(v)
 	if err != nil {
 		return models.Patient{}, err
@@ -126,7 +126,7 @@ func (m *Module) CreateRecord(ctx context.Context, patientID, staffID string) (m
 	return m.Storage.CreateRecord(ctx, patientID, actor)
 }
 
-func (m *Module) Save(ctx context.Context, id string, in models.ChangesInput) (models.Record, error) {
+func (m *Module) Save(ctx context.Context, id string, in models.RecordChanges) (models.Record, error) {
 	staffID, err := platform.ParseID(in.StaffID)
 	if err != nil {
 		return models.Record{}, platform.Bad("STAFF_REQUIRED", "Укажите медработника, изменяющего ЭМК")

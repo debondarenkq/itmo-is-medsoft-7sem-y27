@@ -13,7 +13,7 @@ import (
 
 func TestMissingAuthorRejectedBeforeDependencies(t *testing.T) {
 	m := New(Deps{}) // Nil dependencies make accidental calls fail the test.
-	_, err := m.Save(context.Background(), uuid.NewString(), models.ChangesInput{})
+	_, err := m.Save(context.Background(), uuid.NewString(), models.RecordChanges{})
 	var api *platform.Error
 	if !errors.As(err, &api) || api.Code != "STAFF_REQUIRED" {
 		t.Fatalf("missing author: %v", err)

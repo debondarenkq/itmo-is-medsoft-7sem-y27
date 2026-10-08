@@ -37,7 +37,7 @@ services/
     internal/pkg/storage/     PostgreSQL
     internal/pkg/adapters/    HTTP-клиенты справочников
     internal/pkg/platform/    локальные HTTP-утилиты и запуск процесса
-    api/                      OpenAPI
+    api/                      OpenAPI-контракт и сгенерированные DTO
     migrations/               SQL-миграции Goose
     go.mod
     go.sum
@@ -109,3 +109,7 @@ python3 scripts/smoke.py
 Инструкция запуска и сборки — [desktop/README.md](desktop/README.md). После запуска backend выполните `flutter pub get` и `flutter run -d macos` либо `flutter run -d windows` внутри `desktop/`. Минимальная проверенная версия — Flutter 3.44. Клиент использует один адрес Nginx, настраиваемый через `API_BASE_URL` или окно «Подключение».
 
 Нативные сборки и проверка GUI выполняются workflow [Desktop](https://github.com/debondarenkq/itmo-is-medsoft-7sem-y27/actions/workflows/desktop.yml). Для локальных проверок Flutter-кода без установленного SDK доступен `./scripts/test-desktop.sh` с Docker.
+
+## Контракты
+
+HTTP API описывается в `services/<service>/api/openapi.yaml`. Go DTO, интерфейсы ручек, binding для gorilla/mux и HTTP-клиенты генерируются через `oapi-codegen`. Flutter использует сгенерированный пакет `desktop/packages/his_api` для единственного gateway. Подробности — [docs/contracts.md](docs/contracts.md). После изменения YAML выполните `make generate-contracts`; CI проверяет отсутствие расхождений между схемами и кодом.

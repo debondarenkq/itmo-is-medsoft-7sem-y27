@@ -1,3 +1,4 @@
+import 'package:his_api/api.dart' as contract;
 import 'package:flutter/foundation.dart';
 import 'models.dart';
 
@@ -77,38 +78,62 @@ class RecordDraft extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Json> get commands {
-    final result = <Json>[];
+  List<contract.Command> get commands {
+    final result = <contract.Command>[];
     for (final old in base.diagnoses) {
       if (!diagnoses.any((d) => d.id == old.id)) {
-        result.add({'type': 'remove_diagnosis', 'id': old.id});
+        result.add(
+          contract.Command(
+            type: contract.CommandType.removeDiagnosis,
+            id: contract.Optional.present(old.id),
+          ),
+        );
       }
     }
     for (final current in diagnoses) {
       if (!base.diagnoses.any((d) => d.id == current.id)) {
-        result.add({
-          'type': 'add_diagnosis',
-          'diagnosis_id': current.diagnosisId,
-        });
+        result.add(
+          contract.Command(
+            type: contract.CommandType.addDiagnosis,
+            diagnosisId: contract.Optional.present(current.diagnosisId),
+          ),
+        );
       }
     }
     for (final old in base.prescriptions) {
       final current = prescriptions.where((p) => p.id == old.id).firstOrNull;
       if (current == null) {
-        result.add({'type': 'remove_prescription', 'id': old.id});
+        result.add(
+          contract.Command(
+            type: contract.CommandType.removePrescription,
+            id: contract.Optional.present(old.id),
+          ),
+        );
       } else if (current.text != old.text) {
-        result.add({
-          'type': 'edit_prescription',
-          'id': old.id,
-          'text': current.text,
-        });
+        result.add(
+          contract.Command(
+            type: contract.CommandType.editPrescription,
+            id: contract.Optional.present(old.id),
+            text: contract.Optional.present(current.text),
+          ),
+        );
       } else if (current.status != old.status) {
-        result.add({'type': 'cancel_prescription', 'id': old.id});
+        result.add(
+          contract.Command(
+            type: contract.CommandType.cancelPrescription,
+            id: contract.Optional.present(old.id),
+          ),
+        );
       }
     }
     for (final current in prescriptions) {
       if (isNewPrescription(current.id)) {
-        result.add({'type': 'add_prescription', 'text': current.text});
+        result.add(
+          contract.Command(
+            type: contract.CommandType.addPrescription,
+            text: contract.Optional.present(current.text),
+          ),
+        );
       }
     }
     return result;

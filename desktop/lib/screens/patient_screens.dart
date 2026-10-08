@@ -1,3 +1,4 @@
+import 'package:his_api/api.dart' as contract;
 import 'package:flutter/material.dart';
 import '../core/api_client.dart';
 import '../core/models.dart';
@@ -39,10 +40,7 @@ class _PatientListScreenState extends State<PatientListScreen> {
       return;
     }
     try {
-      await widget.session.api.request(
-        'DELETE',
-        '/api/v1/patients/${patient.id}',
-      );
+      await widget.session.api.deletePatient(patient.id);
       if (mounted) {
         notify(context, 'Пациент удалён');
         _table.currentState?.reload();
@@ -65,12 +63,8 @@ class _PatientListScreenState extends State<PatientListScreen> {
     ],
     child: PagedTable<Patient>(
       key: _table,
-      fetch: (offset, query) => widget.session.api.page(
-        '/api/v1/patients',
-        Patient.fromJson,
-        offset: offset,
-        query: query,
-      ),
+      fetch: (offset, query) =>
+          widget.session.api.patientPage(offset: offset, query: query),
       searchHint: 'Поиск по фамилии, имени или отчеству',
       emptyTitle: 'Пациентов пока нет',
       emptySubtitle: 'Создайте карточку пациента, чтобы начать работу с ЭМК.',
@@ -204,23 +198,22 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
       _error = null;
     });
     try {
-      final data = await widget.session.api.request(
-        _patient == null ? 'POST' : 'PUT',
-        '/api/v1/patients${_patient == null ? '' : '/${_patient!.id}'}',
-        body: {
-          'first_name': _first.text.trim(),
-          'last_name': _last.text.trim(),
-          'middle_name': _middle.text.trim().isEmpty
-              ? null
-              : _middle.text.trim(),
-          'birth_date': calendarDate(_birthDate!),
-          'administrative_sex': _sex,
-          'comment': _comment.text.trim(),
-        },
+      final request = contract.PatientInput(
+        firstName: _first.text.trim(),
+        lastName: _last.text.trim(),
+        middleName: contract.Optional.present(
+          _middle.text.trim().isEmpty ? null : _middle.text.trim(),
+        ),
+        birthDate: _birthDate!,
+        administrativeSex: contract.AdministrativeSex.fromJson(_sex)!,
+        comment: contract.Optional.present(_comment.text.trim()),
       );
+      final patient = _patient == null
+          ? await widget.session.api.createPatient(request)
+          : await widget.session.api.updatePatient(_patient!.id, request);
       if (!mounted) return;
       setState(() {
-        _patient = Patient.fromJson(data);
+        _patient = patient;
         _readOnly = true;
       });
       notify(context, 'Карточка пациента сохранена');
@@ -242,10 +235,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
     }
     setState(() => _saving = true);
     try {
-      await widget.session.api.request(
-        'DELETE',
-        '/api/v1/patients/${patient.id}',
-      );
+      await widget.session.api.deletePatient(patient.id);
       if (mounted) {
         notify(context, 'Пациент удалён');
         Navigator.pop(context);

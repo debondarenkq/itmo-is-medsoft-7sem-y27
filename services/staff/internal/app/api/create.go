@@ -1,20 +1,15 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/platform"
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/api"
 )
 
-func (i *Implementation) Create(w http.ResponseWriter, r *http.Request) error {
-	var in input
-	if err := platform.Decode(w, r, &in); err != nil {
-		return err
-	}
-	v, err := i.Module.Create(r.Context(), in.model())
+func (i *Implementation) CreateStaff(ctx context.Context, request contract.CreateStaffRequestObject) (contract.CreateStaffResponseObject, error) {
+	value, err := i.Module.Create(ctx, fromStaffInput(*request.Body))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	platform.JSON(w, 201, v)
-	return nil
+	return contract.CreateStaff201JSONResponse(toStaff(value)), nil
 }

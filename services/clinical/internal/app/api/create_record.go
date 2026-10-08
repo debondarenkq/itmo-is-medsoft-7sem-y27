@@ -1,25 +1,19 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/models"
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/api"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/platform"
 )
 
-func (i *Implementation) CreateRecord(w http.ResponseWriter, r *http.Request) error {
-	id, err := platform.ID(r)
+func (i *Implementation) CreateRecord(ctx context.Context, request contract.CreateRecordRequestObject) (contract.CreateRecordResponseObject, error) {
+	if err := platform.RequireID(request.ID); err != nil {
+		return nil, err
+	}
+	value, err := i.Module.CreateRecord(ctx, request.ID.String(), request.Body.StaffID.String())
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var in models.CreateRecordInput
-	if err = platform.Decode(w, r, &in); err != nil {
-		return err
-	}
-	v, err := i.Module.CreateRecord(r.Context(), id, in.StaffID)
-	if err != nil {
-		return err
-	}
-	platform.JSON(w, 201, v)
-	return nil
+	return contract.CreateRecord201JSONResponse(toRecord(value)), nil
 }

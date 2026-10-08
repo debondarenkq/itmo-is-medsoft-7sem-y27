@@ -1,20 +1,19 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/api"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/pkg/platform"
 )
 
-func (i *Implementation) Get(w http.ResponseWriter, r *http.Request) error {
-	id, err := platform.ID(r)
-	if err != nil {
-		return err
+func (i *Implementation) GetDiagnosis(ctx context.Context, request contract.GetDiagnosisRequestObject) (contract.GetDiagnosisResponseObject, error) {
+	if err := platform.RequireID(request.ID); err != nil {
+		return nil, err
 	}
-	v, err := i.Module.Get(r.Context(), id)
+	value, err := i.Module.Get(ctx, request.ID.String())
 	if err != nil {
-		return err
+		return nil, err
 	}
-	platform.JSON(w, 200, v)
-	return nil
+	return contract.GetDiagnosis200JSONResponse(toDiagnosis(value)), nil
 }

@@ -1,0 +1,2847 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "HIS Gateway",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "paths": {
+    "/api/v1/staff": {
+      "get": {
+        "operationId": "ListStaff",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_deleted",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffPage"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Список активных записей",
+        "tags": [
+          "Staff"
+        ]
+      },
+      "post": {
+        "operationId": "CreateStaff",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Staff"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Создать запись",
+        "tags": [
+          "Staff"
+        ]
+      }
+    },
+    "/api/v1/staff/{id}": {
+      "delete": {
+        "operationId": "DeleteStaff",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Мягкое удаление",
+        "tags": [
+          "Staff"
+        ]
+      },
+      "get": {
+        "operationId": "GetStaff",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Staff"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Карточка, включая мягко удалённые записи",
+        "tags": [
+          "Staff"
+        ]
+      },
+      "put": {
+        "operationId": "UpdateStaff",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Staff"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Полностью обновить активную запись",
+        "tags": [
+          "Staff"
+        ]
+      }
+    },
+    "/api/v1/diagnoses": {
+      "get": {
+        "operationId": "ListDiagnoses",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_deleted",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiagnosisPage"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Список активных записей",
+        "tags": [
+          "Diagnoses"
+        ]
+      },
+      "post": {
+        "operationId": "CreateDiagnosis",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiagnosisInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Diagnosis"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Создать запись",
+        "tags": [
+          "Diagnoses"
+        ]
+      }
+    },
+    "/api/v1/diagnoses/import": {
+      "post": {
+        "operationId": "ImportDiagnoses",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResult"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Импортировать диагнозы из выбранного JSON-файла одной транзакцией",
+        "tags": [
+          "Diagnoses"
+        ]
+      }
+    },
+    "/api/v1/diagnoses/{id}": {
+      "delete": {
+        "operationId": "DeleteDiagnosis",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Мягкое удаление",
+        "tags": [
+          "Diagnoses"
+        ]
+      },
+      "get": {
+        "operationId": "GetDiagnosis",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Diagnosis"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Карточка, включая мягко удалённые записи",
+        "tags": [
+          "Diagnoses"
+        ]
+      },
+      "put": {
+        "operationId": "UpdateDiagnosis",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiagnosisInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Diagnosis"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Полностью обновить активную запись",
+        "tags": [
+          "Diagnoses"
+        ]
+      }
+    },
+    "/api/v1/patients": {
+      "get": {
+        "operationId": "ListPatients",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientPage"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Список пациентов",
+        "tags": [
+          "Patients"
+        ]
+      },
+      "post": {
+        "operationId": "CreatePatient",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Patient"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Создать пациента",
+        "tags": [
+          "Patients"
+        ]
+      }
+    },
+    "/api/v1/patients/{id}": {
+      "delete": {
+        "operationId": "DeletePatient",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Удалить пациента; при наличии ЭМК возвращает 409",
+        "tags": [
+          "Patients"
+        ]
+      },
+      "get": {
+        "operationId": "GetPatient",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Patient"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Карточка пациента",
+        "tags": [
+          "Patients"
+        ]
+      },
+      "put": {
+        "operationId": "UpdatePatient",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Patient"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Полностью обновить пациента",
+        "tags": [
+          "Patients"
+        ]
+      }
+    },
+    "/api/v1/patients/{id}/record": {
+      "get": {
+        "operationId": "GetPatientRecord",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Получить единственную ЭМК пациента",
+        "tags": [
+          "Patients"
+        ]
+      },
+      "post": {
+        "operationId": "CreateRecord",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecordInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Создать ЭМК с обязательным автором",
+        "tags": [
+          "Records"
+        ]
+      }
+    },
+    "/api/v1/records/{id}": {
+      "get": {
+        "operationId": "GetRecord",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Текущее состояние карты",
+        "tags": [
+          "Records"
+        ]
+      }
+    },
+    "/api/v1/records/{id}/changes": {
+      "post": {
+        "operationId": "SaveRecord",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangesInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Атомарно сохранить команды и историю",
+        "tags": [
+          "Records"
+        ]
+      }
+    },
+    "/api/v1/records/{id}/history": {
+      "get": {
+        "operationId": "GetRecordHistory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPage"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "История по порядку событий",
+        "tags": [
+          "Records"
+        ]
+      }
+    },
+    "/api/v1/records/{id}/state": {
+      "get": {
+        "description": "Требуется ровно один параметр at или version. Несуществующая версия и момент до создания карты возвращают 404.",
+        "operationId": "GetRecordState",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "at",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "schema": {
+              "format": "int64",
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Восстановить карту; требуется ровно один из at или version",
+        "tags": [
+          "Records"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "fields": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "Staff": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deleted_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "first_name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "position": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "first_name",
+          "last_name",
+          "position",
+          "deleted_at"
+        ],
+        "type": "object"
+      },
+      "StaffInput": {
+        "additionalProperties": false,
+        "properties": {
+          "first_name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "last_name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "position": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "first_name",
+          "last_name",
+          "position"
+        ],
+        "type": "object"
+      },
+      "StaffPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Staff"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "Diagnosis": {
+        "properties": {
+          "code": {
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deleted_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "code",
+          "name",
+          "deleted_at"
+        ],
+        "type": "object"
+      },
+      "DiagnosisInput": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "type": "object"
+      },
+      "DiagnosisPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Diagnosis"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "ImportInput": {
+        "additionalProperties": false,
+        "properties": {
+          "diagnoses": {
+            "items": {
+              "$ref": "#/components/schemas/DiagnosisInput"
+            },
+            "maxItems": 1000,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "diagnoses"
+        ],
+        "type": "object"
+      },
+      "ImportResult": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Diagnosis"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "Actor": {
+        "properties": {
+          "first_name": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "first_name",
+          "last_name",
+          "position"
+        ],
+        "type": "object"
+      },
+      "AdministrativeSex": {
+        "enum": [
+          "M",
+          "F",
+          "UNKNOWN"
+        ],
+        "type": "string"
+      },
+      "ChangesInput": {
+        "additionalProperties": false,
+        "properties": {
+          "commands": {
+            "items": {
+              "$ref": "#/components/schemas/Command"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          },
+          "expected_version": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "staff_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "staff_id",
+          "expected_version",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "Command": {
+        "additionalProperties": false,
+        "description": "Поля команды зависят от type. Их соответствие проверяет бизнес-модуль до сохранения всей группы.",
+        "properties": {
+          "diagnosis_id": {
+            "description": "Обязателен для add_diagnosis; ID из справочника.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "description": "Обязателен для удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "text": {
+            "description": "Обязателен для add_prescription и edit_prescription.",
+            "maxLength": 128,
+            "minLength": 3,
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/CommandType"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "CommandType": {
+        "enum": [
+          "add_diagnosis",
+          "remove_diagnosis",
+          "add_prescription",
+          "edit_prescription",
+          "cancel_prescription",
+          "remove_prescription"
+        ],
+        "type": "string"
+      },
+      "CreateRecordInput": {
+        "additionalProperties": false,
+        "properties": {
+          "staff_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "staff_id"
+        ],
+        "type": "object"
+      },
+      "Event": {
+        "properties": {
+          "actor": {
+            "$ref": "#/components/schemas/Actor"
+          },
+          "after": {
+            "additionalProperties": true,
+            "description": "Полный снимок данных записи; null означает отсутствие записи.",
+            "nullable": true,
+            "type": "object"
+          },
+          "before": {
+            "additionalProperties": true,
+            "description": "Полный снимок данных записи; null означает отсутствие записи.",
+            "nullable": true,
+            "type": "object"
+          },
+          "entity_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "record_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sequence": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "version": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "record_id",
+          "sequence",
+          "version",
+          "occurred_at",
+          "actor",
+          "type",
+          "entity_id",
+          "before",
+          "after"
+        ],
+        "type": "object"
+      },
+      "EventPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "EventType": {
+        "enum": [
+          "record_created",
+          "diagnosis_added",
+          "diagnosis_removed",
+          "prescription_added",
+          "prescription_cancelled",
+          "prescription_removed"
+        ],
+        "type": "string"
+      },
+      "Patient": {
+        "properties": {
+          "administrative_sex": {
+            "$ref": "#/components/schemas/AdministrativeSex"
+          },
+          "birth_date": {
+            "format": "date",
+            "type": "string"
+          },
+          "comment": {
+            "maxLength": 32,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "first_name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "has_record": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "middle_name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "nullable": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "first_name",
+          "last_name",
+          "middle_name",
+          "birth_date",
+          "administrative_sex",
+          "comment",
+          "has_record"
+        ],
+        "type": "object"
+      },
+      "PatientInput": {
+        "additionalProperties": false,
+        "properties": {
+          "administrative_sex": {
+            "$ref": "#/components/schemas/AdministrativeSex"
+          },
+          "birth_date": {
+            "format": "date",
+            "type": "string"
+          },
+          "comment": {
+            "maxLength": 32,
+            "type": "string"
+          },
+          "first_name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "last_name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "middle_name": {
+            "maxLength": 64,
+            "minLength": 1,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "first_name",
+          "last_name",
+          "birth_date",
+          "administrative_sex"
+        ],
+        "type": "object"
+      },
+      "PatientPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Patient"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "Prescription": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PrescriptionStatus"
+          },
+          "text": {
+            "maxLength": 128,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "status"
+        ],
+        "type": "object"
+      },
+      "PrescriptionStatus": {
+        "enum": [
+          "active",
+          "cancelled"
+        ],
+        "type": "string"
+      },
+      "Record": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "patient_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/components/schemas/State"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "patient_id",
+          "version",
+          "state"
+        ],
+        "type": "object"
+      },
+      "RecordDiagnosis": {
+        "properties": {
+          "code": {
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          },
+          "diagnosis_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "diagnosis_id",
+          "code",
+          "name"
+        ],
+        "type": "object"
+      },
+      "State": {
+        "properties": {
+          "diagnoses": {
+            "items": {
+              "$ref": "#/components/schemas/RecordDiagnosis"
+            },
+            "type": "array"
+          },
+          "prescriptions": {
+            "items": {
+              "$ref": "#/components/schemas/Prescription"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "diagnoses",
+          "prescriptions"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

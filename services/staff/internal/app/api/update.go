@@ -1,24 +1,19 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/api"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/platform"
 )
 
-func (i *Implementation) Update(w http.ResponseWriter, r *http.Request) error {
-	id, err := platform.ID(r)
+func (i *Implementation) UpdateStaff(ctx context.Context, request contract.UpdateStaffRequestObject) (contract.UpdateStaffResponseObject, error) {
+	if err := platform.RequireID(request.ID); err != nil {
+		return nil, err
+	}
+	value, err := i.Module.Update(ctx, request.ID.String(), fromStaffInput(*request.Body))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var in input
-	if err = platform.Decode(w, r, &in); err != nil {
-		return err
-	}
-	v, err := i.Module.Update(r.Context(), id, in.model())
-	if err != nil {
-		return err
-	}
-	platform.JSON(w, 200, v)
-	return nil
+	return contract.UpdateStaff200JSONResponse(toStaff(value)), nil
 }

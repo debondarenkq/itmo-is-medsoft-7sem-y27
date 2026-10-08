@@ -1,0 +1,399 @@
+# Source contract. Edit this file, then run go generate ./api.
+openapi: 3.0.3
+info:
+  title: staff-service
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+paths:
+  /api/v1/staff:
+    get:
+      summary: Список активных записей
+      operationId: listStaff
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffPage'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      - name: q
+        in: query
+        schema:
+          type: string
+      - name: include_deleted
+        in: query
+        schema:
+          type: boolean
+          default: false
+      tags:
+      - Staff
+    post:
+      summary: Создать запись
+      operationId: createStaff
+      responses:
+        '201':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffInput'
+      tags:
+      - Staff
+  /api/v1/staff/{id}:
+    get:
+      summary: Карточка, включая мягко удалённые записи
+      operationId: getStaff
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Staff
+    put:
+      summary: Полностью обновить активную запись
+      operationId: updateStaff
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffInput'
+      tags:
+      - Staff
+    delete:
+      summary: Мягкое удаление
+      operationId: deleteStaff
+      responses:
+        '204':
+          description: Успех
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Staff
+components:
+  schemas:
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    StaffInput:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 3
+          maxLength: 24
+        last_name:
+          type: string
+          minLength: 3
+          maxLength: 24
+        position:
+          type: string
+          minLength: 3
+          maxLength: 24
+      required:
+      - first_name
+      - last_name
+      - position
+      additionalProperties: false
+    Staff:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        first_name:
+          type: string
+          minLength: 3
+          maxLength: 24
+        last_name:
+          type: string
+          minLength: 3
+          maxLength: 24
+        position:
+          type: string
+          minLength: 3
+          maxLength: 24
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - id
+      - created_at
+      - updated_at
+      - first_name
+      - last_name
+      - position
+      - deleted_at
+    StaffPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Staff'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+      - items
+      - total
+      - limit
+      - offset
+    ErrorDetail:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+      - code
+      - message

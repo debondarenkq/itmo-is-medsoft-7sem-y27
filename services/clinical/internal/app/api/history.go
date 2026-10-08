@@ -1,24 +1,24 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/api"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/platform"
 )
 
-func (i *Implementation) History(w http.ResponseWriter, r *http.Request) error {
-	id, err := platform.ID(r)
-	if err != nil {
-		return err
+func (i *Implementation) GetRecordHistory(ctx context.Context, request contract.GetRecordHistoryRequestObject) (contract.GetRecordHistoryResponseObject, error) {
+	if err := platform.RequireID(request.ID); err != nil {
+		return nil, err
 	}
-	p, err := platform.Pagination(r)
+	page := platform.PageFromParams(request.Params.Limit, request.Params.Offset, nil, nil)
+	values, total, err := i.Module.History(ctx, request.ID.String(), page)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	v, total, err := i.Module.History(r.Context(), id, p)
-	if err != nil {
-		return err
+	items := make([]contract.Event, len(values))
+	for index, value := range values {
+		items[index] = toEvent(value)
 	}
-	platform.List(w, v, total, p)
-	return nil
+	return contract.GetRecordHistory200JSONResponse{Items: items, Total: total, Limit: page.Limit, Offset: page.Offset}, nil
 }

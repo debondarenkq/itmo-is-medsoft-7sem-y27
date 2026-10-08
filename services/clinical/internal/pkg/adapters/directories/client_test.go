@@ -17,6 +17,7 @@ import (
 func TestDeletedStaffCannotAuthorChanges(t *testing.T) {
 	id := uuid.NewString()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path != "/api/v1/staff/"+id {
 			t.Errorf("path: %s", r.URL.Path)
 		}

@@ -1,32 +1,24 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/api"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/models"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/pkg/platform"
 )
 
-type importInput struct {
-	Diagnoses []input `json:"diagnoses"`
-}
-
-// Import accepts the contents of the JSON file selected by the desktop client.
-func (i *Implementation) Import(w http.ResponseWriter, r *http.Request) error {
-	var request importInput
-	if err := platform.Decode(w, r, &request); err != nil {
-		return err
+func (i *Implementation) ImportDiagnoses(ctx context.Context, request contract.ImportDiagnosesRequestObject) (contract.ImportDiagnosesResponseObject, error) {
+	diagnoses := make([]models.Diagnosis, len(request.Body.Diagnoses))
+	for index, diagnosis := range request.Body.Diagnoses {
+		diagnoses[index] = fromDiagnosisInput(diagnosis)
 	}
-
-	diagnoses := make([]models.Diagnosis, len(request.Diagnoses))
-	for index, diagnosis := range request.Diagnoses {
-		diagnoses[index] = diagnosis.model()
-	}
-	imported, err := i.Module.Import(r.Context(), diagnoses)
+	imported, err := i.Module.Import(ctx, diagnoses)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	platform.JSON(w, http.StatusOK, map[string]any{"items": imported})
-	return nil
+	items := make([]contract.Diagnosis, len(imported))
+	for index, diagnosis := range imported {
+		items[index] = toDiagnosis(diagnosis)
+	}
+	return contract.ImportDiagnoses200JSONResponse{Items: items}, nil
 }

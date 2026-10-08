@@ -1,21 +1,15 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/models"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/platform"
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/api"
 )
 
-func (i *Implementation) CreatePatient(w http.ResponseWriter, r *http.Request) error {
-	var in models.PatientInput
-	if err := platform.Decode(w, r, &in); err != nil {
-		return err
-	}
-	v, err := i.Module.CreatePatient(r.Context(), in)
+func (i *Implementation) CreatePatient(ctx context.Context, request contract.CreatePatientRequestObject) (contract.CreatePatientResponseObject, error) {
+	value, err := i.Module.CreatePatient(ctx, fromPatientInput(*request.Body))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	platform.JSON(w, 201, v)
-	return nil
+	return contract.CreatePatient201JSONResponse(toPatient(value)), nil
 }

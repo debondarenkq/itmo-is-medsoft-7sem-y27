@@ -15,7 +15,10 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final api = ApiClient(
         client: MockClient(
-          (_) async => http.Response('{"items":[],"total":0}', 200),
+          (_) async => http.Response(
+            '{"items":[],"total":0,"limit":50,"offset":0}',
+            200,
+          ),
         ),
       );
       await tester.pumpWidget(HisApp(api: api));

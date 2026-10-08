@@ -1,11 +1,16 @@
 package api
 
-import "embed"
+import "encoding/json"
 
-//go:embed openapi.json
-var files embed.FS
-
+// Specification is JSON derived from the generated, embedded source contract.
 func Specification() []byte {
-	data, _ := files.ReadFile("openapi.json")
+	spec, err := GetSwagger()
+	if err != nil {
+		panic(err)
+	}
+	data, err := json.Marshal(spec)
+	if err != nil {
+		panic(err)
+	}
 	return data
 }

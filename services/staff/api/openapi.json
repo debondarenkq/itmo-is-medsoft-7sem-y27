@@ -1,573 +1,71 @@
 {
-  "openapi": "3.0.3",
-  "info": {
-    "title": "staff-service",
-    "version": "1.0.0"
-  },
-  "servers": [
-    {
-      "url": "http://localhost:8080"
-    }
-  ],
-  "paths": {
-    "/api/v1/staff": {
-      "get": {
-        "summary": "Список активных записей",
-        "operationId": "get__api_v1_staff",
-        "responses": {
-          "200": {
-            "description": "Успех",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StaffPage"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Некорректный запрос",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Не найдено",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Конфликт",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "415": {
-            "description": "Неверный Content-Type",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Внутренняя ошибка",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Зависимость недоступна",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 200,
-              "default": 50
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 0
-            }
-          },
-          {
-            "name": "q",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "include_deleted",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
-          }
-        ]
-      },
-      "post": {
-        "summary": "Создать запись",
-        "operationId": "post__api_v1_staff",
-        "responses": {
-          "201": {
-            "description": "Успех",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Staff"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Некорректный запрос",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Не найдено",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Конфликт",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "415": {
-            "description": "Неверный Content-Type",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Внутренняя ошибка",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Зависимость недоступна",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StaffInput"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/staff/{id}": {
-      "get": {
-        "summary": "Карточка, включая мягко удалённые записи",
-        "operationId": "get__api_v1_staff_id",
-        "responses": {
-          "200": {
-            "description": "Успех",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Staff"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Некорректный запрос",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Не найдено",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Конфликт",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "415": {
-            "description": "Неверный Content-Type",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Внутренняя ошибка",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Зависимость недоступна",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ]
-      },
-      "put": {
-        "summary": "Полностью обновить активную запись",
-        "operationId": "put__api_v1_staff_id",
-        "responses": {
-          "200": {
-            "description": "Успех",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Staff"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Некорректный запрос",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Не найдено",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Конфликт",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "415": {
-            "description": "Неверный Content-Type",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Внутренняя ошибка",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Зависимость недоступна",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StaffInput"
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Мягкое удаление",
-        "operationId": "delete__api_v1_staff_id",
-        "responses": {
-          "204": {
-            "description": "Успех"
-          },
-          "400": {
-            "description": "Некорректный запрос",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Не найдено",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Конфликт",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "415": {
-            "description": "Неверный Content-Type",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Внутренняя ошибка",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Зависимость недоступна",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ]
-      }
-    }
-  },
   "components": {
     "schemas": {
       "Error": {
-        "type": "object",
         "properties": {
           "error": {
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string"
-              },
-              "message": {
-                "type": "string"
-              },
-              "fields": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
-                }
-              }
-            },
-            "required": [
-              "code",
-              "message"
-            ]
+            "$ref": "#/components/schemas/ErrorDetail"
           }
         },
         "required": [
           "error"
-        ]
+        ],
+        "type": "object"
       },
-      "StaffInput": {
-        "type": "object",
+      "ErrorDetail": {
         "properties": {
-          "first_name": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 24
+          "code": {
+            "type": "string"
           },
-          "last_name": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 24
+          "fields": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
           },
-          "position": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 24
+          "message": {
+            "type": "string"
           }
         },
         "required": [
-          "first_name",
-          "last_name",
-          "position"
+          "code",
+          "message"
         ],
-        "additionalProperties": false
+        "type": "object"
       },
       "Staff": {
-        "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
           "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "first_name": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 24
-          },
-          "last_name": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 24
-          },
-          "position": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 24
+            "format": "date-time",
+            "type": "string"
           },
           "deleted_at": {
-            "type": "string",
             "format": "date-time",
-            "nullable": true
+            "nullable": true,
+            "type": "string"
+          },
+          "first_name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "position": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
           }
         },
         "required": [
@@ -578,24 +76,50 @@
           "last_name",
           "position",
           "deleted_at"
-        ]
+        ],
+        "type": "object"
+      },
+      "StaffInput": {
+        "additionalProperties": false,
+        "properties": {
+          "first_name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "last_name": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          },
+          "position": {
+            "maxLength": 24,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "first_name",
+          "last_name",
+          "position"
+        ],
+        "type": "object"
       },
       "StaffPage": {
-        "type": "object",
         "properties": {
           "items": {
-            "type": "array",
             "items": {
               "$ref": "#/components/schemas/Staff"
-            }
-          },
-          "total": {
-            "type": "integer"
+            },
+            "type": "array"
           },
           "limit": {
             "type": "integer"
           },
           "offset": {
+            "type": "integer"
+          },
+          "total": {
             "type": "integer"
           }
         },
@@ -604,8 +128,502 @@
           "total",
           "limit",
           "offset"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "staff-service",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/api/v1/staff": {
+      "get": {
+        "operationId": "ListStaff",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_deleted",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffPage"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Список активных записей",
+        "tags": [
+          "Staff"
+        ]
+      },
+      "post": {
+        "operationId": "CreateStaff",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Staff"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Создать запись",
+        "tags": [
+          "Staff"
+        ]
+      }
+    },
+    "/api/v1/staff/{id}": {
+      "delete": {
+        "operationId": "DeleteStaff",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Мягкое удаление",
+        "tags": [
+          "Staff"
+        ]
+      },
+      "get": {
+        "operationId": "GetStaff",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Staff"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Карточка, включая мягко удалённые записи",
+        "tags": [
+          "Staff"
+        ]
+      },
+      "put": {
+        "operationId": "UpdateStaff",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Staff"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Некорректный запрос"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Не найдено"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Конфликт"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Неверный Content-Type"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Внутренняя ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Зависимость недоступна"
+          }
+        },
+        "summary": "Полностью обновить активную запись",
+        "tags": [
+          "Staff"
         ]
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ]
 }

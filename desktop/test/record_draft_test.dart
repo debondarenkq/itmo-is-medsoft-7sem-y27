@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:his_desktop/core/models.dart';
 import 'package:his_desktop/core/record_draft.dart';
@@ -24,7 +25,10 @@ void main() {
   test('undo diagnosis removal returns to unchanged draft', () {
     final draft = RecordDraft(record());
     draft.removeDiagnosis('entry');
-    expect(draft.commands.single, {'type': 'remove_diagnosis', 'id': 'entry'});
+    expect(jsonDecode(jsonEncode(draft.commands.single)), {
+      'type': 'remove_diagnosis',
+      'id': 'entry',
+    });
     draft.addDiagnosis(
       const Diagnosis(id: 'diagnosis', code: 'TEST01', name: 'Новое название'),
     );
@@ -36,7 +40,7 @@ void main() {
     draft.addPrescription('Первый вариант');
     final id = draft.prescriptions.last.id;
     draft.editPrescription(id, 'Второй вариант');
-    expect(draft.commands.single, {
+    expect(jsonDecode(jsonEncode(draft.commands.single)), {
       'type': 'add_prescription',
       'text': 'Второй вариант',
     });
@@ -48,16 +52,16 @@ void main() {
     () {
       final edited = RecordDraft(record());
       edited.editPrescription('rx', 'Пить больше воды');
-      expect(edited.commands.single, {
+      expect(jsonDecode(jsonEncode(edited.commands.single)), {
         'type': 'edit_prescription',
         'id': 'rx',
         'text': 'Пить больше воды',
       });
       edited.cancelPrescription('rx');
-      expect(edited.commands.single['type'], 'edit_prescription');
+      expect(edited.commands.single.type.toJson(), 'edit_prescription');
       final cancelled = RecordDraft(record());
       cancelled.cancelPrescription('rx');
-      expect(cancelled.commands.single, {
+      expect(jsonDecode(jsonEncode(cancelled.commands.single)), {
         'type': 'cancel_prescription',
         'id': 'rx',
       });

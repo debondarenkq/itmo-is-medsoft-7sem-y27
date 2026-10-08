@@ -1,3 +1,4 @@
+import 'package:his_api/api.dart' as contract;
 import 'package:flutter/material.dart';
 import '../core/models.dart';
 import '../core/session.dart';
@@ -35,7 +36,7 @@ class _StaffListScreenState extends State<StaffListScreen> {
       return;
     }
     try {
-      await widget.session.api.request('DELETE', '/api/v1/staff/${staff.id}');
+      await widget.session.api.deleteStaff(staff.id);
       if (mounted) {
         notify(context, 'Сотрудник помечен удалённым');
         _table.currentState?.reload();
@@ -58,9 +59,7 @@ class _StaffListScreenState extends State<StaffListScreen> {
     ],
     child: PagedTable<Staff>(
       key: _table,
-      fetch: (offset, query) => widget.session.api.page(
-        '/api/v1/staff',
-        Staff.fromJson,
+      fetch: (offset, query) => widget.session.api.staffPage(
         offset: offset,
         query: query,
         includeDeleted: _includeDeleted,
@@ -194,19 +193,16 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
       _error = null;
     });
     try {
-      final staff = Staff.fromJson(
-        await widget.session.api.request(
-          widget.staff == null ? 'POST' : 'PUT',
-          '/api/v1/staff${widget.staff == null ? '' : '/${widget.staff!.id}'}',
-          body: {
-            'first_name': _first.text.trim(),
-            'last_name': _last.text.trim(),
-            'position': _position.text.trim(),
-          },
-        ),
+      final request = contract.StaffInput(
+        firstName: _first.text.trim(),
+        lastName: _last.text.trim(),
+        position: _position.text.trim(),
       );
+      final staff = widget.staff == null
+          ? await widget.session.api.createStaff(request)
+          : await widget.session.api.updateStaff(widget.staff!.id, request);
       if (_delete) {
-        await widget.session.api.request('DELETE', '/api/v1/staff/${staff.id}');
+        await widget.session.api.deleteStaff(staff.id);
       }
       if (!mounted) return;
       notify(

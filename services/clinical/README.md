@@ -13,6 +13,8 @@ docker build -t his-clinical .
 Для клинического сервиса также задаются `STAFF_URL` и `CATALOG_URL` — базовые HTTP-адреса справочных сервисов.
 
 
-API: `/api/v1/patients`, `/api/v1/patients/{id}/record`, `/api/v1/records/{id}`. Спецификация — `api/openapi.json`, работающий сервис отдаёт её через `GET /openapi.json`. Диагностика: `GET /live`, `GET /ready`.
+API: `/api/v1/patients`, `/api/v1/patients/{id}/record`, `/api/v1/records/{id}`. Источник контракта — `api/openapi.yaml`; JSON-документация — сгенерированный `api/openapi.json`, работающий сервис отдаёт её через `GET /openapi.json`. Диагностика: `GET /live`, `GET /ready`.
 
 Интеграционные тесты выполняются при наличии `TEST_DATABASE_URL`: `go test -race -count=1 ./...`. Они используют собственные временные схемы и удаляют их после завершения. При отсутствии переменной выполняются доступные тесты без БД, PostgreSQL-тесты пропускаются.
+
+После изменения контракта выполните `go generate ./api`. `api/generated.gen.go` содержит DTO, типизированные request/response, `StrictServerInterface` и gorilla/mux adapter. Сгенерированные файлы не редактируются вручную; `internal/app/api` реализует интерфейс и преобразует DTO в бизнес-модели.

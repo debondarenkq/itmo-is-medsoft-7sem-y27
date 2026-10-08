@@ -1,24 +1,24 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/api"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/models"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/platform"
 )
 
-func (i *Implementation) StateAt(w http.ResponseWriter, r *http.Request) error {
-	id, err := platform.ID(r)
-	if err != nil {
-		return err
+func (i *Implementation) GetRecordState(ctx context.Context, request contract.GetRecordStateRequestObject) (contract.GetRecordStateResponseObject, error) {
+	if err := platform.RequireID(request.ID); err != nil {
+		return nil, err
 	}
-	q, err := parseStateQuery(r)
-	if err != nil {
-		return err
+	if (request.Params.At == nil) == (request.Params.Version == nil) {
+		return nil, platform.Bad("STATE_QUERY", "Укажите ровно один параметр: at или version")
 	}
-	v, err := i.Module.StateAt(r.Context(), id, q)
+	query := models.StateQuery{At: request.Params.At, Version: request.Params.Version}
+	value, err := i.Module.StateAt(ctx, request.ID.String(), query)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	platform.JSON(w, 200, v)
-	return nil
+	return contract.GetRecordState200JSONResponse(toRecord(value)), nil
 }

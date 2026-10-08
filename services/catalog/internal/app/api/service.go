@@ -7,7 +7,6 @@ import (
 	"github.com/gorilla/mux"
 
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/api"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/models"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/pkg/modules"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/pkg/platform"
 )
@@ -15,27 +14,25 @@ import (
 type Deps struct{ Module *modules.Module }
 type Implementation struct{ Deps }
 
-func New(deps Deps) *Implementation {
-	return &Implementation{Deps: deps}
-}
+var _ contract.StrictServerInterface = (*Implementation)(nil)
+
+func New(deps Deps) *Implementation { return &Implementation{Deps: deps} }
 
 func (i *Implementation) Register(r *mux.Router) {
 	r.HandleFunc("/openapi.json", func(w http.ResponseWriter, _ *http.Request) {
 		platform.JSON(w, http.StatusOK, json.RawMessage(contract.Specification()))
-	}).Methods("GET")
-	r.HandleFunc("/api/v1/diagnoses/import", platform.Handle(i.Import)).Methods("POST")
-	r.HandleFunc("/api/v1/diagnoses", platform.Handle(i.List)).Methods("GET")
-	r.HandleFunc("/api/v1/diagnoses", platform.Handle(i.Create)).Methods("POST")
-	r.HandleFunc("/api/v1/diagnoses/{id}", platform.Handle(i.Get)).Methods("GET")
-	r.HandleFunc("/api/v1/diagnoses/{id}", platform.Handle(i.Update)).Methods("PUT")
-	r.HandleFunc("/api/v1/diagnoses/{id}", platform.Handle(i.Delete)).Methods("DELETE")
-}
-
-type input struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
-}
-
-func (v input) model() models.Diagnosis {
-	return models.Diagnosis{Code: v.Code, Name: v.Name}
+	}).Methods(http.MethodGet)
+	spec, err := contract.GetSwagger()
+	if err != nil {
+		panic(err)
+	}
+	r.Use(platform.ContractMiddleware(spec))
+	strict := contract.NewStrictHandlerWithOptions(i, nil, contract.StrictHTTPServerOptions{
+		RequestErrorHandlerFunc:  platform.WriteRequestError,
+		ResponseErrorHandlerFunc: platform.WriteError,
+	})
+	contract.HandlerWithOptions(strict, contract.GorillaServerOptions{
+		BaseRouter:       r,
+		ErrorHandlerFunc: platform.WriteRequestError,
+	})
 }

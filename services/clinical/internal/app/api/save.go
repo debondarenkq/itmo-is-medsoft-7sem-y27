@@ -1,25 +1,19 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/models"
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/api"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/platform"
 )
 
-func (i *Implementation) Save(w http.ResponseWriter, r *http.Request) error {
-	id, err := platform.ID(r)
+func (i *Implementation) SaveRecord(ctx context.Context, request contract.SaveRecordRequestObject) (contract.SaveRecordResponseObject, error) {
+	if err := platform.RequireID(request.ID); err != nil {
+		return nil, err
+	}
+	value, err := i.Module.Save(ctx, request.ID.String(), fromChangesInput(*request.Body))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var in models.ChangesInput
-	if err = platform.Decode(w, r, &in); err != nil {
-		return err
-	}
-	v, err := i.Module.Save(r.Context(), id, in)
-	if err != nil {
-		return err
-	}
-	platform.JSON(w, 200, v)
-	return nil
+	return contract.SaveRecord200JSONResponse(toRecord(value)), nil
 }

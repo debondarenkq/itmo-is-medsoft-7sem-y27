@@ -18,7 +18,7 @@ import (
 
 func createPatient(t *testing.T, r *Repository) models.Patient {
 	t.Helper()
-	v, err := r.CreatePatient(context.Background(), models.PatientInput{FirstName: "Иван", LastName: "Иванов", BirthDate: "2000-01-01", AdministrativeSex: "M"})
+	v, err := r.CreatePatient(context.Background(), models.PatientData{FirstName: "Иван", LastName: "Иванов", BirthDate: "2000-01-01", AdministrativeSex: "M"})
 	if err != nil {
 		t.Fatal(err)
 	}

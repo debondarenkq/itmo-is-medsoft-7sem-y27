@@ -1,0 +1,1030 @@
+# Source contract. Edit this file, then run go generate ./api.
+openapi: 3.0.3
+info:
+  title: clinical-service
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+paths:
+  /api/v1/patients:
+    get:
+      summary: Список пациентов
+      operationId: listPatients
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientPage'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      - name: q
+        in: query
+        schema:
+          type: string
+      tags:
+      - Patients
+    post:
+      summary: Создать пациента
+      operationId: createPatient
+      responses:
+        '201':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientInput'
+      tags:
+      - Patients
+  /api/v1/patients/{id}:
+    get:
+      summary: Карточка пациента
+      operationId: getPatient
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Patients
+    put:
+      summary: Полностью обновить пациента
+      operationId: updatePatient
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientInput'
+      tags:
+      - Patients
+    delete:
+      summary: Удалить пациента; при наличии ЭМК возвращает 409
+      operationId: deletePatient
+      responses:
+        '204':
+          description: Успех
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Patients
+  /api/v1/patients/{id}/record:
+    get:
+      summary: Получить единственную ЭМК пациента
+      operationId: getPatientRecord
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Patients
+    post:
+      summary: Создать ЭМК с обязательным автором
+      operationId: createRecord
+      responses:
+        '201':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecordInput'
+      tags:
+      - Records
+  /api/v1/records/{id}:
+    get:
+      summary: Текущее состояние карты
+      operationId: getRecord
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Records
+  /api/v1/records/{id}/changes:
+    post:
+      summary: Атомарно сохранить команды и историю
+      operationId: saveRecord
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangesInput'
+      tags:
+      - Records
+  /api/v1/records/{id}/history:
+    get:
+      summary: История по порядку событий
+      operationId: getRecordHistory
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventPage'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      tags:
+      - Records
+  /api/v1/records/{id}/state:
+    get:
+      summary: Восстановить карту; требуется ровно один из at или version
+      operationId: getRecordState
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: at
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: version
+        in: query
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      tags:
+      - Records
+      description: Требуется ровно один параметр at или version. Несуществующая версия и момент до создания карты возвращают 404.
+components:
+  schemas:
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    PatientInput:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        middle_name:
+          type: string
+          minLength: 1
+          maxLength: 64
+          nullable: true
+        birth_date:
+          type: string
+          format: date
+        administrative_sex:
+          $ref: '#/components/schemas/AdministrativeSex'
+        comment:
+          type: string
+          minLength: 0
+          maxLength: 32
+      required:
+      - first_name
+      - last_name
+      - birth_date
+      - administrative_sex
+      additionalProperties: false
+    Patient:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        middle_name:
+          type: string
+          minLength: 1
+          maxLength: 64
+          nullable: true
+        birth_date:
+          type: string
+          format: date
+        administrative_sex:
+          $ref: '#/components/schemas/AdministrativeSex'
+        comment:
+          type: string
+          minLength: 0
+          maxLength: 32
+        has_record:
+          type: boolean
+      required:
+      - id
+      - created_at
+      - updated_at
+      - first_name
+      - last_name
+      - middle_name
+      - birth_date
+      - administrative_sex
+      - comment
+      - has_record
+    PatientPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Patient'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+      - items
+      - total
+      - limit
+      - offset
+    Actor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        position:
+          type: string
+      required:
+      - id
+      - first_name
+      - last_name
+      - position
+    RecordDiagnosis:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        diagnosis_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          minLength: 6
+          maxLength: 6
+        name:
+          type: string
+          minLength: 3
+          maxLength: 24
+      required:
+      - id
+      - diagnosis_id
+      - code
+      - name
+    Prescription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        text:
+          type: string
+          minLength: 3
+          maxLength: 128
+        status:
+          $ref: '#/components/schemas/PrescriptionStatus'
+      required:
+      - id
+      - text
+      - status
+    State:
+      type: object
+      properties:
+        diagnoses:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecordDiagnosis'
+        prescriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Prescription'
+      required:
+      - diagnoses
+      - prescriptions
+    Record:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        patient_id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+        state:
+          $ref: '#/components/schemas/State'
+      required:
+      - id
+      - created_at
+      - updated_at
+      - patient_id
+      - version
+      - state
+    CreateRecordInput:
+      type: object
+      properties:
+        staff_id:
+          type: string
+          format: uuid
+      required:
+      - staff_id
+      additionalProperties: false
+    Command:
+      type: object
+      additionalProperties: false
+      required:
+      - type
+      description: Поля команды зависят от type. Их соответствие проверяет бизнес-модуль до сохранения всей группы.
+      properties:
+        type:
+          $ref: '#/components/schemas/CommandType'
+        diagnosis_id:
+          type: string
+          format: uuid
+          description: Обязателен для add_diagnosis; ID из справочника.
+        id:
+          type: string
+          format: uuid
+          description: Обязателен для удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК.
+        text:
+          type: string
+          minLength: 3
+          maxLength: 128
+          description: Обязателен для add_prescription и edit_prescription.
+    ChangesInput:
+      type: object
+      properties:
+        staff_id:
+          type: string
+          format: uuid
+        expected_version:
+          type: integer
+          format: int64
+          minimum: 1
+        commands:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Command'
+      required:
+      - staff_id
+      - expected_version
+      - commands
+      additionalProperties: false
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        record_id:
+          type: string
+          format: uuid
+        sequence:
+          type: integer
+          format: int64
+        version:
+          type: integer
+          format: int64
+        occurred_at:
+          type: string
+          format: date-time
+        actor:
+          $ref: '#/components/schemas/Actor'
+        type:
+          $ref: '#/components/schemas/EventType'
+        entity_id:
+          type: string
+          format: uuid
+        before:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: Полный снимок данных записи; null означает отсутствие записи.
+        after:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: Полный снимок данных записи; null означает отсутствие записи.
+      required:
+      - id
+      - record_id
+      - sequence
+      - version
+      - occurred_at
+      - actor
+      - type
+      - entity_id
+      - before
+      - after
+    EventPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+      required:
+      - items
+      - total
+      - limit
+      - offset
+    ErrorDetail:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+      - code
+      - message
+    AdministrativeSex:
+      type: string
+      enum:
+      - M
+      - F
+      - UNKNOWN
+    PrescriptionStatus:
+      type: string
+      enum:
+      - active
+      - cancelled
+    CommandType:
+      type: string
+      enum:
+      - add_diagnosis
+      - remove_diagnosis
+      - add_prescription
+      - edit_prescription
+      - cancel_prescription
+      - remove_prescription
+    EventType:
+      type: string
+      enum:
+      - record_created
+      - diagnosis_added
+      - diagnosis_removed
+      - prescription_added
+      - prescription_cancelled
+      - prescription_removed

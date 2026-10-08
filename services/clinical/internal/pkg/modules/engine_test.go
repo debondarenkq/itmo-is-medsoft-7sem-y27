@@ -76,7 +76,7 @@ func TestValidationCountsUnicodeCharacters(t *testing.T) {
 }
 
 func TestPatientValidation(t *testing.T) {
-	valid := models.PatientInput{FirstName: "Иван", LastName: "Иванов", BirthDate: "2000-02-29", AdministrativeSex: "UNKNOWN"}
+	valid := models.PatientData{FirstName: "Иван", LastName: "Иванов", BirthDate: "2000-02-29", AdministrativeSex: "UNKNOWN"}
 	if _, err := ValidatePatient(valid); err != nil {
 		t.Fatal(err)
 	}

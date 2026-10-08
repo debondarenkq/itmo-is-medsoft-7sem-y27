@@ -1,3 +1,4 @@
+import 'package:his_api/api.dart' as contract;
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import '../core/models.dart';
@@ -35,10 +36,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
       return;
     }
     try {
-      await widget.session.api.request(
-        'DELETE',
-        '/api/v1/diagnoses/${value.id}',
-      );
+      await widget.session.api.deleteDiagnosis(value.id);
       if (mounted) {
         notify(context, 'Диагноз удалён из справочника');
         _table.currentState?.reload();
@@ -64,16 +62,11 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
       if (await file.length() > 1024 * 1024) {
         throw const FormatException('Размер файла не должен превышать 1 МБ.');
       }
-      final data = await widget.session.api.request(
-        'POST',
-        '/api/v1/diagnoses/import',
-        fileContents: await file.readAsString(),
+      final count = await widget.session.api.importDiagnoses(
+        await file.readAsString(),
       );
       if (!mounted) return;
-      notify(
-        context,
-        'Импорт завершён. Загружено записей: ${(data['items'] as List).length}',
-      );
+      notify(context, 'Импорт завершён. Загружено записей: $count');
       _table.currentState?.reload(reset: true);
     } catch (error) {
       if (mounted) {
@@ -120,12 +113,8 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
     ],
     child: PagedTable<Diagnosis>(
       key: _table,
-      fetch: (offset, query) => widget.session.api.page(
-        '/api/v1/diagnoses',
-        Diagnosis.fromJson,
-        offset: offset,
-        query: query,
-      ),
+      fetch: (offset, query) =>
+          widget.session.api.diagnosisPage(offset: offset, query: query),
       searchHint: 'Поиск по коду или наименованию',
       emptyTitle: 'Справочник пока пуст',
       emptySubtitle:
@@ -216,11 +205,15 @@ class _DiagnosisFormState extends State<_DiagnosisForm> {
       _error = null;
     });
     try {
-      await widget.session.api.request(
-        widget.diagnosis == null ? 'POST' : 'PUT',
-        '/api/v1/diagnoses${widget.diagnosis == null ? '' : '/${widget.diagnosis!.id}'}',
-        body: {'code': _code.text.trim(), 'name': _name.text.trim()},
+      final request = contract.DiagnosisInput(
+        code: _code.text.trim(),
+        name: _name.text.trim(),
       );
+      if (widget.diagnosis == null) {
+        await widget.session.api.createDiagnosis(request);
+      } else {
+        await widget.session.api.updateDiagnosis(widget.diagnosis!.id, request);
+      }
       if (mounted) Navigator.pop(context, true);
     } catch (error) {
       if (mounted) setState(() => _error = error);

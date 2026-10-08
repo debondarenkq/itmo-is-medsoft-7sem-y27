@@ -60,11 +60,11 @@ func (r *Repository) ListPatients(ctx context.Context, p platform.Page) ([]model
 	return items, total, rows.Err()
 }
 
-func (r *Repository) CreatePatient(ctx context.Context, v models.PatientInput) (models.Patient, error) {
+func (r *Repository) CreatePatient(ctx context.Context, v models.PatientData) (models.Patient, error) {
 	return scanPatientWrite(r.pool.QueryRow(ctx, "INSERT INTO patients(id,first_name,last_name,middle_name,birth_date,administrative_sex,comment) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING "+patientReturning, uuid.NewString(), v.FirstName, v.LastName, v.MiddleName, v.BirthDate, v.AdministrativeSex, v.Comment))
 }
 
-func (r *Repository) UpdatePatient(ctx context.Context, id string, v models.PatientInput) (models.Patient, error) {
+func (r *Repository) UpdatePatient(ctx context.Context, id string, v models.PatientData) (models.Patient, error) {
 	// Locking the patient also serializes this snapshot with record creation/deletion.
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {

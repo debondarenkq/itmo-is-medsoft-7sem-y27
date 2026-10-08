@@ -1,0 +1,11 @@
+package: api
+output: generated.gen.go
+generate:
+  models: true
+  gorilla-server: true
+  strict-server: true
+  client: true
+  embedded-spec: true
+output-options:
+  skip-prune: true
+  name-normalizer: ToCamelCaseWithInitialisms

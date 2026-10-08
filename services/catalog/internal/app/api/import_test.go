@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/models"
@@ -20,6 +21,9 @@ type importRepository struct {
 
 func (r *importRepository) UpsertBatch(_ context.Context, diagnoses []models.Diagnosis) ([]models.Diagnosis, error) {
 	r.items = diagnoses
+	for index := range diagnoses {
+		diagnoses[index].ID = uuid.NewString()
+	}
 	return diagnoses, nil
 }
 

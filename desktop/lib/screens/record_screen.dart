@@ -285,7 +285,7 @@ class _RecordScreenState extends State<RecordScreen> {
     final result = <String, RecordDiagnosis>{};
     for (final event in _events) {
       if (event.type == 'diagnosis_removed' && event.before != null) {
-        final value = RecordDiagnosis.fromJson(event.before!);
+        final value = RecordDiagnosis.fromSnapshot(event.before!);
         result[value.diagnosisId] = value;
       }
     }

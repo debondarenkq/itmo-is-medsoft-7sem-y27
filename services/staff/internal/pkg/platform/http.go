@@ -5,19 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
-	"mime"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/api"
 )
 
 type Error struct {
@@ -73,7 +71,11 @@ func WriteError(w http.ResponseWriter, r *http.Request, err error) {
 			}
 		}
 	}
-	JSON(w, api.Status, map[string]any{"error": api})
+	detail := contract.ErrorDetail{Code: api.Code, Message: api.Message}
+	if len(api.Fields) > 0 {
+		detail.Fields = &api.Fields
+	}
+	JSON(w, api.Status, contract.Error{Error: detail})
 }
 
 func JSON(w http.ResponseWriter, status int, v any) {
@@ -82,27 +84,6 @@ func JSON(w http.ResponseWriter, status int, v any) {
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		slog.Warn("encode response", "error", err)
 	}
-}
-
-func Decode(w http.ResponseWriter, r *http.Request, v any) error {
-	media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
-	if err != nil || media != "application/json" {
-		return &Error{Status: 415, Code: "CONTENT_TYPE", Message: "Требуется Content-Type: application/json"}
-	}
-	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(v); err != nil {
-		return Bad("INVALID_JSON", "Некорректный JSON: "+err.Error())
-	}
-	if err := d.Decode(new(any)); err != io.EOF {
-		return Bad("INVALID_JSON", "Ожидается один JSON-объект")
-	}
-	return nil
-}
-
-func ID(r *http.Request) (string, error) {
-	return ParseID(mux.Vars(r)["id"])
 }
 
 func ParseID(s string) (string, error) {
@@ -125,32 +106,4 @@ type Page struct {
 	Limit, Offset  int
 	Query          string
 	IncludeDeleted bool
-}
-
-func Pagination(r *http.Request) (Page, error) {
-	p := Page{Limit: 50, Query: strings.TrimSpace(r.URL.Query().Get("q"))}
-	var err error
-	if v := r.URL.Query().Get("limit"); v != "" {
-		p.Limit, err = strconv.Atoi(v)
-		if err != nil || p.Limit < 1 || p.Limit > 200 {
-			return p, Bad("PAGINATION", "limit должен быть от 1 до 200")
-		}
-	}
-	if v := r.URL.Query().Get("offset"); v != "" {
-		p.Offset, err = strconv.Atoi(v)
-		if err != nil || p.Offset < 0 {
-			return p, Bad("PAGINATION", "offset должен быть неотрицательным")
-		}
-	}
-	if v := r.URL.Query().Get("include_deleted"); v != "" {
-		p.IncludeDeleted, err = strconv.ParseBool(v)
-		if err != nil {
-			return p, Bad("PAGINATION", "include_deleted должен быть true или false")
-		}
-	}
-	return p, nil
-}
-
-func List(w http.ResponseWriter, items any, total int, p Page) {
-	JSON(w, 200, map[string]any{"items": items, "total": total, "limit": p.Limit, "offset": p.Offset})
 }

@@ -38,9 +38,27 @@ void main() {
         client: MockClient((request) async {
           if (request.method == 'POST') {
             posted.add(request);
-            return http.Response('{"items":[{}]}', 200);
+            return http.Response(
+              jsonEncode({
+                'items': [
+                  {
+                    'id': '12e575d0-0047-4be4-9e09-07f7e5aa8ffb',
+                    'code': 'TEST01',
+                    'name': 'Первый диагноз',
+                    'created_at': '2026-10-08T00:00:00Z',
+                    'updated_at': '2026-10-08T00:00:00Z',
+                    'deleted_at': null,
+                  },
+                ],
+              }),
+              200,
+              headers: {'content-type': 'application/json; charset=utf-8'},
+            );
           }
-          return http.Response('{"items":[],"total":0}', 200);
+          return http.Response(
+            '{"items":[],"total":0,"limit":50,"offset":0}',
+            200,
+          );
         }),
       );
       await tester.pumpWidget(HisApp(api: api));

@@ -1,3 +1,4 @@
+import 'package:his_api/api.dart' as contract;
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -64,46 +65,45 @@ void main() {
             .toRadixString(16)
             .toUpperCase()
             .substring(8);
-        final staff = await api.request(
-          'POST',
-          '/api/v1/staff',
-          body: {
-            'first_name': 'Анна',
-            'last_name': 'Петрова$suffix',
-            'position': 'Терапевт',
-          },
+        final staff = await api.createStaff(
+          contract.StaffInput(
+            firstName: 'Анна',
+            lastName: 'Петрова$suffix',
+            position: 'Терапевт',
+          ),
         );
-        final diagnosis = await api.request(
-          'POST',
-          '/api/v1/diagnoses',
-          body: {
-            'code': suffix.padLeft(6, '0').substring(0, 6),
-            'name': 'Учебный диагноз $suffix',
-          },
+        final diagnosis = await api.createDiagnosis(
+          contract.DiagnosisInput(
+            code: suffix.padLeft(6, '0').substring(0, 6),
+            name: 'Учебный диагноз $suffix',
+          ),
         );
-        final patient = await api.request(
-          'POST',
-          '/api/v1/patients',
-          body: {
-            'first_name': 'Иван',
-            'last_name': 'Иванов$suffix',
-            'middle_name': 'Иванович',
-            'birth_date': '1994-05-12',
-            'administrative_sex': 'M',
-            'comment': 'Учебная карточка',
-          },
+        final patient = await api.createPatient(
+          contract.PatientInput(
+            firstName: 'Иван',
+            lastName: 'Иванов$suffix',
+            middleName: const contract.Optional.present('Иванович'),
+            birthDate: DateTime(1994, 5, 12),
+            administrativeSex: contract.AdministrativeSex.M,
+            comment: const contract.Optional.present('Учебная карточка'),
+          ),
         );
         return {'staff': staff, 'patient': patient, 'diagnosis': diagnosis};
       });
-      final staffName = '${data!['staff']!['last_name']} Анна';
-      final patientName = '${data['patient']!['last_name']} Иван Иванович';
-      final diagnosisName = data['diagnosis']!['name'] as String;
+      final staffName = (data!['staff'] as Staff).name;
+      final patientName = (data['patient'] as Patient).name;
+      final diagnosisName = (data['diagnosis'] as Diagnosis).name;
       final previewKey = GlobalKey();
       await tester.pumpWidget(
         RepaintBoundary(
           key: previewKey,
           child: HisApp(api: api),
         ),
+      );
+      await settleNetwork(tester);
+      await tester.enterText(
+        find.byType(TextField),
+        (data['staff'] as Staff).lastName,
       );
       await settleNetwork(tester);
       expect(find.text('Анна'), findsNothing);
@@ -122,6 +122,11 @@ void main() {
         find.byWidgetPredicate((w) => w is DropdownButtonFormField<bool>),
       );
       await click(tester, find.text('Медработник').last);
+      await tester.enterText(
+        find.byType(TextField),
+        (data['patient'] as Patient).lastName,
+      );
+      await settleNetwork(tester);
       expect(find.text(patientName), findsOneWidget);
       await capture(tester, previewKey, '04-patients');
       await click(tester, find.text(patientName));
@@ -163,7 +168,7 @@ void main() {
       await capture(tester, previewKey, '07-record-editing');
       await click(tester, find.text('Сохранить изменения'));
       expect(find.text('Только просмотр'), findsOneWidget);
-      final patientId = (data['patient'] as Json)['id'] as String;
+      final patientId = (data['patient'] as Patient).id;
       final saved = await tester.runAsync(() => api.patientRecord(patientId));
       expect(saved!.version, 2);
       expect(saved.diagnoses.length, 1);
@@ -266,8 +271,11 @@ void main() {
       );
       await click(tester, find.text('Добавить в карту'));
       await tester.runAsync(
-        () => api.saveRecord(restored, data['staff']!['id'] as String, [
-          {'type': 'add_prescription', 'text': 'Параллельное назначение'},
+        () => api.saveRecord(restored, (data['staff'] as Staff).id, [
+          contract.Command(
+            type: contract.CommandType.addPrescription,
+            text: const contract.Optional.present('Параллельное назначение'),
+          ),
         ]),
       );
       await click(tester, find.text('Сохранить изменения'));

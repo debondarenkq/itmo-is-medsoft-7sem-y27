@@ -1,19 +1,18 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/api"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/platform"
 )
 
-func (i *Implementation) Delete(w http.ResponseWriter, r *http.Request) error {
-	id, err := platform.ID(r)
-	if err != nil {
-		return err
+func (i *Implementation) DeleteStaff(ctx context.Context, request contract.DeleteStaffRequestObject) (contract.DeleteStaffResponseObject, error) {
+	if err := platform.RequireID(request.ID); err != nil {
+		return nil, err
 	}
-	if err = i.Module.Delete(r.Context(), id); err != nil {
-		return err
+	if err := i.Module.Delete(ctx, request.ID.String()); err != nil {
+		return nil, err
 	}
-	w.WriteHeader(http.StatusNoContent)
-	return nil
+	return contract.DeleteStaff204Response{}, nil
 }

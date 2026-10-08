@@ -1,0 +1,16 @@
+generatorName: dart
+inputSpec: /local/desktop/api/openapi.json
+outputDir: /local/desktop/packages/his_api
+additionalProperties:
+  pubName: his_api
+  pubPublishTo: none
+  pubVersion: 1.0.0
+  pubDescription: Generated HTTP client for the single HIS gateway
+  pubHomepage: https://github.com/debondarenkq/itmo-is-medsoft-7sem-y27
+  hideGenerationTimestamp: true
+  useOptional: true
+globalProperties:
+  apiTests: 'false'
+  modelTests: 'false'
+  apiDocs: 'false'
+  modelDocs: 'false'

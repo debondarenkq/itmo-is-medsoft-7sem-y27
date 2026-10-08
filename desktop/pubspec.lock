@@ -149,6 +149,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  his_api:
+    dependency: "direct main"
+    description:
+      path: "packages/his_api"
+      relative: true
+    source: path
+    version: "1.0.0"
   http:
     dependency: "direct main"
     description:
