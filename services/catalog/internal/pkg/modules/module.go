@@ -14,7 +14,7 @@ type Storage interface {
 	Create(context.Context, models.Diagnosis) (models.Diagnosis, error)
 	Update(context.Context, string, models.Diagnosis) (models.Diagnosis, error)
 	Delete(context.Context, string) error
-	Seed(context.Context) ([]models.Diagnosis, error)
+	UpsertBatch(context.Context, []models.Diagnosis) ([]models.Diagnosis, error)
 }
 type Deps struct{ Storage Storage }
 type Module struct {
@@ -70,8 +70,4 @@ func (m *Module) Update(ctx context.Context, id string, v models.Diagnosis) (mod
 
 func (m *Module) Delete(ctx context.Context, id string) error {
 	return m.Storage.Delete(ctx, id)
-}
-
-func (m *Module) Seed(ctx context.Context) ([]models.Diagnosis, error) {
-	return m.Storage.Seed(ctx)
 }
