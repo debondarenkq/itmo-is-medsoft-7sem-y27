@@ -1,0 +1,108 @@
+name: his
+
+x-staff: &staff
+  build: ./services/staff
+  image: his-staff:local
+  environment:
+    DATABASE_URL: postgres://staff_user:staff_local@postgres:5432/staff?sslmode=disable
+
+x-catalog: &catalog
+  build: ./services/catalog
+  image: his-catalog:local
+  environment:
+    DATABASE_URL: postgres://catalog_user:catalog_local@postgres:5432/catalog?sslmode=disable
+
+x-clinical: &clinical
+  build: ./services/clinical
+  image: his-clinical:local
+  environment:
+    DATABASE_URL: postgres://clinical_user:clinical_local@postgres:5432/clinical?sslmode=disable
+    STAFF_URL: http://staff-service:8080
+    CATALOG_URL: http://catalog-service:8080
+
+x-health: &health
+  test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/ready]
+  interval: 3s
+  timeout: 2s
+  retries: 20
+  start_period: 5s
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: his_admin
+      POSTGRES_PASSWORD: his_local
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./deploy/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U his_admin -d postgres']
+      interval: 3s
+      timeout: 2s
+      retries: 20
+
+  staff-migrate:
+    <<: *staff
+    command: [migrate]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  catalog-migrate:
+    <<: *catalog
+    command: [migrate]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  clinical-migrate:
+    <<: *clinical
+    command: [migrate]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  staff-service:
+    <<: *staff
+    depends_on:
+      staff-migrate:
+        condition: service_completed_successfully
+    healthcheck: *health
+
+  catalog-service:
+    <<: *catalog
+    depends_on:
+      catalog-migrate:
+        condition: service_completed_successfully
+    healthcheck: *health
+
+  clinical-service:
+    <<: *clinical
+    depends_on:
+      clinical-migrate:
+        condition: service_completed_successfully
+    healthcheck: *health
+
+  nginx:
+    image: nginx:1.28-alpine
+    ports:
+      - '127.0.0.1:8080:80'
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      staff-service:
+        condition: service_healthy
+      catalog-service:
+        condition: service_healthy
+      clinical-service:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1/live]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+
+volumes:
+  postgres-data:
