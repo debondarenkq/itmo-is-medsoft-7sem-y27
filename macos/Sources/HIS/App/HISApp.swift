@@ -3,7 +3,6 @@ import SwiftUI
 
 @main
 struct HISApp: App {
-  @NSApplicationDelegateAdaptor(ApplicationDelegate.self) private var delegate
   @AppStorage("gatewayAddress") private var address = "http://localhost:8080"
 
   var body: some Scene {
