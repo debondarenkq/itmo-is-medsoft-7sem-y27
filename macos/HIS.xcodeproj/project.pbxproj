@@ -1,0 +1,179 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 77;
+	objects = {
+		A00000000000000000000001 = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					A00000000000000000000002 = { CreatedOnToolsVersion = 16.0; };
+				};
+			};
+			buildConfigurationList = A00000000000000000000010;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = ru;
+			hasScannedForEncodings = 0;
+			knownRegions = (ru, en, Base);
+			mainGroup = A00000000000000000000003;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (A00000000000000000000020);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A00000000000000000000005;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (A00000000000000000000002);
+		};
+		A00000000000000000000002 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000011;
+			buildPhases = (A00000000000000000000007, A00000000000000000000008, A00000000000000000000009);
+			buildRules = ();
+			dependencies = ();
+			fileSystemSynchronizedGroups = (A00000000000000000000004);
+			name = HIS;
+			packageProductDependencies = (A00000000000000000000021);
+			productName = HIS;
+			productReference = A00000000000000000000006;
+			productType = "com.apple.product-type.application";
+		};
+		A00000000000000000000003 = {
+			isa = PBXGroup;
+			children = (A00000000000000000000004, A0000000000000000000000A, A00000000000000000000005);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000004 = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Sources/HIS;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000005 = {
+			isa = PBXGroup;
+			children = (A00000000000000000000006);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000006 = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = HIS.app;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A00000000000000000000007 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000008 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (A00000000000000000000022);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000009 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (A0000000000000000000000D);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A0000000000000000000000A = {
+			isa = PBXGroup;
+			children = (A0000000000000000000000B, A0000000000000000000000C);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A0000000000000000000000B = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			path = Info.plist;
+			sourceTree = "<group>";
+		};
+		A0000000000000000000000C = {
+			isa = PBXFileReference;
+			lastKnownFileType = image.icns;
+			path = AppIcon.icns;
+			sourceTree = "<group>";
+		};
+		A0000000000000000000000D = { isa = PBXBuildFile; fileRef = A0000000000000000000000C; };
+		A00000000000000000000010 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A00000000000000000000012, A00000000000000000000013);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000011 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A00000000000000000000014, A00000000000000000000015);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000012 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)");
+				ONLY_ACTIVE_ARCH = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		A00000000000000000000013 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		A00000000000000000000014 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
+				PRODUCT_BUNDLE_IDENTIFIER = ru.itmo.medsoft.his;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A00000000000000000000015 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
+				PRODUCT_BUNDLE_IDENTIFIER = ru.itmo.medsoft.his;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		A00000000000000000000020 = { isa = XCLocalSwiftPackageReference; relativePath = Generated; };
+		A00000000000000000000021 = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000020;
+			productName = HISAPI;
+		};
+		A00000000000000000000022 = { isa = PBXBuildFile; productRef = A00000000000000000000021; };
+	};
+	rootObject = A00000000000000000000001;
+}

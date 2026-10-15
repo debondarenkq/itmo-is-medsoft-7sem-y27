@@ -4,7 +4,7 @@
 
 ## Запуск
 
-Нужны Swift 6 с macOS SDK (Xcode 16+ либо соответствующие Command Line Tools), принятая лицензия Apple SDK и работающий backend.
+Нужны Xcode 16+ с принятыми условиями лицензии Apple SDK и работающий backend.
 
 Из корня репозитория:
 
@@ -14,13 +14,13 @@ make macos-build
 open macos/build/HIS.app
 ```
 
-Сборка использует Swift Package Manager и не скачивает зависимости: пакет `Generated` находится в репозитории. `build.sh` создаёт `.app` и подписывает её локальной ad hoc подписью. Для распространения за пределами учебного окружения нужны Developer ID и notarization; CI-артефакт не нотарифицирован.
+Сборка использует цель macOS Application в `HIS.xcodeproj`. API-клиент подключён как локальный Swift-пакет `Generated`; сетевых зависимостей нет. `build.sh` вызывает `xcodebuild` и копирует подписанную локальной ad hoc подписью `.app` в `build/HIS.app`. Для распространения за пределами учебного окружения нужны Developer ID и notarization; CI-артефакт не нотарифицирован.
 
-Для разработки можно открыть `macos/Package.swift` в Xcode. Проверка компиляции без упаковки:
+## Запуск из Xcode
 
-```sh
-swift build --package-path macos
-```
+1. Откройте `macos/HIS.xcodeproj`.
+2. Вверху выберите схему **HIS** и устройство **My Mac**.
+3. Нажмите **▶ Run** или **⌘R**. Xcode соберёт и запустит `HIS.app`; Apple Developer Team для локальной сборки не требуется.
 
 В меню **HIS → Настройки…** (`⌘,`) задаётся адрес Nginx, по умолчанию `http://localhost:8080`. Он сохраняется между запусками. HTTP разрешён для учебного backend; запросы к сервисам идут через gateway.
 
@@ -45,6 +45,7 @@ swift build --package-path macos
 - `api` — объединённая OpenAPI-спецификация и конфигурация генератора.
 - `Generated` — Swift 6 HTTP-клиент и Codable DTO из общих контрактов; вручную не редактируется.
 - `Resources` — Info.plist и иконка.
+- `HIS.xcodeproj` — цель macOS Application и общая схема HIS для запуска и отладки.
 
 Генерация: `make generate-contracts` из корня. Новые тесты не добавлены. Workflow macOS компилирует приложение и публикует `.app` в ZIP.
 

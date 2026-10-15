@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: swift --version
-      - run: swift build --package-path macos
+      - run: xcodebuild -project macos/HIS.xcodeproj -scheme HIS -configuration Debug -destination platform=macOS -derivedDataPath macos/build/DerivedData build
       - run: ./macos/build.sh
       - run: ditto -c -k --sequesterRsrc --keepParent macos/build/HIS.app macos/build/HIS-macos.zip
       - uses: actions/upload-artifact@v4

@@ -1,13 +1,13 @@
 #!/bin/sh
 set -eu
 cd "$(dirname "$0")"
-configuration="${1:-release}"
-swift build -c "$configuration"
-binary_dir="$(swift build -c "$configuration" --show-bin-path)"
-app="build/HIS.app"
-mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
-cp "$binary_dir/HIS" "$app/Contents/MacOS/HIS"
-cp Resources/Info.plist "$app/Contents/Info.plist"
-cp Resources/AppIcon.icns "$app/Contents/Resources/AppIcon.icns"
-codesign --force --sign - "$app"
-printf '%s\n' "$(pwd)/$app"
+case "${1:-release}" in
+    debug|Debug) configuration=Debug ;;
+    release|Release) configuration=Release ;;
+    *) printf '%s\n' 'Usage: ./build.sh [debug|release]' >&2; exit 1 ;;
+esac
+xcodebuild -project HIS.xcodeproj -scheme HIS -configuration "$configuration" \
+    -destination 'platform=macOS' -derivedDataPath build/DerivedData \
+    CONFIGURATION_BUILD_DIR="$PWD/build/Products/$configuration" build
+ditto "build/Products/$configuration/HIS.app" build/HIS.app
+printf '%s\n' "$PWD/build/HIS.app"

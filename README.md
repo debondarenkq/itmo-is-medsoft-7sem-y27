@@ -123,7 +123,7 @@ make macos-build
 open macos/build/HIS.app
 ```
 
-Нужны macOS 14+ и Swift 6 с macOS SDK. Адрес Nginx задаётся в меню HIS → Настройки… (`⌘,`). Workflow [macOS](https://github.com/debondarenkq/itmo-is-medsoft-7sem-y27/actions/workflows/desktop.yml) собирает `.app` и публикует ZIP. Старый Flutter-клиент сохранён в `desktop/` для сравнения.
+Нужны macOS 14+ и Xcode 16+. Для запуска из Xcode откройте `macos/HIS.xcodeproj`, выберите **HIS → My Mac** и нажмите **⌘R**. Адрес Nginx задаётся в меню HIS → Настройки… (`⌘,`). Workflow [macOS](https://github.com/debondarenkq/itmo-is-medsoft-7sem-y27/actions/workflows/desktop.yml) собирает `.app` и публикует ZIP. Старый Flutter-клиент сохранён в `desktop/` для сравнения.
 
 ## Контракты
 
