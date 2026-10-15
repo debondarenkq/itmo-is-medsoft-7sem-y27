@@ -47,12 +47,9 @@ struct DiagnosesView: View {
     .onChange(of: search) { offset = 0 }
     .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
       Task {
-        isBusy = true
-        defer { isBusy = false }
         do {
-          let count = try await gateway.importDiagnoses(from: result.get())
-          importResult = "Импортировано записей: \(count)"
-          await load()
+          let file = try result.get()
+          await importDiagnoses(from: file)
         } catch {
           errorText = errorMessage(error)
         }
@@ -65,6 +62,25 @@ struct DiagnosesView: View {
       Button("Удалить", role: .destructive) { Task { await delete() } }
     } message: {
       Text(selectedDiagnosis?.name ?? "")
+    }
+  }
+
+  private func importDiagnoses(from file: URL) async {
+    isBusy = true
+    defer { isBusy = false }
+
+    let accessed = file.startAccessingSecurityScopedResource()
+    defer {
+      if accessed { file.stopAccessingSecurityScopedResource() }
+    }
+
+    do {
+      let contents = try Data(contentsOf: file)
+      let result = try await gateway.diagnoses.importDiagnoses(contents: contents)
+      importResult = "Импортировано записей: \(result.items.count)"
+      await load()
+    } catch {
+      errorText = errorMessage(error)
     }
   }
 
