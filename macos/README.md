@@ -40,9 +40,9 @@ open macos/build/HIS.app
 ## Структура
 
 - `Sources/HIS/App` — приложение, навигация и настройки.
-- `Sources/HIS/Staff`, `Diagnoses`, `Patients`, `Records` — экраны по предметным областям.
-- `Sources/HIS/Networking` — подключение к Nginx, разбор серверных ошибок и дополнение API для отправки исходного файла.
-- `Sources/HIS/UI` — общие элементы интерфейса, выбор справочника и отображение ошибок.
+- `Sources/HIS/Features` — разделы `Staff`, `Diagnoses`, `Patients`, `Records`: экраны, редакторы и черновик ЭМК.
+- `Sources/HIS/Core/Networking` — подключение к Nginx, разбор серверных ошибок и отправка исходного файла.
+- `Sources/HIS/UI/Components` — общие элементы SwiftUI; `UI/Formatting` — подписи, даты и сообщения для отображения.
 - `api` — объединённая OpenAPI-спецификация и конфигурация генератора.
 - `Generated` — Swift 6 HTTP-клиент и Codable DTO из общих контрактов; вручную не редактируется.
 - `Resources` — Info.plist и иконка.

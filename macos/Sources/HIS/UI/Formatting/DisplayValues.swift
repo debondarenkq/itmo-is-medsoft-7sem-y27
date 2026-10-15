@@ -1,5 +1,9 @@
+import Foundation
 import HISAPI
-import SwiftUI
+
+extension Staff {
+  var fullName: String { "\(lastName) \(firstName)" }
+}
 
 extension Patient {
   var fullName: String {
@@ -27,5 +31,18 @@ extension OpenAPIDateWithoutTime {
     let components = calendar.dateComponents([.year, .month, .day], from: wrappedDate)
     calendar.timeZone = .current
     return calendar.date(from: components) ?? wrappedDate
+  }
+}
+
+extension EventType {
+  var label: String {
+    switch self {
+    case .recordCreated: return "Создана медицинская карта"
+    case .diagnosisAdded: return "Добавлен диагноз"
+    case .diagnosisRemoved: return "Удалён диагноз"
+    case .prescriptionAdded: return "Добавлено назначение"
+    case .prescriptionCancelled: return "Отменено назначение"
+    case .prescriptionRemoved: return "Удалено назначение"
+    }
   }
 }

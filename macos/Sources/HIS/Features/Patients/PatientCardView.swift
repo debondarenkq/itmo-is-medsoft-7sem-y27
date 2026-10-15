@@ -1,7 +1,7 @@
 import HISAPI
 import SwiftUI
 
-struct PatientCard: View {
+struct PatientCardView: View {
   let gateway: Gateway
   let worker: Staff
   @State var patient: Patient
@@ -48,7 +48,7 @@ struct PatientCard: View {
     .disabled(isBusy)
     .overlay { if isBusy { ProgressView() } }
     .sheet(isPresented: $editing) {
-      PatientEditor(gateway: gateway, patient: patient) { Task { await reload() } }
+      PatientEditorView(gateway: gateway, patient: patient) { Task { await reload() } }
     }
     .sheet(isPresented: $showingRecord, onDismiss: { Task { await reload() } }) {
       RecordView(gateway: gateway, worker: worker, patient: patient)
