@@ -3,6 +3,7 @@ import SwiftUI
 
 struct PatientsView: View {
   let gateway: Gateway
+  let worker: Staff
   @State private var items: [Patient] = []
   @State private var selection: UUID?
   @State private var search = ""
@@ -52,13 +53,13 @@ struct PatientsView: View {
     .task(id: "\(search)|\(offset)") { await load() }
     .onChange(of: search) { offset = 0 }
     .sheet(item: $viewedPatient, onDismiss: { Task { await load() } }) { patient in
-      PatientCard(gateway: gateway, patient: patient)
+      PatientCard(gateway: gateway, worker: worker, patient: patient)
     }
     .sheet(isPresented: $editing) {
       PatientEditor(gateway: gateway, patient: editedPatient) { Task { await load() } }
     }
     .sheet(item: $recordPatient, onDismiss: { Task { await load() } }) { patient in
-      RecordView(gateway: gateway, patient: patient)
+      RecordView(gateway: gateway, worker: worker, patient: patient)
     }
     .confirmationDialog("Удалить пациента?", isPresented: $deleting, titleVisibility: .visible) {
       Button("Удалить", role: .destructive) { Task { await delete() } }

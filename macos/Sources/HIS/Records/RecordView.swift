@@ -3,10 +3,12 @@ import SwiftUI
 
 struct RecordView: View {
   let gateway: Gateway
+  let worker: Staff
   let patient: Patient
   @Environment(\.dismiss) private var dismiss
   @State private var draft: RecordDraft?
-  @State private var actor: Staff?
+  @State private var editing = false
+  @State private var confirmingUnlock = false
   @State private var busy = false
   @State private var missing = false
   @State private var message: String?
@@ -16,13 +18,12 @@ struct RecordView: View {
   @State private var selectedPrescription: UUID?
 
   private enum EditorSheet: String, Identifiable {
-    case staff, diagnosis, prescription
+    case diagnosis, prescription
     var id: Self { self }
   }
   private enum PendingAction { case close, reload, cancel }
   @State private var editedPrescription: Prescription?
   private var dirty: Bool { draft?.isDirty ?? false }
-  private var editing: Bool { actor != nil }
 
   var body: some View {
     VStack(spacing: 0) {
@@ -53,10 +54,10 @@ struct RecordView: View {
             systemImage: editing ? "lock.open" : "lock")
           Text("Версия \(draft.base.version)").foregroundStyle(.secondary)
           Spacer()
-          if let actor {
-            Text("Автор: \(actor.fullName)")
+          if editing {
+            Text("Автор: \(worker.fullName)")
           } else {
-            Button("Разблокировать…") { sheet = .staff }
+            Button("Разблокировать…") { confirmingUnlock = true }
           }
         }.padding()
         TabView {
@@ -86,7 +87,7 @@ struct RecordView: View {
         ContentUnavailableView {
           Label("Медицинская карта не создана", systemImage: "heart.text.clipboard")
         } actions: {
-          Button("Создать ЭМК…") { sheet = .staff }
+          Button("Создать ЭМК") { Task { await create() } }
         }
       } else {
         ContentUnavailableView(
@@ -99,19 +100,16 @@ struct RecordView: View {
     .overlay { if busy { ProgressView() } }
     .interactiveDismissDisabled()
     .task { await load() }
+    .confirmationDialog(
+      "Разблокировать карту?", isPresented: $confirmingUnlock, titleVisibility: .visible
+    ) {
+      Button("Разблокировать") { editing = true }
+      Button("Отмена", role: .cancel) {}
+    } message: {
+      Text("Автор изменений: \(worker.fullName) · \(worker.position)")
+    }
     .sheet(item: $sheet) { destination in
       switch destination {
-      case .staff:
-        DirectoryPicker<Staff>(
-          title: missing ? "Автор создания ЭМК" : "Автор изменений",
-          label: { "\($0.fullName) · \($0.position)" },
-          fetch: { search, offset in
-            let page = try await gateway.staff.listStaff(limit: 50, offset: offset, search: search)
-            return (page.items, page.total)
-          },
-          select: { staff in
-            if missing { Task { await create(author: staff) } } else { actor = staff }
-          })
       case .diagnosis:
         DirectoryPicker<Diagnosis>(
           title: "Добавить диагноз", label: { "\($0.code) · \($0.name)" },
@@ -183,7 +181,7 @@ struct RecordView: View {
     case .reload: Task { await load() }
     case .cancel:
       if let draft { self.draft = RecordDraft(draft.base) }
-      actor = nil
+      editing = false
       message = nil
       conflict = false
     }
@@ -191,7 +189,7 @@ struct RecordView: View {
 
   private func replace(_ record: Record) {
     draft = RecordDraft(record)
-    actor = nil
+    editing = false
     missing = false
     message = nil
     conflict = false
@@ -210,23 +208,23 @@ struct RecordView: View {
     }
   }
 
-  private func create(author: Staff) async {
+  private func create() async {
     busy = true
     defer { busy = false }
     do {
       replace(
         try await gateway.records.createRecord(
-          id: patient.id, createRecordInput: CreateRecordInput(staffId: author.id)))
+          id: patient.id, createRecordInput: CreateRecordInput(staffId: worker.id)))
     } catch { message = errorMessage(error) }
   }
 
   private func save() async {
-    guard let draft, let actor else { return }
+    guard let draft else { return }
     busy = true
     defer { busy = false }
     do {
       let input = ChangesInput(
-        commands: draft.commands, expectedVersion: draft.base.version, staffId: actor.id)
+        commands: draft.commands, expectedVersion: draft.base.version, staffId: worker.id)
       replace(try await gateway.records.saveRecord(id: draft.base.id, changesInput: input))
     } catch {
       message = errorMessage(error)

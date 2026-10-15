@@ -3,6 +3,7 @@ import SwiftUI
 
 struct PatientCard: View {
   let gateway: Gateway
+  let worker: Staff
   @State var patient: Patient
   @Environment(\.dismiss) private var dismiss
   @State private var editing = false
@@ -50,7 +51,7 @@ struct PatientCard: View {
       PatientEditor(gateway: gateway, patient: patient) { Task { await reload() } }
     }
     .sheet(isPresented: $showingRecord, onDismiss: { Task { await reload() } }) {
-      RecordView(gateway: gateway, patient: patient)
+      RecordView(gateway: gateway, worker: worker, patient: patient)
     }
     .confirmationDialog("Удалить пациента?", isPresented: $deleting, titleVisibility: .visible) {
       Button("Удалить", role: .destructive) {

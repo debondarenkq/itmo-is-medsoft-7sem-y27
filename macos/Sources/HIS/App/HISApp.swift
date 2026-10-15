@@ -1,3 +1,4 @@
+import HISAPI
 import SwiftUI
 
 @main
@@ -31,31 +32,92 @@ private enum Workspace: String, CaseIterable, Identifiable {
 
 private struct MainView: View {
   let gateway: Gateway
-  @State private var selection: Workspace? = .patients
+  @State private var profile: AppProfile?
+  @State private var selection: Workspace? = .staff
+  @State private var choosingWorker = false
 
   var body: some View {
     NavigationSplitView {
       List(selection: $selection) {
-        Section("Медработник") {
+        switch profile {
+        case .administrator:
+          Section("Администрирование") {
+            ForEach([Workspace.staff, .diagnoses]) { section in
+              Label(section.rawValue, systemImage: section.icon).tag(section)
+            }
+          }
+        case .worker:
           Label(Workspace.patients.rawValue, systemImage: Workspace.patients.icon).tag(
             Workspace.patients)
-        }
-        Section("Администрирование") {
-          ForEach([Workspace.staff, .diagnoses]) { section in
-            Label(section.rawValue, systemImage: section.icon).tag(section)
-          }
+        case nil:
+          EmptyView()
         }
       }
       .navigationTitle("HIS")
-    } detail: {
-      Group {
-        switch selection {
-        case .staff: StaffView(gateway: gateway)
-        case .diagnoses: DiagnosesView(gateway: gateway)
-        default: PatientsView(gateway: gateway)
+      .safeAreaInset(edge: .bottom, spacing: 0) {
+        VStack(spacing: 0) {
+          Divider()
+          VStack(alignment: .leading) {
+            Menu {
+              Button("Администратор", systemImage: "person.badge.key") { select(.administrator) }
+              Button("Медработник…", systemImage: "stethoscope") { choosingWorker = true }
+            } label: {
+              Label(
+                profile?.name ?? "Выбрать профиль",
+                systemImage: profile?.icon ?? "person.crop.circle")
+            }
+            .menuStyle(.borderlessButton)
+            .help(
+              profile.map { "\($0.name) · \($0.subtitle). Сменить профиль" } ?? "Выбрать профиль")
+            if let profile {
+              Text(profile.subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            }
+          }
+          .padding()
         }
       }
+    } detail: {
+      Group {
+        switch profile {
+        case .administrator:
+          if selection == .diagnoses {
+            DiagnosesView(gateway: gateway)
+          } else {
+            StaffView(gateway: gateway)
+          }
+        case .worker(let worker):
+          PatientsView(gateway: gateway, worker: worker)
+        case nil:
+          ContentUnavailableView {
+            Label("Выберите профиль", systemImage: "person.crop.circle")
+          } description: {
+            Text("Войдите как администратор или выберите медработника.")
+          } actions: {
+            Button("Администратор") { select(.administrator) }
+            Button("Медработник…") { choosingWorker = true }
+          }
+        }
+      }
+      .id(profile)
       .id(gateway.address)
+    }
+    .sheet(isPresented: $choosingWorker) {
+      DirectoryPicker<Staff>(
+        title: "Выберите профиль медработника",
+        label: { "\($0.fullName) · \($0.position)" },
+        fetch: { search, offset in
+          let page = try await gateway.staff.listStaff(limit: 50, offset: offset, search: search)
+          return (page.items, page.total)
+        }, select: { select(.worker($0)) })
+    }
+    .onChange(of: gateway.address) { profile = nil }
+  }
+
+  private func select(_ profile: AppProfile) {
+    self.profile = profile
+    switch profile {
+    case .administrator: selection = .staff
+    case .worker: selection = .patients
     }
   }
 }
