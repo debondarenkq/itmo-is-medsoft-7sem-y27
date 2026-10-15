@@ -8,8 +8,8 @@ import (
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/models"
 )
 
-func (r *Repository) UpsertBatch(ctx context.Context, diagnoses []models.Diagnosis) ([]models.Diagnosis, error) {
-	tx, err := r.pool.Begin(ctx)
+func (repository *Repository) UpsertBatch(ctx context.Context, diagnoses []models.Diagnosis) ([]models.Diagnosis, error) {
+	tx, err := repository.pool.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -12,14 +12,14 @@ class RecordDraft extends ChangeNotifier {
   int _nextId = 0;
   String _localId() => 'draft-${_nextId++}';
   bool get dirty => commands.isNotEmpty;
-  bool containsDiagnosis(String id) =>
-      diagnoses.any((d) => d.diagnosisId == id);
-
   void addDiagnosis(Diagnosis value) {
-    if (containsDiagnosis(value.id)) return;
     // Undo a pending removal without introducing a duplicate historical entry.
     final original = base.diagnoses
-        .where((d) => d.diagnosisId == value.id)
+        .where(
+          (entry) =>
+              entry.diagnosisId == value.id &&
+              !diagnoses.any((current) => current.id == entry.id),
+        )
         .firstOrNull;
     diagnoses.add(
       original ??
@@ -38,24 +38,17 @@ class RecordDraft extends ChangeNotifier {
     notifyListeners();
   }
 
-  void undoDiagnosisRemoval(RecordDiagnosis value) {
-    if (!containsDiagnosis(value.diagnosisId)) {
-      diagnoses.add(value);
-      notifyListeners();
-    }
-  }
-
   void addPrescription(String text) {
     prescriptions.add(
-      Prescription(id: _localId(), text: text.trim(), status: 'active'),
+      Prescription(id: _localId(), text: text, status: 'active'),
     );
     notifyListeners();
   }
 
   void editPrescription(String id, String text) {
     final index = prescriptions.indexWhere((p) => p.id == id);
-    if (index < 0 || !prescriptions[index].active) return;
-    prescriptions[index] = prescriptions[index].copyWith(text: text.trim());
+    if (index < 0) return;
+    prescriptions[index] = prescriptions[index].copyWith(text: text);
     notifyListeners();
   }
 

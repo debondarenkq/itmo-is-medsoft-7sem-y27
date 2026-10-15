@@ -9,11 +9,9 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/models"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/modules"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/platform"
 )
 
 func createPatient(t *testing.T, r *Repository) models.Patient {
@@ -24,6 +22,15 @@ func createPatient(t *testing.T, r *Repository) models.Patient {
 	}
 	return v
 }
+func saveRecord(ctx context.Context, repository *Repository, id string, expectedVersion int64, author models.Actor, commands []models.Command, diagnoses map[string]models.DiagnosisSnapshot) (models.Record, error) {
+	return repository.Save(ctx, id, author, func(record models.Record) (models.State, []models.Event, error) {
+		if record.Version != expectedVersion {
+			return models.State{}, nil, models.ErrVersionConflict
+		}
+		return modules.Apply(record.State, commands, diagnoses)
+	})
+}
+
 func actor() models.Actor {
 	return models.Actor{ID: uuid.NewString(), FirstName: "Анна", LastName: "Петрова", Position: "Терапевт"}
 }
@@ -44,13 +51,13 @@ func TestRecordLifecycleAndHistoricalState(t *testing.T) {
 		t.Fatal("patient with record deleted")
 	}
 	d := models.DiagnosisSnapshot{ID: uuid.NewString(), Code: "J00.00", Name: "Назофарингит"}
-	record, err = r.Save(ctx, record.ID, 1, a, []models.Command{{Type: "add_diagnosis", DiagnosisID: d.ID}, {Type: "add_prescription", Text: "Пить больше воды"}}, map[string]models.DiagnosisSnapshot{d.ID: d})
+	record, err = saveRecord(ctx, r, record.ID, 1, a, []models.Command{{Type: "add_diagnosis", DiagnosisID: d.ID}, {Type: "add_prescription", Text: "Пить больше воды"}}, map[string]models.DiagnosisSnapshot{d.ID: d})
 	if err != nil {
 		t.Fatal(err)
 	}
 	added := record
 	originalID := record.State.Prescriptions[0].ID
-	record, err = r.Save(ctx, record.ID, 2, a, []models.Command{{Type: "edit_prescription", ID: originalID, Text: "Пить воду после еды"}}, nil)
+	record, err = saveRecord(ctx, r, record.ID, 2, a, []models.Command{{Type: "edit_prescription", ID: originalID, Text: "Пить воду после еды"}}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,11 +65,11 @@ func TestRecordLifecycleAndHistoricalState(t *testing.T) {
 	if record.State.Prescriptions[0].ID == originalID {
 		t.Fatal("ID must change when editing")
 	}
-	record, err = r.Save(ctx, record.ID, 3, a, []models.Command{{Type: "cancel_prescription", ID: record.State.Prescriptions[0].ID}, {Type: "remove_diagnosis", ID: record.State.Diagnoses[0].ID}}, nil)
+	record, err = saveRecord(ctx, r, record.ID, 3, a, []models.Command{{Type: "cancel_prescription", ID: record.State.Prescriptions[0].ID}, {Type: "remove_diagnosis", ID: record.State.Diagnoses[0].ID}}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	events, total, err := r.History(ctx, record.ID, platform.Page{Limit: 200})
+	events, total, err := r.History(ctx, record.ID, models.Page{Limit: 200})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +99,7 @@ func TestRecordLifecycleAndHistoricalState(t *testing.T) {
 		}
 	}
 	// Failure after a valid command leaves both current state and history untouched.
-	_, err = r.Save(ctx, record.ID, 4, a, []models.Command{{Type: "add_prescription", Text: "Новое назначение"}, {Type: "remove_diagnosis", ID: uuid.NewString()}}, nil)
+	_, err = saveRecord(ctx, r, record.ID, 4, a, []models.Command{{Type: "add_prescription", Text: "Новое назначение"}, {Type: "remove_diagnosis", ID: uuid.NewString()}}, nil)
 	if err == nil {
 		t.Fatal("invalid batch accepted")
 	}
@@ -100,7 +107,7 @@ func TestRecordLifecycleAndHistoricalState(t *testing.T) {
 	if err != nil || current.Version != 4 || !reflect.DeepEqual(current.State, record.State) {
 		t.Fatal("failed batch changed record")
 	}
-	_, total, err = r.History(ctx, record.ID, platform.Page{Limit: 200})
+	_, total, err = r.History(ctx, record.ID, models.Page{Limit: 200})
 	if err != nil || total != 7 {
 		t.Fatal("failed batch changed history")
 	}
@@ -123,7 +130,7 @@ func TestConcurrentSavesUseVersion(t *testing.T) {
 	for range 2 {
 		go func() {
 			<-start
-			_, err := r.Save(ctx, record.ID, 1, actor(), []models.Command{{Type: "add_prescription", Text: "Назначение"}}, nil)
+			_, err := saveRecord(ctx, r, record.ID, 1, actor(), []models.Command{{Type: "add_prescription", Text: "Назначение"}}, nil)
 			results <- err
 		}()
 	}
@@ -131,10 +138,9 @@ func TestConcurrentSavesUseVersion(t *testing.T) {
 	successes, conflicts := 0, 0
 	for range 2 {
 		err := <-results
-		var api *platform.Error
 		if err == nil {
 			successes++
-		} else if errors.As(err, &api) && api.Code == "VERSION_CONFLICT" {
+		} else if errors.Is(err, models.ErrVersionConflict) {
 			conflicts++
 		} else {
 			t.Fatal(err)
@@ -159,11 +165,10 @@ func TestConcurrentCreateRecordAndDeletePatient(t *testing.T) {
 		close(start)
 		wg.Wait()
 		if createErr == nil {
-			var api *platform.Error
-			if !errors.As(deleteErr, &api) || api.Code != "PATIENT_HAS_RECORD" {
+			if !errors.Is(deleteErr, models.ErrReferenced) {
 				t.Fatalf("create success, delete=%v", deleteErr)
 			}
-		} else if !errors.Is(createErr, pgx.ErrNoRows) || deleteErr != nil {
+		} else if !errors.Is(createErr, models.ErrNotFound) || deleteErr != nil {
 			t.Fatalf("create=%v delete=%v", createErr, deleteErr)
 		}
 	}

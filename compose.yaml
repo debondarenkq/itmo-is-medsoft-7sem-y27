@@ -17,8 +17,7 @@ x-clinical: &clinical
   image: his-clinical:local
   environment:
     DATABASE_URL: postgres://clinical_user:clinical_local@postgres:5432/clinical?sslmode=disable
-    STAFF_URL: http://staff-service:8080
-    CATALOG_URL: http://catalog-service:8080
+    GATEWAY_URL: ${GATEWAY_URL:-http://nginx}
 
 x-health: &health
   test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/ready]

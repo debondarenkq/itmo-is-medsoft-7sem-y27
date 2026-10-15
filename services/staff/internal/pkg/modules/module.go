@@ -2,14 +2,15 @@ package modules
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/models"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/platform"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/validation"
 )
 
 type Storage interface {
-	List(context.Context, platform.Page) ([]models.Staff, int, error)
+	List(context.Context, models.Page) ([]models.Staff, int, error)
 	Get(context.Context, string) (models.Staff, error)
 	Create(context.Context, models.Staff) (models.Staff, error)
 	Update(context.Context, string, models.Staff) (models.Staff, error)
@@ -24,53 +25,53 @@ func New(deps Deps) *Module {
 	return &Module{Deps: deps}
 }
 
-func Validate(v models.Staff) (models.Staff, error) {
-	v.FirstName = strings.TrimSpace(v.FirstName)
-	if err := platform.Text("first_name", v.FirstName, 3, 24); err != nil {
-		return v, err
+func Validate(staff models.Staff) (models.Staff, error) {
+	staff.FirstName = strings.TrimSpace(staff.FirstName)
+	if err := validation.Text("first_name", staff.FirstName, 3, 24); err != nil {
+		return staff, err
 	}
-	v.LastName = strings.TrimSpace(v.LastName)
-	if err := platform.Text("last_name", v.LastName, 3, 24); err != nil {
-		return v, err
+	staff.LastName = strings.TrimSpace(staff.LastName)
+	if err := validation.Text("last_name", staff.LastName, 3, 24); err != nil {
+		return staff, err
 	}
-	v.Position = strings.TrimSpace(v.Position)
-	if err := platform.Text("position", v.Position, 3, 24); err != nil {
-		return v, err
+	staff.Position = strings.TrimSpace(staff.Position)
+	if err := validation.Text("position", staff.Position, 3, 24); err != nil {
+		return staff, err
 	}
-	return v, nil
+	return staff, nil
 }
 
-func (m *Module) List(ctx context.Context, p platform.Page) ([]models.Staff, int, error) {
-	return m.Storage.List(ctx, p)
+func (module *Module) List(ctx context.Context, page models.Page) ([]models.Staff, int, error) {
+	return module.Storage.List(ctx, page)
 }
 
-func (m *Module) Get(ctx context.Context, id string) (models.Staff, error) {
-	return m.Storage.Get(ctx, id)
+func (module *Module) Get(ctx context.Context, id string) (models.Staff, error) {
+	return module.Storage.Get(ctx, id)
 }
 
-func (m *Module) Create(ctx context.Context, v models.Staff) (models.Staff, error) {
-	v, err := Validate(v)
+func (module *Module) Create(ctx context.Context, staff models.Staff) (models.Staff, error) {
+	staff, err := Validate(staff)
 	if err != nil {
-		return v, err
+		return staff, err
 	}
-	return m.Storage.Create(ctx, v)
+	return module.Storage.Create(ctx, staff)
 }
 
-func (m *Module) Update(ctx context.Context, id string, v models.Staff) (models.Staff, error) {
-	v, err := Validate(v)
+func (module *Module) Update(ctx context.Context, id string, staff models.Staff) (models.Staff, error) {
+	staff, err := Validate(staff)
 	if err != nil {
-		return v, err
+		return staff, err
 	}
-	old, err := m.Storage.Get(ctx, id)
+	existingStaff, err := module.Storage.Get(ctx, id)
 	if err != nil {
-		return v, err
+		return staff, err
 	}
-	if old.DeletedAt != nil {
-		return v, platform.Conflict("DELETED", "Удалённую запись нельзя редактировать")
+	if existingStaff.DeletedAt != nil {
+		return staff, fmt.Errorf("%w: Удалённую запись нельзя редактировать", models.ErrConflict)
 	}
-	return m.Storage.Update(ctx, id, v)
+	return module.Storage.Update(ctx, id, staff)
 }
 
-func (m *Module) Delete(ctx context.Context, id string) error {
-	return m.Storage.Delete(ctx, id)
+func (module *Module) Delete(ctx context.Context, id string) error {
+	return module.Storage.Delete(ctx, id)
 }

@@ -4,16 +4,20 @@ import (
 	"context"
 
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/api"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/platform"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/validation"
 )
 
-func (i *Implementation) GetRecord(ctx context.Context, request contract.GetRecordRequestObject) (contract.GetRecordResponseObject, error) {
-	if err := platform.RequireID(request.ID); err != nil {
+func (implementation *Implementation) GetRecord(ctx context.Context, request contract.GetRecordRequestObject) (contract.GetRecordResponseObject, error) {
+	if err := validation.RequireID(request.ID); err != nil {
 		return nil, err
 	}
-	value, err := i.Module.GetRecord(ctx, request.ID.String())
+	record, err := implementation.Module.GetRecord(ctx, request.ID.String())
 	if err != nil {
 		return nil, err
 	}
-	return contract.GetRecord200JSONResponse(toRecord(value)), nil
+	response, err := toRecord(record)
+	if err != nil {
+		return nil, err
+	}
+	return contract.GetRecord200JSONResponse(response), nil
 }

@@ -137,7 +137,7 @@ def main():
 
     call('DELETE', f'/api/v1/staff/{sid}', status=204)
     assert call('GET', f'/api/v1/staff/{sid}')['deleted_at'] is not None
-    assert all(s['id'] != sid for s in call('GET', '/api/v1/staff?' + urllib.parse.urlencode({'q': 'Петрова'}))['items'])
+    assert all(s['id'] != sid for s in call('GET', '/api/v1/staff?' + urllib.parse.urlencode({'search': 'Петрова'}))['items'])
     save(4, [{'type': 'add_prescription', 'text': 'Назначение'}], 400)
     second_staff = call('POST', '/api/v1/staff', staff_input, 201)
     call('DELETE', f'/api/v1/diagnoses/{did}', status=204)

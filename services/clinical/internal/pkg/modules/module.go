@@ -2,15 +2,22 @@ package modules
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/models"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/platform"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/validation"
+)
+
+var (
+	errPatientHasRecord = fmt.Errorf("%w: Нельзя удалить пациента, для которого создана ЭМК", models.ErrConflict)
+	errRecordExists     = fmt.Errorf("%w: У пациента уже есть ЭМК", models.ErrConflict)
 )
 
 type Storage interface {
-	ListPatients(context.Context, platform.Page) ([]models.Patient, int, error)
+	ListPatients(context.Context, models.Page) ([]models.Patient, int, error)
 	GetPatient(context.Context, string) (models.Patient, error)
 	CreatePatient(context.Context, models.PatientData) (models.Patient, error)
 	UpdatePatient(context.Context, string, models.PatientData) (models.Patient, error)
@@ -18,8 +25,8 @@ type Storage interface {
 	CreateRecord(context.Context, string, models.Actor) (models.Record, error)
 	GetPatientRecord(context.Context, string) (models.Record, error)
 	GetRecord(context.Context, string) (models.Record, error)
-	Save(context.Context, string, int64, models.Actor, []models.Command, map[string]models.DiagnosisSnapshot) (models.Record, error)
-	History(context.Context, string, platform.Page) ([]models.Event, int, error)
+	Save(context.Context, string, models.Actor, func(models.Record) (models.State, []models.Event, error)) (models.Record, error)
+	History(context.Context, string, models.Page) ([]models.Event, int, error)
 	Events(context.Context, string, models.StateQuery) ([]models.Event, error)
 }
 
@@ -42,149 +49,173 @@ func New(deps Deps) *Module {
 	return &Module{Deps: deps}
 }
 
-func ValidatePatient(v models.PatientData) (models.PatientData, error) {
-	v.FirstName = strings.TrimSpace(v.FirstName)
-	v.LastName = strings.TrimSpace(v.LastName)
-	if err := platform.Text("first_name", v.FirstName, 1, 64); err != nil {
-		return v, err
+func ValidatePatient(patientData models.PatientData) (models.PatientData, error) {
+	patientData.FirstName = strings.TrimSpace(patientData.FirstName)
+	patientData.LastName = strings.TrimSpace(patientData.LastName)
+	if err := validation.Text("first_name", patientData.FirstName, 1, 64); err != nil {
+		return patientData, err
 	}
-	if err := platform.Text("last_name", v.LastName, 1, 64); err != nil {
-		return v, err
+	if err := validation.Text("last_name", patientData.LastName, 1, 64); err != nil {
+		return patientData, err
 	}
-	if v.MiddleName != nil {
-		s := strings.TrimSpace(*v.MiddleName)
-		if s == "" {
-			v.MiddleName = nil
+	if patientData.MiddleName != nil {
+		middleName := strings.TrimSpace(*patientData.MiddleName)
+		if middleName == "" {
+			patientData.MiddleName = nil
 		} else {
-			v.MiddleName = &s
-			if err := platform.Text("middle_name", s, 1, 64); err != nil {
-				return v, err
+			patientData.MiddleName = &middleName
+			if err := validation.Text("middle_name", middleName, 1, 64); err != nil {
+				return patientData, err
 			}
 		}
 	}
-	d, err := time.Parse(time.DateOnly, v.BirthDate)
-	if err != nil || d.After(time.Now().UTC()) {
-		return v, platform.Bad("BIRTH_DATE", "Дата рождения обязательна, формат YYYY-MM-DD, не в будущем")
+	birthDate, err := time.Parse(time.DateOnly, patientData.BirthDate)
+	if err != nil || birthDate.After(time.Now().UTC()) {
+		return patientData, fmt.Errorf("%w: Дата рождения обязательна, формат YYYY-MM-DD, не в будущем", models.ErrInvalidInput)
 	}
-	if v.AdministrativeSex != "M" && v.AdministrativeSex != "F" && v.AdministrativeSex != "UNKNOWN" {
-		return v, platform.Bad("SEX", "Пол должен быть M, F или UNKNOWN")
+	if patientData.AdministrativeSex != "M" && patientData.AdministrativeSex != "F" && patientData.AdministrativeSex != "UNKNOWN" {
+		return patientData, fmt.Errorf("%w: Пол должен быть M, F или UNKNOWN", models.ErrInvalidInput)
 	}
-	if err := platform.Text("comment", v.Comment, 0, 32); err != nil {
-		return v, err
+	if err := validation.Text("comment", patientData.Comment, 0, 32); err != nil {
+		return patientData, err
 	}
-	return v, nil
+	return patientData, nil
 }
 
-func (m *Module) ListPatients(ctx context.Context, p platform.Page) ([]models.Patient, int, error) {
-	return m.Storage.ListPatients(ctx, p)
+func (module *Module) ListPatients(ctx context.Context, page models.Page) ([]models.Patient, int, error) {
+	return module.Storage.ListPatients(ctx, page)
 }
 
-func (m *Module) GetPatient(ctx context.Context, id string) (models.Patient, error) {
-	return m.Storage.GetPatient(ctx, id)
+func (module *Module) GetPatient(ctx context.Context, id string) (models.Patient, error) {
+	return module.Storage.GetPatient(ctx, id)
 }
 
-func (m *Module) CreatePatient(ctx context.Context, v models.PatientData) (models.Patient, error) {
-	v, err := ValidatePatient(v)
+func (module *Module) CreatePatient(ctx context.Context, patientData models.PatientData) (models.Patient, error) {
+	patientData, err := ValidatePatient(patientData)
 	if err != nil {
 		return models.Patient{}, err
 	}
-	return m.Storage.CreatePatient(ctx, v)
+	return module.Storage.CreatePatient(ctx, patientData)
 }
 
-func (m *Module) UpdatePatient(ctx context.Context, id string, v models.PatientData) (models.Patient, error) {
-	v, err := ValidatePatient(v)
+func (module *Module) UpdatePatient(ctx context.Context, id string, patientData models.PatientData) (models.Patient, error) {
+	patientData, err := ValidatePatient(patientData)
 	if err != nil {
 		return models.Patient{}, err
 	}
-	return m.Storage.UpdatePatient(ctx, id, v)
+	return module.Storage.UpdatePatient(ctx, id, patientData)
 }
 
-func (m *Module) DeletePatient(ctx context.Context, id string) error {
-	return m.Storage.DeletePatient(ctx, id)
-}
-
-func (m *Module) GetPatientRecord(ctx context.Context, id string) (models.Record, error) {
-	return m.Storage.GetPatientRecord(ctx, id)
-}
-
-func (m *Module) GetRecord(ctx context.Context, id string) (models.Record, error) {
-	return m.Storage.GetRecord(ctx, id)
-}
-
-func (m *Module) CreateRecord(ctx context.Context, patientID, staffID string) (models.Record, error) {
-	staffID, err := platform.ParseID(staffID)
+func (module *Module) DeletePatient(ctx context.Context, id string) error {
+	patient, err := module.Storage.GetPatient(ctx, id)
 	if err != nil {
-		return models.Record{}, platform.Bad("STAFF_REQUIRED", "Укажите медработника, создающего ЭМК")
+		return err
 	}
-	if _, err = m.Storage.GetPatient(ctx, patientID); err != nil {
-		return models.Record{}, err
+	if patient.HasRecord {
+		return errPatientHasRecord
 	}
-	actor, err := m.Staff.GetActor(ctx, staffID)
-	if err != nil {
-		return models.Record{}, err
+	err = module.Storage.DeletePatient(ctx, id)
+	if errors.Is(err, models.ErrReferenced) {
+		return errPatientHasRecord
 	}
-	return m.Storage.CreateRecord(ctx, patientID, actor)
+	return err
 }
 
-func (m *Module) Save(ctx context.Context, id string, in models.RecordChanges) (models.Record, error) {
-	staffID, err := platform.ParseID(in.StaffID)
+func (module *Module) GetPatientRecord(ctx context.Context, id string) (models.Record, error) {
+	return module.Storage.GetPatientRecord(ctx, id)
+}
+
+func (module *Module) GetRecord(ctx context.Context, id string) (models.Record, error) {
+	return module.Storage.GetRecord(ctx, id)
+}
+
+func (module *Module) CreateRecord(ctx context.Context, patientID, staffID string) (models.Record, error) {
+	staffID, err := validation.ParseID(staffID)
 	if err != nil {
-		return models.Record{}, platform.Bad("STAFF_REQUIRED", "Укажите медработника, изменяющего ЭМК")
+		return models.Record{}, fmt.Errorf("%w: Укажите медработника, создающего ЭМК", models.ErrInvalidInput)
 	}
-	if in.ExpectedVersion == nil || *in.ExpectedVersion < 1 {
-		return models.Record{}, platform.Bad("VERSION_REQUIRED", "Требуется expected_version >= 1")
-	}
-	if err = ValidateCommands(in.Commands); err != nil {
+	patient, err := module.Storage.GetPatient(ctx, patientID)
+	if err != nil {
 		return models.Record{}, err
 	}
-	if _, err = m.Storage.GetRecord(ctx, id); err != nil {
+	if patient.HasRecord {
+		return models.Record{}, errRecordExists
+	}
+	actor, err := module.Staff.GetActor(ctx, staffID)
+	if err != nil {
 		return models.Record{}, err
 	}
-	actor, err := m.Staff.GetActor(ctx, staffID)
+	record, err := module.Storage.CreateRecord(ctx, patientID, actor)
+	if errors.Is(err, models.ErrAlreadyExists) {
+		return models.Record{}, errRecordExists
+	}
+	return record, err
+}
+
+func (module *Module) Save(ctx context.Context, id string, changes models.RecordChanges) (models.Record, error) {
+	staffID, err := validation.ParseID(changes.StaffID)
+	if err != nil {
+		return models.Record{}, fmt.Errorf("%w: Укажите медработника, изменяющего ЭМК", models.ErrInvalidInput)
+	}
+	if changes.ExpectedVersion == nil || *changes.ExpectedVersion < 1 {
+		return models.Record{}, fmt.Errorf("%w: Требуется expected_version >= 1", models.ErrInvalidInput)
+	}
+	if err = ValidateCommands(changes.Commands); err != nil {
+		return models.Record{}, err
+	}
+	if _, err = module.Storage.GetRecord(ctx, id); err != nil {
+		return models.Record{}, err
+	}
+	actor, err := module.Staff.GetActor(ctx, staffID)
 	if err != nil {
 		return models.Record{}, err
 	}
 	diagnoses := map[string]models.DiagnosisSnapshot{}
-	for _, c := range in.Commands {
-		if c.Type == "add_diagnosis" {
-			did, _ := platform.ParseID(c.DiagnosisID)
-			if _, ok := diagnoses[did]; ok {
+	for _, command := range changes.Commands {
+		if command.Type == "add_diagnosis" {
+			diagnosisID, _ := validation.ParseID(command.DiagnosisID)
+			if _, ok := diagnoses[diagnosisID]; ok {
 				continue
 			}
-			d, err := m.Catalog.GetDiagnosis(ctx, did)
+			diagnosis, err := module.Catalog.GetDiagnosis(ctx, diagnosisID)
 			if err != nil {
 				return models.Record{}, err
 			}
-			diagnoses[did] = d
+			diagnoses[diagnosisID] = diagnosis
 		}
 	}
-	return m.Storage.Save(ctx, id, *in.ExpectedVersion, actor, in.Commands, diagnoses)
+	return module.Storage.Save(ctx, id, actor, func(record models.Record) (models.State, []models.Event, error) {
+		if record.Version != *changes.ExpectedVersion {
+			return models.State{}, nil, models.ErrVersionConflict
+		}
+		return Apply(record.State, changes.Commands, diagnoses)
+	})
 }
 
-func (m *Module) History(ctx context.Context, id string, p platform.Page) ([]models.Event, int, error) {
-	if _, err := m.Storage.GetRecord(ctx, id); err != nil {
+func (module *Module) History(ctx context.Context, id string, page models.Page) ([]models.Event, int, error) {
+	if _, err := module.Storage.GetRecord(ctx, id); err != nil {
 		return nil, 0, err
 	}
-	return m.Storage.History(ctx, id, p)
+	return module.Storage.History(ctx, id, page)
 }
 
-func (m *Module) StateAt(ctx context.Context, id string, q models.StateQuery) (models.Record, error) {
-	record, err := m.Storage.GetRecord(ctx, id)
+func (module *Module) StateAt(ctx context.Context, id string, stateQuery models.StateQuery) (models.Record, error) {
+	record, err := module.Storage.GetRecord(ctx, id)
 	if err != nil {
 		return record, err
 	}
-	if q.Version != nil && (*q.Version < 1 || *q.Version > record.Version) {
-		return record, platform.NotFound()
+	if stateQuery.Version != nil && (*stateQuery.Version < 1 || *stateQuery.Version > record.Version) {
+		return record, models.ErrNotFound
 	}
-	if q.At != nil && q.At.Before(record.CreatedAt) {
-		return record, platform.NotFound()
+	if stateQuery.At != nil && stateQuery.At.Before(record.CreatedAt) {
+		return record, models.ErrNotFound
 	}
-	events, err := m.Storage.Events(ctx, id, q)
+	events, err := module.Storage.Events(ctx, id, stateQuery)
 	if err != nil {
 		return record, err
 	}
 	if len(events) == 0 {
-		return record, platform.NotFound()
+		return record, models.ErrNotFound
 	}
 	record.State, err = Replay(events)
 	last := events[len(events)-1]

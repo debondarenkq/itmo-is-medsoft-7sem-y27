@@ -206,13 +206,13 @@ class StaffApi {
   ///
   /// * [int] offset:
   ///
-  /// * [String] q:
+  /// * [String] search:
   ///
   /// * [bool] includeDeleted:
   Future<Response> listStaffWithHttpInfo({
     int? limit,
     int? offset,
-    String? q,
+    String? search,
     bool? includeDeleted,
     Future<void>? abortTrigger,
   }) async {
@@ -232,8 +232,8 @@ class StaffApi {
     if (offset != null) {
       queryParams.addAll(_queryParams('', 'offset', offset));
     }
-    if (q != null) {
-      queryParams.addAll(_queryParams('', 'q', q));
+    if (search != null) {
+      queryParams.addAll(_queryParams('', 'search', search));
     }
     if (includeDeleted != null) {
       queryParams.addAll(_queryParams('', 'include_deleted', includeDeleted));
@@ -261,20 +261,20 @@ class StaffApi {
   ///
   /// * [int] offset:
   ///
-  /// * [String] q:
+  /// * [String] search:
   ///
   /// * [bool] includeDeleted:
   Future<StaffPage?> listStaff({
     int? limit,
     int? offset,
-    String? q,
+    String? search,
     bool? includeDeleted,
     Future<void>? abortTrigger,
   }) async {
     final response = await listStaffWithHttpInfo(
       limit: limit,
       offset: offset,
-      q: q,
+      search: search,
       includeDeleted: includeDeleted,
       abortTrigger: abortTrigger,
     );

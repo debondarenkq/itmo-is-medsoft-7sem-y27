@@ -21,7 +21,6 @@ class ApiException implements Exception {
   ].join('\n');
 }
 
-// One generated gateway client serves every public resource group.
 class ApiClient {
   ApiClient({
     String baseUrl = const String.fromEnvironment(
@@ -52,7 +51,7 @@ class ApiClient {
     final address = uri
         .replace(path: uri.path.replaceFirst(RegExp(r'/+$'), ''))
         .toString();
-    _gateway = contract.ApiClient(basePath: address);
+    _gateway = _GatewayClient(basePath: address);
     _gateway.client.close();
     _gateway.client = _http;
     _staff = contract.StaffApi(_gateway);
@@ -110,7 +109,7 @@ class ApiClient {
 
   Future<PageResult<Staff>> staffPage({
     int offset = 0,
-    String query = '',
+    String search = '',
     bool includeDeleted = false,
     int limit = 50,
   }) async {
@@ -119,7 +118,7 @@ class ApiClient {
         () => _staff.listStaff(
           limit: limit,
           offset: offset,
-          q: query,
+          search: search,
           includeDeleted: includeDeleted,
         ),
       ),
@@ -129,12 +128,16 @@ class ApiClient {
 
   Future<PageResult<Diagnosis>> diagnosisPage({
     int offset = 0,
-    String query = '',
+    String search = '',
     int limit = 50,
   }) async {
     final page = _present(
       await _request(
-        () => _diagnoses.listDiagnoses(limit: limit, offset: offset, q: query),
+        () => _diagnoses.listDiagnoses(
+          limit: limit,
+          offset: offset,
+          search: search,
+        ),
       ),
     );
     return PageResult(
@@ -145,12 +148,16 @@ class ApiClient {
 
   Future<PageResult<Patient>> patientPage({
     int offset = 0,
-    String query = '',
+    String search = '',
     int limit = 50,
   }) async {
     final page = _present(
       await _request(
-        () => _patients.listPatients(limit: limit, offset: offset, q: query),
+        () => _patients.listPatients(
+          limit: limit,
+          offset: offset,
+          search: search,
+        ),
       ),
     );
     return PageResult(
@@ -196,20 +203,11 @@ class ApiClient {
   Future<void> deleteDiagnosis(String id) =>
       _request(() => _diagnoses.deleteDiagnosis(id));
   Future<int> importDiagnoses(String contents) async {
-    dynamic document;
-    try {
-      document = jsonDecode(contents.replaceFirst(RegExp('^\uFEFF'), ''));
-    } on FormatException {
-      throw const FormatException('Файл должен содержать корректный JSON.');
-    }
-    if (document is! Json) {
-      throw const FormatException(
-        'В файле ожидается JSON-объект со списком diagnoses.',
-      );
-    }
     final result = _present(
       await _request(
-        () => _diagnoses.importDiagnoses(_ImportDocument(document)),
+        () => _diagnoses.importDiagnoses(
+          _ImportDocument(contents.replaceFirst(RegExp('^\uFEFF'), '')),
+        ),
       ),
     );
     return result.items.length;
@@ -285,10 +283,17 @@ class ApiClient {
   );
 }
 
-// Preserve all file fields for server-side validation, including unknown fields.
 class _ImportDocument extends contract.ImportInput {
-  _ImportDocument(this.document) : super(diagnoses: []);
-  final Json document;
+  _ImportDocument(this.contents) : super(diagnoses: []);
+  final String contents;
+}
+
+class _GatewayClient extends contract.ApiClient {
+  _GatewayClient({required super.basePath});
+
   @override
-  Json toJson() => document;
+  Future<String> serializeAsync(Object? value) async {
+    if (value is _ImportDocument) return value.contents;
+    return super.serializeAsync(value);
+  }
 }

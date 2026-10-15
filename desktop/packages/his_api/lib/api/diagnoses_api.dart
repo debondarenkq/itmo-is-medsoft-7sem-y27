@@ -271,13 +271,13 @@ class DiagnosesApi {
   ///
   /// * [int] offset:
   ///
-  /// * [String] q:
+  /// * [String] search:
   ///
   /// * [bool] includeDeleted:
   Future<Response> listDiagnosesWithHttpInfo({
     int? limit,
     int? offset,
-    String? q,
+    String? search,
     bool? includeDeleted,
     Future<void>? abortTrigger,
   }) async {
@@ -297,8 +297,8 @@ class DiagnosesApi {
     if (offset != null) {
       queryParams.addAll(_queryParams('', 'offset', offset));
     }
-    if (q != null) {
-      queryParams.addAll(_queryParams('', 'q', q));
+    if (search != null) {
+      queryParams.addAll(_queryParams('', 'search', search));
     }
     if (includeDeleted != null) {
       queryParams.addAll(_queryParams('', 'include_deleted', includeDeleted));
@@ -326,20 +326,20 @@ class DiagnosesApi {
   ///
   /// * [int] offset:
   ///
-  /// * [String] q:
+  /// * [String] search:
   ///
   /// * [bool] includeDeleted:
   Future<DiagnosisPage?> listDiagnoses({
     int? limit,
     int? offset,
-    String? q,
+    String? search,
     bool? includeDeleted,
     Future<void>? abortTrigger,
   }) async {
     final response = await listDiagnosesWithHttpInfo(
       limit: limit,
       offset: offset,
-      q: q,
+      search: search,
       includeDeleted: includeDeleted,
       abortTrigger: abortTrigger,
     );

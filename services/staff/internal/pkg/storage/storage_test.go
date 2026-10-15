@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/models"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/platform"
 )
 
 func TestStaffSoftDelete(t *testing.T) {
@@ -22,11 +21,11 @@ func TestStaffSoftDelete(t *testing.T) {
 	if err != nil || deleted.DeletedAt == nil {
 		t.Fatalf("soft delete: %v", err)
 	}
-	active, total, err := r.List(ctx, platform.Page{Limit: 50})
+	active, total, err := r.List(ctx, models.Page{Limit: 50})
 	if err != nil || total != 0 || len(active) != 0 {
 		t.Fatal("deleted staff in active list")
 	}
-	all, total, err := r.List(ctx, platform.Page{Limit: 50, IncludeDeleted: true})
+	all, total, err := r.List(ctx, models.Page{Limit: 50, IncludeDeleted: true})
 	if err != nil || total != 1 || len(all) != 1 {
 		t.Fatal("staff lost from database")
 	}

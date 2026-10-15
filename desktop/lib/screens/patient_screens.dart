@@ -64,7 +64,7 @@ class _PatientListScreenState extends State<PatientListScreen> {
     child: PagedTable<Patient>(
       key: _table,
       fetch: (offset, query) =>
-          widget.session.api.patientPage(offset: offset, query: query),
+          widget.session.api.patientPage(offset: offset, search: query),
       searchHint: 'Поиск по фамилии, имени или отчеству',
       emptyTitle: 'Пациентов пока нет',
       emptySubtitle: 'Создайте карточку пациента, чтобы начать работу с ЭМК.',
@@ -140,7 +140,6 @@ class PatientFormScreen extends StatefulWidget {
 }
 
 class _PatientFormScreenState extends State<PatientFormScreen> {
-  final _form = GlobalKey<FormState>();
   late final TextEditingController _first, _last, _middle, _comment, _birth;
   Patient? _patient;
   DateTime? _birthDate;
@@ -175,12 +174,11 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   }
 
   Future<void> _pickDate() async {
-    final now = DateTime.now();
     final value = await showDatePicker(
       context: context,
       initialDate: _birthDate ?? DateTime(2000, 1, 1),
       firstDate: DateTime(1),
-      lastDate: DateTime(now.year, now.month, now.day),
+      lastDate: DateTime(9999, 12, 31),
       helpText: 'Дата рождения',
     );
     if (value != null && mounted) {
@@ -192,21 +190,21 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   }
 
   Future<void> _save() async {
-    if (!_form.currentState!.validate()) return;
+    if (_birthDate == null) return;
     setState(() {
       _saving = true;
       _error = null;
     });
     try {
       final request = contract.PatientInput(
-        firstName: _first.text.trim(),
-        lastName: _last.text.trim(),
+        firstName: _first.text,
+        lastName: _last.text,
         middleName: contract.Optional.present(
-          _middle.text.trim().isEmpty ? null : _middle.text.trim(),
+          _middle.text.isEmpty ? null : _middle.text,
         ),
         birthDate: _birthDate!,
         administrativeSex: contract.AdministrativeSex.fromJson(_sex)!,
-        comment: contract.Optional.present(_comment.text.trim()),
+        comment: contract.Optional.present(_comment.text),
       );
       final patient = _patient == null
           ? await widget.session.api.createPatient(request)
@@ -344,7 +342,6 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
             constraints: const BoxConstraints(maxWidth: 950),
             child: Panel(
               child: Form(
-                key: _form,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -383,13 +380,11 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Фамилия',
                           ),
-                          validator: (v) => validateText(v, 1, 64),
                         ),
                         TextFormField(
                           controller: _first,
                           enabled: !_readOnly && !_busy,
                           decoration: const InputDecoration(labelText: 'Имя'),
-                          validator: (v) => validateText(v, 1, 64),
                         ),
                         TextFormField(
                           controller: _middle,
@@ -398,8 +393,6 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                             labelText: 'Отчество',
                             hintText: 'При наличии',
                           ),
-                          validator: (v) =>
-                              validateText(v, 1, 64, optional: true),
                         ),
                         TextFormField(
                           controller: _birth,
@@ -413,9 +406,6 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                               size: 20,
                             ),
                           ),
-                          validator: (_) => _birthDate == null
-                              ? 'Выберите дату рождения'
-                              : null,
                         ),
                         DropdownButtonFormField<String>(
                           key: ValueKey(_sex),
@@ -448,8 +438,6 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                             labelText: 'Комментарий',
                             helperText: 'До 32 символов',
                           ),
-                          validator: (v) =>
-                              validateText(v, 0, 32, optional: true),
                         ),
                       ],
                     ),
@@ -468,7 +456,9 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                           )
                         else
                           FilledButton.icon(
-                            onPressed: _busy ? null : _save,
+                            onPressed: _busy || _birthDate == null
+                                ? null
+                                : _save,
                             icon: const Icon(Icons.check_rounded, size: 18),
                             label: Text(_saving ? 'Сохранение…' : 'Сохранить'),
                           ),

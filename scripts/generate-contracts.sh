@@ -2,11 +2,12 @@
 set -eu
 cd "$(dirname "$0")/.."
 for service in staff catalog clinical; do
+    cp "contracts/$service.yaml" "services/$service/api/openapi.yaml"
     (cd "services/$service" && go generate ./api)
 done
 # Vendor external API descriptions so clinical-service still builds independently.
 for service in staff catalog; do
-    cp "services/$service/api/openapi.yaml" "services/clinical/internal/pkg/adapters/${service}api/openapi.yaml"
+    cp "contracts/$service.yaml" "services/clinical/internal/pkg/adapters/${service}api/openapi.yaml"
 done
 (cd services/clinical && go generate ./internal/pkg/adapters/staffapi ./internal/pkg/adapters/catalogapi)
 python3 scripts/bundle_gateway_contract.py

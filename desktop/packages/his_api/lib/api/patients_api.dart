@@ -271,11 +271,11 @@ class PatientsApi {
   ///
   /// * [int] offset:
   ///
-  /// * [String] q:
+  /// * [String] search:
   Future<Response> listPatientsWithHttpInfo({
     int? limit,
     int? offset,
-    String? q,
+    String? search,
     Future<void>? abortTrigger,
   }) async {
     // ignore: prefer_const_declarations
@@ -294,8 +294,8 @@ class PatientsApi {
     if (offset != null) {
       queryParams.addAll(_queryParams('', 'offset', offset));
     }
-    if (q != null) {
-      queryParams.addAll(_queryParams('', 'q', q));
+    if (search != null) {
+      queryParams.addAll(_queryParams('', 'search', search));
     }
 
     const contentTypes = <String>[];
@@ -320,17 +320,17 @@ class PatientsApi {
   ///
   /// * [int] offset:
   ///
-  /// * [String] q:
+  /// * [String] search:
   Future<PatientPage?> listPatients({
     int? limit,
     int? offset,
-    String? q,
+    String? search,
     Future<void>? abortTrigger,
   }) async {
     final response = await listPatientsWithHttpInfo(
       limit: limit,
       offset: offset,
-      q: q,
+      search: search,
       abortTrigger: abortTrigger,
     );
     if (response.statusCode >= HttpStatus.badRequest) {

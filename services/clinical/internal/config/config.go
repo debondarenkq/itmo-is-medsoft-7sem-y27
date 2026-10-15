@@ -1,9 +1,11 @@
 package config
 
-import "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/platform"
+import "os"
 
-type Config struct{ StaffURL, CatalogURL string }
+type Config struct {
+	GatewayURL string
+}
 
 func New() Config {
-	return Config{StaffURL: platform.Env("STAFF_URL", "http://localhost:8081"), CatalogURL: platform.Env("CATALOG_URL", "http://localhost:8082")}
+	return Config{GatewayURL: os.Getenv("GATEWAY_URL")}
 }

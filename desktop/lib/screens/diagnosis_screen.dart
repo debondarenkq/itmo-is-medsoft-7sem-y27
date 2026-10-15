@@ -59,9 +59,6 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
         ],
       );
       if (file == null) return;
-      if (await file.length() > 1024 * 1024) {
-        throw const FormatException('Размер файла не должен превышать 1 МБ.');
-      }
       final count = await widget.session.api.importDiagnoses(
         await file.readAsString(),
       );
@@ -114,7 +111,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
     child: PagedTable<Diagnosis>(
       key: _table,
       fetch: (offset, query) =>
-          widget.session.api.diagnosisPage(offset: offset, query: query),
+          widget.session.api.diagnosisPage(offset: offset, search: query),
       searchHint: 'Поиск по коду или наименованию',
       emptyTitle: 'Справочник пока пуст',
       emptySubtitle:
@@ -180,7 +177,6 @@ class _DiagnosisForm extends StatefulWidget {
 }
 
 class _DiagnosisFormState extends State<_DiagnosisForm> {
-  final _form = GlobalKey<FormState>();
   late final TextEditingController _code, _name;
   bool _saving = false;
   Object? _error;
@@ -199,15 +195,14 @@ class _DiagnosisFormState extends State<_DiagnosisForm> {
   }
 
   Future<void> _save() async {
-    if (!_form.currentState!.validate()) return;
     setState(() {
       _saving = true;
       _error = null;
     });
     try {
       final request = contract.DiagnosisInput(
-        code: _code.text.trim(),
-        name: _name.text.trim(),
+        code: _code.text,
+        name: _name.text,
       );
       if (widget.diagnosis == null) {
         await widget.session.api.createDiagnosis(request);
@@ -230,7 +225,6 @@ class _DiagnosisFormState extends State<_DiagnosisForm> {
     content: SizedBox(
       width: 460,
       child: Form(
-        key: _form,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -243,14 +237,12 @@ class _DiagnosisFormState extends State<_DiagnosisForm> {
                 labelText: 'Код диагноза',
                 helperText: 'Ровно 6 символов, например E11.00',
               ),
-              validator: (v) => validateText(v, 6, 6),
             ),
             const SizedBox(height: 20),
             TextFormField(
               controller: _name,
               enabled: !_saving,
               decoration: const InputDecoration(labelText: 'Наименование'),
-              validator: (v) => validateText(v, 3, 24),
             ),
           ],
         ),

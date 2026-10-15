@@ -27,9 +27,6 @@ void main() {
       await tester.tap(find.text('Добавить медработника'));
       await tester.pumpAndSettle();
       expect(find.text('Новый медработник'), findsOneWidget);
-      await tester.tap(find.text('Сохранить'));
-      await tester.pumpAndSettle();
-      expect(find.text('От 3 до 24 символов'), findsNWidgets(3));
       await tester.tap(find.text('Отмена'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Диагнозы'));

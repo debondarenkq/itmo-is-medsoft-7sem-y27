@@ -118,14 +118,6 @@ class _RecordScreenState extends State<RecordScreen> {
   Future<void> _save() async {
     final commands = _draft.commands;
     if (commands.isEmpty || _actor == null || _saving) return;
-    if (commands.length > 100) {
-      notify(
-        context,
-        'Слишком много изменений. Сохраните не более 100 действий за один раз.',
-        error: true,
-      );
-      return;
-    }
     setState(() {
       _saving = true;
       _error = null;
@@ -213,37 +205,15 @@ class _RecordScreenState extends State<RecordScreen> {
   Future<void> _addDiagnosis() async {
     final diagnosis = await showDialog<Diagnosis>(
       context: context,
-      builder: (_) => _DiagnosisPicker(
-        session: widget.session,
-        excluded: _draft.diagnoses.map((d) => d.diagnosisId).toSet(),
-      ),
+      builder: (_) => _DiagnosisPicker(session: widget.session),
     );
     if (diagnosis != null && mounted) _draft.addDiagnosis(diagnosis);
   }
 
-  Future<void> _restoreDiagnosis(RecordDiagnosis value) async {
-    if (_draft.base.diagnoses.any((d) => d.id == value.id)) {
-      _draft.undoDiagnosisRemoval(value);
-      return;
-    }
-    try {
-      final diagnoses = await widget.session.api.diagnoses();
-      final active = diagnoses
-          .where((d) => d.id == value.diagnosisId)
-          .firstOrNull;
-      if (!mounted) return;
-      if (active == null) {
-        notify(
-          context,
-          'Диагноз больше не доступен в справочнике.',
-          error: true,
-        );
-        return;
-      }
-      _draft.addDiagnosis(active);
-    } catch (error) {
-      if (mounted) notify(context, errorMessage(error), error: true);
-    }
+  void _restoreDiagnosis(RecordDiagnosis value) {
+    _draft.addDiagnosis(
+      Diagnosis(id: value.diagnosisId, code: value.code, name: value.name),
+    );
   }
 
   Future<void> _prescription([Prescription? value]) async {
@@ -504,7 +474,7 @@ class _RecordScreenState extends State<RecordScreen> {
                           ),
                           IconButton(
                             tooltip: 'Редактировать назначение',
-                            onPressed: _canEdit && value.active
+                            onPressed: _canEdit
                                 ? () => _prescription(value)
                                 : null,
                             icon: const Icon(Icons.edit_outlined, size: 19),
@@ -515,7 +485,7 @@ class _RecordScreenState extends State<RecordScreen> {
                                 : edited
                                 ? 'Сначала сохраните изменение назначения'
                                 : 'Отменить назначение',
-                            onPressed: _canEdit && value.active && !edited
+                            onPressed: _canEdit && !edited
                                 ? () => _cancelPrescription(value)
                                 : null,
                             icon: Icon(
@@ -842,7 +812,6 @@ class _PrescriptionDialog extends StatefulWidget {
 }
 
 class _PrescriptionDialogState extends State<_PrescriptionDialog> {
-  final _form = GlobalKey<FormState>();
   late final TextEditingController _text;
   @override
   void initState() {
@@ -864,7 +833,6 @@ class _PrescriptionDialogState extends State<_PrescriptionDialog> {
     content: SizedBox(
       width: 480,
       child: Form(
-        key: _form,
         child: TextFormField(
           controller: _text,
           autofocus: true,
@@ -874,7 +842,6 @@ class _PrescriptionDialogState extends State<_PrescriptionDialog> {
             labelText: 'Назначение',
             helperText: 'От 3 до 128 символов',
           ),
-          validator: (v) => validateText(v, 3, 128),
         ),
       ),
     ),
@@ -885,9 +852,7 @@ class _PrescriptionDialogState extends State<_PrescriptionDialog> {
       ),
       FilledButton(
         onPressed: () {
-          if (_form.currentState!.validate()) {
-            Navigator.pop(context, _text.text.trim());
-          }
+          Navigator.pop(context, _text.text);
         },
         child: const Text('Добавить в карту'),
       ),
@@ -896,9 +861,8 @@ class _PrescriptionDialogState extends State<_PrescriptionDialog> {
 }
 
 class _DiagnosisPicker extends StatefulWidget {
-  const _DiagnosisPicker({required this.session, required this.excluded});
+  const _DiagnosisPicker({required this.session});
   final AppSession session;
-  final Set<String> excluded;
   @override
   State<_DiagnosisPicker> createState() => _DiagnosisPickerState();
 }
@@ -924,9 +888,7 @@ class _DiagnosisPickerState extends State<_DiagnosisPicker> {
       final values = await widget.session.api.diagnoses();
       if (mounted) {
         setState(() {
-          _values = values
-              .where((d) => !widget.excluded.contains(d.id))
-              .toList();
+          _values = values;
           _error = null;
         });
       }

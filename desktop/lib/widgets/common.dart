@@ -258,15 +258,6 @@ Future<bool> confirm(
     ) ??
     false;
 
-String? validateText(String? value, int min, int max, {bool optional = false}) {
-  final text = (value ?? '').trim();
-  if (optional && text.isEmpty) return null;
-  if (text.runes.length < min || text.runes.length > max) {
-    return 'От $min до $max символов';
-  }
-  return null;
-}
-
 class FormFields extends StatelessWidget {
   const FormFields({super.key, required this.children});
   final List<Widget> children;

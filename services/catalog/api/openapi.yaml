@@ -67,7 +67,7 @@ paths:
           type: integer
           minimum: 0
           default: 0
-      - name: q
+      - name: search
         in: query
         schema:
           type: string

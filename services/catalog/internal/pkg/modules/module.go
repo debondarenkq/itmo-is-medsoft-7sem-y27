@@ -2,14 +2,16 @@ package modules
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/models"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/pkg/platform"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/validation"
 )
 
 type Storage interface {
-	List(context.Context, platform.Page) ([]models.Diagnosis, int, error)
+	List(context.Context, models.Page) ([]models.Diagnosis, int, error)
 	Get(context.Context, string) (models.Diagnosis, error)
 	Create(context.Context, models.Diagnosis) (models.Diagnosis, error)
 	Update(context.Context, string, models.Diagnosis) (models.Diagnosis, error)
@@ -25,49 +27,62 @@ func New(deps Deps) *Module {
 	return &Module{Deps: deps}
 }
 
-func Validate(v models.Diagnosis) (models.Diagnosis, error) {
-	v.Code = strings.TrimSpace(v.Code)
-	if err := platform.Text("code", v.Code, 6, 6); err != nil {
-		return v, err
+func Validate(diagnosis models.Diagnosis) (models.Diagnosis, error) {
+	diagnosis.Code = strings.TrimSpace(diagnosis.Code)
+	if err := validation.Text("code", diagnosis.Code, 6, 6); err != nil {
+		return diagnosis, err
 	}
-	v.Name = strings.TrimSpace(v.Name)
-	if err := platform.Text("name", v.Name, 3, 24); err != nil {
-		return v, err
+	diagnosis.Name = strings.TrimSpace(diagnosis.Name)
+	if err := validation.Text("name", diagnosis.Name, 3, 24); err != nil {
+		return diagnosis, err
 	}
-	return v, nil
+	return diagnosis, nil
 }
 
-func (m *Module) List(ctx context.Context, p platform.Page) ([]models.Diagnosis, int, error) {
-	return m.Storage.List(ctx, p)
+func (module *Module) List(ctx context.Context, page models.Page) ([]models.Diagnosis, int, error) {
+	return module.Storage.List(ctx, page)
 }
 
-func (m *Module) Get(ctx context.Context, id string) (models.Diagnosis, error) {
-	return m.Storage.Get(ctx, id)
+func (module *Module) Get(ctx context.Context, id string) (models.Diagnosis, error) {
+	return module.Storage.Get(ctx, id)
 }
 
-func (m *Module) Create(ctx context.Context, v models.Diagnosis) (models.Diagnosis, error) {
-	v, err := Validate(v)
+func (module *Module) Create(ctx context.Context, diagnosis models.Diagnosis) (models.Diagnosis, error) {
+	diagnosis, err := Validate(diagnosis)
 	if err != nil {
-		return v, err
+		return diagnosis, err
 	}
-	return m.Storage.Create(ctx, v)
+	created, err := module.Storage.Create(ctx, diagnosis)
+	return created, diagnosisWriteError(err)
 }
 
-func (m *Module) Update(ctx context.Context, id string, v models.Diagnosis) (models.Diagnosis, error) {
-	v, err := Validate(v)
+func (module *Module) Update(ctx context.Context, id string, diagnosis models.Diagnosis) (models.Diagnosis, error) {
+	diagnosis, err := Validate(diagnosis)
 	if err != nil {
-		return v, err
+		return diagnosis, err
 	}
-	old, err := m.Storage.Get(ctx, id)
+	existingDiagnosis, err := module.Storage.Get(ctx, id)
 	if err != nil {
-		return v, err
+		return diagnosis, err
 	}
-	if old.DeletedAt != nil {
-		return v, platform.Conflict("DELETED", "Удалённую запись нельзя редактировать")
+	if existingDiagnosis.DeletedAt != nil {
+		return diagnosis, fmt.Errorf("%w: Удалённую запись нельзя редактировать", models.ErrConflict)
 	}
-	return m.Storage.Update(ctx, id, v)
+	updated, err := module.Storage.Update(ctx, id, diagnosis)
+	return updated, diagnosisWriteError(err)
 }
 
-func (m *Module) Delete(ctx context.Context, id string) error {
-	return m.Storage.Delete(ctx, id)
+func (module *Module) Delete(ctx context.Context, id string) error {
+	return module.Storage.Delete(ctx, id)
+}
+
+func diagnosisWriteError(err error) error {
+	switch {
+	case errors.Is(err, models.ErrDuplicateCode):
+		return fmt.Errorf("%w: Диагноз с таким кодом уже существует", models.ErrConflict)
+	case errors.Is(err, models.ErrDuplicateName):
+		return fmt.Errorf("%w: Диагноз с таким наименованием уже существует", models.ErrConflict)
+	default:
+		return err
+	}
 }

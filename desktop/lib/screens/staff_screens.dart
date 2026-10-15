@@ -61,7 +61,7 @@ class _StaffListScreenState extends State<StaffListScreen> {
       key: _table,
       fetch: (offset, query) => widget.session.api.staffPage(
         offset: offset,
-        query: query,
+        search: query,
         includeDeleted: _includeDeleted,
       ),
       searchHint: 'Поиск по имени или должности',
@@ -156,7 +156,6 @@ class StaffFormScreen extends StatefulWidget {
 }
 
 class _StaffFormScreenState extends State<StaffFormScreen> {
-  final _form = GlobalKey<FormState>();
   late final TextEditingController _first, _last, _position;
   bool _saving = false, _delete = false;
   Object? _error;
@@ -178,7 +177,6 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
   }
 
   Future<void> _save() async {
-    if (!_form.currentState!.validate()) return;
     if (_delete &&
         !await confirm(
           context,
@@ -194,9 +192,9 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
     });
     try {
       final request = contract.StaffInput(
-        firstName: _first.text.trim(),
-        lastName: _last.text.trim(),
-        position: _position.text.trim(),
+        firstName: _first.text,
+        lastName: _last.text,
+        position: _position.text,
       );
       final staff = widget.staff == null
           ? await widget.session.api.createStaff(request)
@@ -233,7 +231,6 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
             constraints: const BoxConstraints(maxWidth: 900),
             child: Panel(
               child: Form(
-                key: _form,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -271,13 +268,11 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Фамилия',
                           ),
-                          validator: (v) => validateText(v, 3, 24),
                         ),
                         TextFormField(
                           controller: _first,
                           enabled: !_archived && !_saving,
                           decoration: const InputDecoration(labelText: 'Имя'),
-                          validator: (v) => validateText(v, 3, 24),
                         ),
                         TextFormField(
                           controller: _position,
@@ -306,7 +301,6 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
                                       .toList(),
                             ),
                           ),
-                          validator: (v) => validateText(v, 3, 24),
                         ),
                       ],
                     ),

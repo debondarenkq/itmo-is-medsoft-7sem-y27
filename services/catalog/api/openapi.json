@@ -183,7 +183,7 @@
           },
           {
             "in": "query",
-            "name": "q",
+            "name": "search",
             "schema": {
               "type": "string"
             }

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/models"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/pkg/platform"
 )
 
 type importStorage struct {
@@ -26,23 +25,21 @@ func TestImportValidatesWholeFileBeforeStorage(t *testing.T) {
 	tests := []struct {
 		name string
 		data []models.Diagnosis
-		code string
 	}{
-		{name: "empty", code: "IMPORT_SIZE"},
-		{name: "missing code", data: []models.Diagnosis{{Name: "Диагноз"}}, code: "VALIDATION"},
-		{name: "seven character code", data: []models.Diagnosis{{Code: "E11.900", Name: "Диагноз"}}, code: "VALIDATION"},
-		{name: "invalid second row", data: []models.Diagnosis{{Code: "TEST01", Name: "Первый диагноз"}, {Code: "TEST02", Name: "Я"}}, code: "VALIDATION"},
-		{name: "duplicate trimmed code", data: []models.Diagnosis{{Code: "TEST01", Name: "Первый диагноз"}, {Code: " TEST01 ", Name: "Второй диагноз"}}, code: "IMPORT_DUPLICATE_CODE"},
-		{name: "duplicate name", data: []models.Diagnosis{{Code: "TEST01", Name: "Первый диагноз"}, {Code: "TEST02", Name: "Первый диагноз"}}, code: "IMPORT_DUPLICATE_NAME"},
+		{name: "empty"},
+		{name: "missing code", data: []models.Diagnosis{{Name: "Диагноз"}}},
+		{name: "seven character code", data: []models.Diagnosis{{Code: "E11.900", Name: "Диагноз"}}},
+		{name: "invalid second row", data: []models.Diagnosis{{Code: "TEST01", Name: "Первый диагноз"}, {Code: "TEST02", Name: "Я"}}},
+		{name: "duplicate trimmed code", data: []models.Diagnosis{{Code: "TEST01", Name: "Первый диагноз"}, {Code: " TEST01 ", Name: "Второй диагноз"}}},
+		{name: "duplicate name", data: []models.Diagnosis{{Code: "TEST01", Name: "Первый диагноз"}, {Code: "TEST02", Name: "Первый диагноз"}}},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			storage := &importStorage{}
 			module := New(Deps{Storage: storage})
 			_, err := module.Import(context.Background(), test.data)
-			var api *platform.Error
-			if !errors.As(err, &api) || api.Code != test.code {
-				t.Fatalf("error = %v, want %s", err, test.code)
+			if !errors.Is(err, models.ErrInvalidInput) {
+				t.Fatalf("expected invalid input, got %v", err)
 			}
 			if storage.called {
 				t.Fatal("invalid file reached storage")

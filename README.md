@@ -25,18 +25,20 @@ docker compose down
 ## Структура
 
 ```text
+contracts/        исходные OpenAPI-схемы всех сервисов
 services/
   staff/          медработники
   catalog/        справочник диагнозов
   clinical/       пациенты, ЭМК, назначения, история
     cmd/clinical-service/
     internal/app/api/         HTTP-обработчики
-    internal/models/          модели и запросы
+    internal/models/          модели, запросы и обычные ошибки Go
     internal/config/          конфигурация зависимостей
     internal/pkg/modules/     бизнес-логика и интерфейсы зависимостей
     internal/pkg/storage/     PostgreSQL
     internal/pkg/adapters/    HTTP-клиенты справочников
-    internal/pkg/platform/    локальные HTTP-утилиты и запуск процесса
+    internal/app/server/      запуск HTTP-сервера, БД и миграций
+    internal/validation/      проверки UUID и текстовых полей
     api/                      OpenAPI-контракт и сгенерированные DTO
     migrations/               SQL-миграции Goose
     go.mod
@@ -65,8 +67,15 @@ docker build -t his-clinical .
 |---|---|---|
 | `DATABASE_URL` | Все сервисы | Обязательный адрес собственной PostgreSQL-базы |
 | `HTTP_ADDR` | Все сервисы | По умолчанию `:8080` |
-| `STAFF_URL` | Клинический сервис | По умолчанию `http://localhost:8081`, в Compose задаётся адрес контейнера |
-| `CATALOG_URL` | Клинический сервис | По умолчанию `http://localhost:8082`, в Compose задаётся адрес контейнера |
+| `GATEWAY_URL` | Клинический сервис | Обязательный URL Nginx; в Compose — `http://nginx`, можно переопределить окружением |
+
+Клинический сервис обращается к справочникам через Nginx: `clinical → nginx → staff/catalog`. Адреса конечных сервисов находятся в upstream-блоках `deploy/nginx.conf`. При смене адреса staff/catalog обновляется конфигурация Nginx; клинический сервис не нужно менять или пересобирать. Смену IP контейнера за прежним DNS-именем Nginx отслеживает через встроенный DNS Docker.
+
+Если меняется адрес самого gateway, задайте `GATEWAY_URL` и пересоздайте клинический контейнер без пересборки:
+
+```sh
+GATEWAY_URL=http://gateway.internal docker compose up -d --force-recreate clinical-service
+```
 
 ## API и история ЭМК
 
@@ -112,4 +121,4 @@ python3 scripts/smoke.py
 
 ## Контракты
 
-HTTP API описывается в `services/<service>/api/openapi.yaml`. Go DTO, интерфейсы ручек, binding для gorilla/mux и HTTP-клиенты генерируются через `oapi-codegen`. Flutter использует сгенерированный пакет `desktop/packages/his_api` для единственного gateway. Подробности — [docs/contracts.md](docs/contracts.md). После изменения YAML выполните `make generate-contracts`; CI проверяет отсутствие расхождений между схемами и кодом.
+HTTP API описывается в корневом каталоге [`contracts/`](contracts/README.md). Локальные схемы в сервисах обновляются генератором и не редактируются вручную. Go DTO, интерфейсы ручек, binding для gorilla/mux и HTTP-клиенты генерируются через `oapi-codegen`. Flutter использует сгенерированный пакет `desktop/packages/his_api` для единственного gateway. Подробности — [docs/contracts.md](docs/contracts.md). После изменения YAML выполните `make generate-contracts`; CI проверяет отсутствие расхождений между схемами и кодом.
