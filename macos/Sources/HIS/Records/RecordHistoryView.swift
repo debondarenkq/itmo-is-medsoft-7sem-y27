@@ -10,8 +10,8 @@ struct RecordHistoryView: View {
   @State private var total = 0
   @State private var moment = Date()
   @State private var snapshot: Record?
-  @State private var message: String?
-  @State private var busy = false
+  @State private var errorText: String?
+  @State private var isBusy = false
 
   var body: some View {
     VStack {
@@ -21,7 +21,7 @@ struct RecordHistoryView: View {
         Button("Посмотреть") { Task { await showState(at: moment) } }
         Button("Обновить", systemImage: "arrow.clockwise") { Task { await load() } }
       }.padding()
-      ErrorNotice(message: message)
+      ErrorNotice(message: errorText)
       List(events) { event in
         DisclosureGroup {
           LabeledContent("До изменения", value: describe(event.before))
@@ -41,62 +41,72 @@ struct RecordHistoryView: View {
       }
       PageControls(offset: $offset, total: total, count: events.count)
     }
-    .disabled(busy)
-    .overlay { if busy { ProgressView() } }
+    .disabled(isBusy)
+    .overlay { if isBusy { ProgressView() } }
     .task(id: "\(version)|\(offset)") { await load() }
     .sheet(item: $snapshot) { RecordSnapshotView(record: $0) }
   }
 
   private func load() async {
-    busy = true
-    defer { busy = false }
+    isBusy = true
+    defer { isBusy = false }
     do {
       let page = try await gateway.records.getRecordHistory(id: recordID, limit: 50, offset: offset)
       try Task.checkCancellation()
       events = page.items
       total = page.total
-      message = nil
-    } catch { if !Task.isCancelled { message = errorMessage(error) } }
+      errorText = nil
+    } catch {
+      if !Task.isCancelled {
+        errorText = errorMessage(error)
+      }
+    }
   }
 
   private func showState(at: Date? = nil, version: Int64? = nil) async {
-    busy = true
-    defer { busy = false }
+    isBusy = true
+    defer { isBusy = false }
     do {
       snapshot = try await gateway.records.getRecordState(id: recordID, at: at, version: version)
-      message = nil
-    } catch { message = errorMessage(error) }
+      errorText = nil
+    } catch {
+      errorText = errorMessage(error)
+    }
   }
 
   private func describe(_ snapshot: [String: JSONValue]?) -> String {
     guard let snapshot else { return "Запись отсутствует" }
-    return snapshot.sorted { $0.key < $1.key }.compactMap { key, value in
+    var lines: [String] = []
+    for key in snapshot.keys.sorted() {
+      guard let text = snapshot[key]?.stringValue else { continue }
       let label: String
       switch key {
       case "text": label = "Назначение"
       case "name": label = "Наименование"
       case "code": label = "Код"
       case "status": label = "Статус"
-      default: return nil
+      default: continue
       }
-      if case .string(let text) = value {
-        let displayed = key == "status" ? (text == "active" ? "Активно" : "Отменено") : text
-        return "\(label): \(displayed)"
+
+      var displayedValue = text
+      if key == "status" {
+        displayedValue = text == "active" ? "Активно" : "Отменено"
       }
-      return nil
-    }.joined(separator: "\n")
+      lines.append("\(label): \(displayedValue)")
+    }
+    return lines.joined(separator: "\n")
   }
 }
 
 extension EventType {
   fileprivate var label: String {
     switch self {
-    case .recordCreated: "Создана медицинская карта"
-    case .diagnosisAdded: "Добавлен диагноз"
-    case .diagnosisRemoved: "Удалён диагноз"
-    case .prescriptionAdded: "Добавлено назначение"
-    case .prescriptionCancelled: "Отменено назначение"
-    case .prescriptionRemoved: "Удалено назначение"
+    case .recordCreated: return "Создана медицинская карта"
+    case .diagnosisAdded: return "Добавлен диагноз"
+    case .diagnosisRemoved: return "Удалён диагноз"
+    case .prescriptionAdded: return "Добавлено назначение"
+    case .prescriptionCancelled: return "Отменено назначение"
+    case .prescriptionRemoved: return "Удалено назначение"
     }
   }
 }

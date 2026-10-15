@@ -9,5 +9,6 @@ esac
 xcodebuild -project HIS.xcodeproj -scheme HIS -configuration "$configuration" \
     -destination 'platform=macOS' -derivedDataPath build/DerivedData \
     CONFIGURATION_BUILD_DIR="$PWD/build/Products/$configuration" build
+rm -rf build/HIS.app
 ditto "build/Products/$configuration/HIS.app" build/HIS.app
 printf '%s\n' "$PWD/build/HIS.app"

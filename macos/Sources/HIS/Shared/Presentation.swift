@@ -7,16 +7,18 @@ extension Staff {
 
 extension Patient {
   var fullName: String {
-    [lastName, firstName, middleName].compactMap { $0 }.joined(separator: " ")
+    var parts = [lastName, firstName]
+    if let middleName { parts.append(middleName) }
+    return parts.joined(separator: " ")
   }
 }
 
 extension AdministrativeSex {
   var label: String {
     switch self {
-    case .m: "Мужской"
-    case .f: "Женский"
-    case .unknown: "Не указан"
+    case .m: return "Мужской"
+    case .f: return "Женский"
+    case .unknown: return "Не указан"
     }
   }
 }
@@ -67,19 +69,19 @@ struct PageControls: View {
 }
 
 struct FormActions: View {
-  let busy: Bool
+  let isBusy: Bool
   var saveTitle = "Сохранить"
   let cancel: () -> Void
   let save: () -> Void
 
   var body: some View {
     HStack {
-      if busy { ProgressView().controlSize(.small) }
+      if isBusy { ProgressView().controlSize(.small) }
       Spacer()
       Button("Отмена", role: .cancel, action: cancel).keyboardShortcut(.cancelAction)
       Button(saveTitle, action: save).keyboardShortcut(.defaultAction)
     }
-    .disabled(busy)
+    .disabled(isBusy)
     .padding()
   }
 }

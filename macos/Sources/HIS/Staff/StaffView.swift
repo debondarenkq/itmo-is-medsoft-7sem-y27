@@ -3,22 +3,22 @@ import SwiftUI
 
 struct StaffView: View {
   let gateway: Gateway
-  @State private var items: [Staff] = []
-  @State private var selection: UUID?
+  @State private var staffMembers: [Staff] = []
+  @State private var selectedStaffID: UUID?
   @State private var search = ""
   @State private var includeDeleted = false
   @State private var offset = 0
   @State private var total = 0
-  @State private var busy = false
-  @State private var message: String?
+  @State private var isBusy = false
+  @State private var errorText: String?
   @State private var editor: StaffEditorSelection?
   @State private var deleting = false
-  private var selected: Staff? { items.first { $0.id == selection } }
+  private var selectedStaff: Staff? { staffMembers.first { $0.id == selectedStaffID } }
 
   var body: some View {
     VStack(spacing: 0) {
-      ErrorNotice(message: message)
-      Table(items, selection: $selection) {
+      ErrorNotice(message: errorText)
+      Table(staffMembers, selection: $selectedStaffID) {
         TableColumn("Фамилия и имя", value: \.fullName)
         TableColumn("Должность", value: \.position)
         TableColumn("Статус") { staff in
@@ -28,22 +28,22 @@ struct StaffView: View {
       }
       .contextMenu(forSelectionType: UUID.self) { _ in
       } primaryAction: { ids in
-        if let value = items.first(where: { ids.contains($0.id) }) { edit(value) }
+        if let value = staffMembers.first(where: { ids.contains($0.id) }) { edit(value) }
       }
-      PageControls(offset: $offset, total: total, count: items.count)
+      PageControls(offset: $offset, total: total, count: staffMembers.count)
     }
     .navigationTitle("Медработники")
     .searchable(text: $search, prompt: "Фамилия, имя или должность")
     .toolbar {
       Toggle("Показать удалённых", isOn: $includeDeleted)
       Button("Добавить", systemImage: "plus") { edit(nil) }
-      Button("Изменить", systemImage: "square.and.pencil") { edit(selected) }.disabled(
-        selected == nil)
-      Button("Удалить", systemImage: "trash") { deleting = true }.disabled(selected == nil)
+      Button("Изменить", systemImage: "square.and.pencil") { edit(selectedStaff) }.disabled(
+        selectedStaff == nil)
+      Button("Удалить", systemImage: "trash") { deleting = true }.disabled(selectedStaff == nil)
       Button("Обновить", systemImage: "arrow.clockwise") { Task { await load() } }
     }
-    .disabled(busy)
-    .overlay { if busy { ProgressView() } }
+    .disabled(isBusy)
+    .overlay { if isBusy { ProgressView() } }
     .task(id: "\(search)|\(offset)|\(includeDeleted)") { await load() }
     .onChange(of: search) { offset = 0 }
     .onChange(of: includeDeleted) { offset = 0 }
@@ -54,7 +54,7 @@ struct StaffView: View {
     {
       Button("Удалить", role: .destructive) { Task { await delete() } }
     } message: {
-      Text(selected?.fullName ?? "")
+      Text(selectedStaff?.fullName ?? "")
     }
   }
 
@@ -63,26 +63,32 @@ struct StaffView: View {
   }
 
   private func load() async {
-    busy = true
-    defer { busy = false }
+    isBusy = true
+    defer { isBusy = false }
     do {
       let page = try await gateway.staff.listStaff(
         limit: 50, offset: offset, search: search, includeDeleted: includeDeleted)
       try Task.checkCancellation()
-      items = page.items
+      staffMembers = page.items
       total = page.total
-      message = nil
-    } catch { if !Task.isCancelled { message = errorMessage(error) } }
+      errorText = nil
+    } catch {
+      if !Task.isCancelled {
+        errorText = errorMessage(error)
+      }
+    }
   }
 
   private func delete() async {
-    guard let selected else { return }
-    busy = true
+    guard let selectedStaff else { return }
+    isBusy = true
     do {
-      try await gateway.staff.deleteStaff(id: selected.id)
+      try await gateway.staff.deleteStaff(id: selectedStaff.id)
       await load()
-    } catch { message = errorMessage(error) }
-    busy = false
+    } catch {
+      errorText = errorMessage(error)
+    }
+    isBusy = false
   }
 }
 
@@ -96,11 +102,11 @@ private struct StaffEditor: View {
   let staff: Staff?
   let saved: () -> Void
   @Environment(\.dismiss) private var dismiss
-  @State private var firstName = ""
-  @State private var lastName = ""
-  @State private var position = ""
-  @State private var busy = false
-  @State private var message: String?
+  @State private var firstName: String
+  @State private var lastName: String
+  @State private var position: String
+  @State private var isBusy = false
+  @State private var errorText: String?
 
   init(gateway: Gateway, staff: Staff?, saved: @escaping () -> Void) {
     self.gateway = gateway
@@ -122,17 +128,17 @@ private struct StaffEditor: View {
             LabeledContent("Статус", value: staff.deletedAt == nil ? "Активен" : "Удалён")
           }
         }
-      }.formStyle(.grouped).disabled(busy)
-      ErrorNotice(message: message)
-      FormActions(busy: busy, cancel: { dismiss() }, save: { Task { await save() } })
+      }.formStyle(.grouped).disabled(isBusy)
+      ErrorNotice(message: errorText)
+      FormActions(isBusy: isBusy, cancel: { dismiss() }, save: { Task { await save() } })
     }
     .frame(width: 480)
     .interactiveDismissDisabled()
   }
 
   private func save() async {
-    busy = true
-    defer { busy = false }
+    isBusy = true
+    defer { isBusy = false }
     do {
       let input = StaffInput(firstName: firstName, lastName: lastName, position: position)
       if let staff {
@@ -142,6 +148,8 @@ private struct StaffEditor: View {
       }
       saved()
       dismiss()
-    } catch { message = errorMessage(error) }
+    } catch {
+      errorText = errorMessage(error)
+    }
   }
 }

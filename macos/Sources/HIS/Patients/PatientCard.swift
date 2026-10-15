@@ -9,8 +9,8 @@ struct PatientCard: View {
   @State private var editing = false
   @State private var showingRecord = false
   @State private var deleting = false
-  @State private var busy = false
-  @State private var message: String?
+  @State private var isBusy = false
+  @State private var errorText: String?
 
   var body: some View {
     VStack(spacing: 0) {
@@ -38,15 +38,15 @@ struct PatientCard: View {
       }
       .formStyle(.grouped)
       .textSelection(.enabled)
-      ErrorNotice(message: message)
+      ErrorNotice(message: errorText)
       HStack {
         Spacer()
         Button("К списку пациентов") { dismiss() }.keyboardShortcut(.cancelAction)
       }.padding()
     }
     .frame(width: 560)
-    .disabled(busy)
-    .overlay { if busy { ProgressView() } }
+    .disabled(isBusy)
+    .overlay { if isBusy { ProgressView() } }
     .sheet(isPresented: $editing) {
       PatientEditor(gateway: gateway, patient: patient) { Task { await reload() } }
     }
@@ -56,23 +56,27 @@ struct PatientCard: View {
     .confirmationDialog("Удалить пациента?", isPresented: $deleting, titleVisibility: .visible) {
       Button("Удалить", role: .destructive) {
         Task {
-          busy = true
-          defer { busy = false }
+          isBusy = true
+          defer { isBusy = false }
           do {
             try await gateway.patients.deletePatient(id: patient.id)
             dismiss()
-          } catch { message = errorMessage(error) }
+          } catch {
+            errorText = errorMessage(error)
+          }
         }
       }
     }
   }
 
   private func reload() async {
-    busy = true
-    defer { busy = false }
+    isBusy = true
+    defer { isBusy = false }
     do {
       patient = try await gateway.patients.getPatient(id: patient.id)
-      message = nil
-    } catch { message = errorMessage(error) }
+      errorText = nil
+    } catch {
+      errorText = errorMessage(error)
+    }
   }
 }

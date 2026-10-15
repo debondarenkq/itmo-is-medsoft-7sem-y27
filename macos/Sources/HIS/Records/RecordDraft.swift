@@ -14,15 +14,22 @@ struct RecordDraft {
 
   var commands: [Command] {
     var result: [Command] = []
-    for original in base.state.diagnoses where !diagnoses.contains(where: { $0.id == original.id })
-    {
-      result.append(Command(id: original.id, type: .removeDiagnosis))
+    for original in base.state.diagnoses {
+      let stillPresent = diagnoses.contains { diagnosis in diagnosis.id == original.id }
+      if !stillPresent {
+        result.append(Command(id: original.id, type: .removeDiagnosis))
+      }
     }
-    for current in diagnoses where !base.state.diagnoses.contains(where: { $0.id == current.id }) {
-      result.append(Command(diagnosisId: current.diagnosisId, type: .addDiagnosis))
+    for diagnosis in diagnoses {
+      let alreadySaved = base.state.diagnoses.contains { original in original.id == diagnosis.id }
+      if !alreadySaved {
+        result.append(Command(diagnosisId: diagnosis.diagnosisId, type: .addDiagnosis))
+      }
     }
     for original in base.state.prescriptions {
-      guard let current = prescriptions.first(where: { $0.id == original.id }) else {
+      guard
+        let current = prescriptions.first(where: { prescription in prescription.id == original.id })
+      else {
         result.append(Command(id: original.id, type: .removePrescription))
         continue
       }
@@ -32,9 +39,13 @@ struct RecordDraft {
         result.append(Command(id: original.id, type: .cancelPrescription))
       }
     }
-    for current in prescriptions
-    where !base.state.prescriptions.contains(where: { $0.id == current.id }) {
-      result.append(Command(text: current.text, type: .addPrescription))
+    for prescription in prescriptions {
+      let alreadySaved = base.state.prescriptions.contains { original in
+        original.id == prescription.id
+      }
+      if !alreadySaved {
+        result.append(Command(text: prescription.text, type: .addPrescription))
+      }
     }
     return result
   }
@@ -42,14 +53,36 @@ struct RecordDraft {
   var isDirty: Bool { !commands.isEmpty }
 
   mutating func addDiagnosis(_ diagnosis: Diagnosis) {
-    let removed = base.state.diagnoses.first {
-      $0.diagnosisId == diagnosis.id && !diagnoses.contains($0)
+    let removedDiagnosis = base.state.diagnoses.first { original in
+      let stillPresent = diagnoses.contains(original)
+      return original.diagnosisId == diagnosis.id && !stillPresent
     }
-    diagnoses.append(
-      removed
-        ?? RecordDiagnosis(
+    if let removedDiagnosis {
+      diagnoses.append(removedDiagnosis)
+    } else {
+      diagnoses.append(
+        RecordDiagnosis(
           code: diagnosis.code, diagnosisId: diagnosis.id,
           id: UUID(), name: diagnosis.name))
+    }
+  }
+
+  mutating func removeDiagnosis(id: UUID) {
+    diagnoses.removeAll { diagnosis in diagnosis.id == id }
+  }
+
+  mutating func restoreDiagnosis(_ diagnosis: RecordDiagnosis) {
+    let belongsToCurrentVersion = base.state.diagnoses.contains { original in
+      original.id == diagnosis.id
+    }
+    if belongsToCurrentVersion {
+      diagnoses.append(diagnosis)
+    } else {
+      diagnoses.append(
+        RecordDiagnosis(
+          code: diagnosis.code, diagnosisId: diagnosis.diagnosisId,
+          id: UUID(), name: diagnosis.name))
+    }
   }
 
   func isEdited(_ prescription: Prescription) -> Bool {

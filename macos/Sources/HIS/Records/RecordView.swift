@@ -7,15 +7,16 @@ struct RecordView: View {
   let patient: Patient
   @Environment(\.dismiss) private var dismiss
   @State private var draft: RecordDraft?
-  @State private var editing = false
+  @State private var isEditing = false
   @State private var confirmingUnlock = false
-  @State private var busy = false
-  @State private var missing = false
-  @State private var message: String?
-  @State private var conflict = false
+  @State private var isBusy = false
+  @State private var recordIsMissing = false
+  @State private var errorText: String?
+  @State private var hasVersionConflict = false
   @State private var sheet: EditorSheet?
   @State private var pendingAction: PendingAction?
-  @State private var selectedPrescription: UUID?
+  @State private var showingDiscardConfirmation = false
+  @State private var selectedPrescriptionID: UUID?
 
   private enum EditorSheet: Identifiable {
     case diagnosis
@@ -23,13 +24,13 @@ struct RecordView: View {
 
     var id: String {
       switch self {
-      case .diagnosis: "diagnosis"
-      case .prescription(let prescription): prescription?.id.uuidString ?? "new-prescription"
+      case .diagnosis: return "diagnosis"
+      case .prescription(let prescription): return prescription?.id.uuidString ?? "new-prescription"
       }
     }
   }
   private enum PendingAction { case close, reload, cancel }
-  private var dirty: Bool { draft?.isDirty ?? false }
+  private var hasUnsavedChanges: Bool { draft?.isDirty ?? false }
 
   var body: some View {
     VStack(spacing: 0) {
@@ -43,24 +44,24 @@ struct RecordView: View {
           .foregroundStyle(.secondary)
         }
         Spacer()
-        Button("Обновить", systemImage: "arrow.clockwise") { request(.reload) }
-        Button("Закрыть") { request(.close) }.keyboardShortcut(.cancelAction)
+        Button("Обновить", systemImage: "arrow.clockwise") { requestAction(.reload) }
+        Button("Закрыть") { requestAction(.close) }.keyboardShortcut(.cancelAction)
       }.padding()
-      ErrorNotice(message: message)
-      if conflict {
+      ErrorNotice(message: errorText)
+      if hasVersionConflict {
         HStack {
           Text("Черновик сохранён. Для загрузки актуальной карты отмените изменения.")
-          Button("Обновить карту") { request(.reload) }
+          Button("Обновить карту") { requestAction(.reload) }
         }.padding()
       }
       if let draft {
         HStack {
           Label(
-            editing ? "Редактирование" : "Только просмотр",
-            systemImage: editing ? "lock.open" : "lock")
+            isEditing ? "Редактирование" : "Только просмотр",
+            systemImage: isEditing ? "lock.open" : "lock")
           Text("Версия \(draft.base.version)").foregroundStyle(.secondary)
           Spacer()
-          if editing {
+          if isEditing {
             Text("Автор: \(worker.fullName)")
           } else {
             Button("Разблокировать…") { confirmingUnlock = true }
@@ -69,9 +70,11 @@ struct RecordView: View {
         TabView {
           RecordDiagnosesView(
             gateway: gateway,
-            draft: Binding(
-              get: { self.draft ?? draft }, set: { self.draft = $0 }
-            ), editing: editing, add: { sheet = .diagnosis }
+            draft: draft,
+            isEditing: isEditing,
+            addDiagnosis: { sheet = .diagnosis },
+            removeDiagnosis: { diagnosisID in self.draft?.removeDiagnosis(id: diagnosisID) },
+            restoreDiagnosis: { diagnosis in self.draft?.restoreDiagnosis(diagnosis) }
           )
           .tabItem { Text("Диагнозы") }
           prescriptionsTab.tabItem { Text("Назначения") }
@@ -79,21 +82,21 @@ struct RecordView: View {
             .tabItem { Text("История") }
         }
         .padding(.horizontal)
-        if editing {
+        if isEditing {
           HStack {
             Text("Несохранённых действий: \(draft.commands.count)").foregroundStyle(.secondary)
             Spacer()
-            Button("Отменить изменения") { request(.cancel) }
-            Button("Сохранить") { Task { await save() } }
+            Button("Отменить изменения") { requestAction(.cancel) }
+            Button("Сохранить") { Task { await saveChanges() } }
               .keyboardShortcut("s", modifiers: .command)
-              .disabled(!dirty)
+              .disabled(!hasUnsavedChanges)
           }.padding()
         }
-      } else if missing {
+      } else if recordIsMissing {
         ContentUnavailableView {
           Label("Медицинская карта не создана", systemImage: "heart.text.clipboard")
         } actions: {
-          Button("Создать ЭМК") { Task { await create() } }
+          Button("Создать ЭМК") { Task { await createRecord() } }
         }
       } else {
         ContentUnavailableView(
@@ -102,14 +105,14 @@ struct RecordView: View {
       }
     }
     .frame(minWidth: 800, idealWidth: 960, minHeight: 580, idealHeight: 680)
-    .disabled(busy)
-    .overlay { if busy { ProgressView() } }
+    .disabled(isBusy)
+    .overlay { if isBusy { ProgressView() } }
     .interactiveDismissDisabled()
-    .task { await load() }
+    .task { await loadRecord() }
     .confirmationDialog(
       "Разблокировать карту?", isPresented: $confirmingUnlock, titleVisibility: .visible
     ) {
-      Button("Разблокировать") { editing = true }
+      Button("Разблокировать") { isEditing = true }
       Button("Отмена", role: .cancel) {}
     } message: {
       Text("Автор изменений: \(worker.fullName) · \(worker.position)")
@@ -132,12 +135,10 @@ struct RecordView: View {
     }
     .confirmationDialog(
       "Отменить несохранённые изменения?",
-      isPresented: Binding(
-        get: { pendingAction != nil }, set: { if !$0 { pendingAction = nil } }
-      ), titleVisibility: .visible
+      isPresented: $showingDiscardConfirmation, titleVisibility: .visible
     ) {
       Button("Отменить изменения", role: .destructive) {
-        if let action = pendingAction { perform(action) }
+        if let action = pendingAction { performAction(action) }
         pendingAction = nil
       }
       Button("Продолжить редактирование", role: .cancel) { pendingAction = nil }
@@ -146,93 +147,109 @@ struct RecordView: View {
 
   private var prescriptionsTab: some View {
     VStack {
-      Table(draft?.prescriptions ?? [], selection: $selectedPrescription) {
+      Table(draft?.prescriptions ?? [], selection: $selectedPrescriptionID) {
         TableColumn("Назначение", value: \.text)
         TableColumn("Статус") { Text($0.status == .active ? "Активно" : "Отменено") }
       }
-      if editing {
+      if isEditing {
         HStack {
           Button("Добавить…", systemImage: "plus") {
             sheet = .prescription(nil)
           }
           Button("Изменить…") {
-            sheet = .prescription(prescription)
-          }.disabled(prescription == nil)
+            sheet = .prescription(selectedPrescription)
+          }.disabled(selectedPrescription == nil)
           Button("Отменить назначение") {
-            if let prescription { draft?.cancelPrescription(prescription) }
+            if let selectedPrescription { draft?.cancelPrescription(selectedPrescription) }
           }
-          .disabled(prescription == nil || prescription.map { draft?.isEdited($0) == true } == true)
+          .disabled(!canCancelPrescription)
           .help("Изменённое назначение сначала нужно сохранить.")
-          Button("Удалить") { draft?.prescriptions.removeAll { $0.id == selectedPrescription } }
-            .disabled(prescription == nil)
+          Button("Удалить") { draft?.prescriptions.removeAll { $0.id == selectedPrescriptionID } }
+            .disabled(selectedPrescription == nil)
           Spacer()
         }.padding()
       }
     }
   }
 
-  private var prescription: Prescription? {
-    draft?.prescriptions.first { $0.id == selectedPrescription }
+  private var selectedPrescription: Prescription? {
+    draft?.prescriptions.first { $0.id == selectedPrescriptionID }
   }
 
-  private func request(_ action: PendingAction) {
-    if dirty { pendingAction = action } else { perform(action) }
+  private var canCancelPrescription: Bool {
+    guard let selectedPrescription, let draft else { return false }
+    return !draft.isEdited(selectedPrescription)
   }
 
-  private func perform(_ action: PendingAction) {
-    switch action {
-    case .close: dismiss()
-    case .reload: Task { await load() }
-    case .cancel:
-      if let draft { self.draft = RecordDraft(draft.base) }
-      editing = false
-      message = nil
-      conflict = false
+  private func requestAction(_ action: PendingAction) {
+    if hasUnsavedChanges {
+      pendingAction = action
+      showingDiscardConfirmation = true
+    } else {
+      performAction(action)
     }
   }
 
-  private func replace(_ record: Record) {
-    draft = RecordDraft(record)
-    editing = false
-    missing = false
-    message = nil
-    conflict = false
-    selectedPrescription = nil
+  private func performAction(_ action: PendingAction) {
+    switch action {
+    case .close: dismiss()
+    case .reload: Task { await loadRecord() }
+    case .cancel:
+      if let draft { self.draft = RecordDraft(draft.base) }
+      isEditing = false
+      errorText = nil
+      hasVersionConflict = false
+    }
   }
 
-  private func load() async {
-    busy = true
-    defer { busy = false }
-    do { replace(try await gateway.patients.getPatientRecord(id: patient.id)) } catch {
+  private func replaceDraft(_ record: Record) {
+    draft = RecordDraft(record)
+    isEditing = false
+    recordIsMissing = false
+    errorText = nil
+    hasVersionConflict = false
+    selectedPrescriptionID = nil
+  }
+
+  private func loadRecord() async {
+    isBusy = true
+    defer { isBusy = false }
+    do {
+      let record = try await gateway.patients.getPatientRecord(id: patient.id)
+      replaceDraft(record)
+    } catch {
       if case ErrorResponse.error(404, _, _, _) = error {
-        missing = true
+        recordIsMissing = true
       } else {
-        message = errorMessage(error)
+        errorText = errorMessage(error)
       }
     }
   }
 
-  private func create() async {
-    busy = true
-    defer { busy = false }
+  private func createRecord() async {
+    isBusy = true
+    defer { isBusy = false }
     do {
-      replace(
-        try await gateway.records.createRecord(
-          id: patient.id, createRecordInput: CreateRecordInput(staffId: worker.id)))
-    } catch { message = errorMessage(error) }
+      let input = CreateRecordInput(staffId: worker.id)
+      let record = try await gateway.records.createRecord(id: patient.id, createRecordInput: input)
+      replaceDraft(record)
+    } catch {
+      errorText = errorMessage(error)
+    }
   }
 
-  private func save() async {
+  private func saveChanges() async {
     guard let draft else { return }
-    busy = true
-    defer { busy = false }
+    isBusy = true
+    defer { isBusy = false }
     do {
       let input = ChangesInput(
         commands: draft.commands, expectedVersion: draft.base.version, staffId: worker.id)
-      replace(try await gateway.records.saveRecord(id: draft.base.id, changesInput: input))
+      let record = try await gateway.records.saveRecord(id: draft.base.id, changesInput: input)
+      replaceDraft(record)
     } catch {
-      message = errorMessage(error)
-      conflict = serverDetail(error)?.code == "VERSION_CONFLICT"
+      errorText = errorMessage(error)
+      hasVersionConflict = serverDetail(error)?.code == "VERSION_CONFLICT"
     }
   }
 }
@@ -255,7 +272,7 @@ private struct PrescriptionEditor: View {
         TextField("Назначение", text: $text, axis: .vertical).lineLimit(3...8)
       }.formStyle(.grouped)
       FormActions(
-        busy: false, saveTitle: "Добавить в черновик", cancel: { dismiss() },
+        isBusy: false, saveTitle: "Добавить в черновик", cancel: { dismiss() },
         save: {
           save(text)
           dismiss()

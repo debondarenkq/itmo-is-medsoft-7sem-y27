@@ -3,30 +3,42 @@ import SwiftUI
 
 struct RecordDiagnosesView: View {
   let gateway: Gateway
-  @Binding var draft: RecordDraft
-  let editing: Bool
-  let add: () -> Void
+  let draft: RecordDraft
+  let isEditing: Bool
+  let addDiagnosis: () -> Void
+  let removeDiagnosis: (UUID) -> Void
+  let restoreDiagnosis: (RecordDiagnosis) -> Void
   @State private var events: [Event] = []
   @State private var removed: [RecordDiagnosis] = []
-  @State private var selection: UUID?
-  @State private var message: String?
-  @State private var loading = false
+  @State private var selectedDiagnosisID: UUID?
+  @State private var errorText: String?
+  @State private var isLoading = false
 
   private var rows: [RecordDiagnosis] {
     var result = draft.diagnoses
-    for diagnosis in draft.base.state.diagnoses + removed
-    where !result.contains(where: { $0.id == diagnosis.id }) {
-      result.append(diagnosis)
+    for diagnosis in draft.base.state.diagnoses + removed {
+      let alreadyListed = result.contains { row in row.id == diagnosis.id }
+      if !alreadyListed { result.append(diagnosis) }
     }
     return result
   }
 
-  private var selected: RecordDiagnosis? { rows.first { $0.id == selection } }
+  private var selectedDiagnosis: RecordDiagnosis? { rows.first { $0.id == selectedDiagnosisID } }
+
+  private var canRemoveDiagnosis: Bool {
+    guard let selectedDiagnosis else { return false }
+    return isPresent(selectedDiagnosis)
+  }
+
+  private var canRestoreDiagnosis: Bool {
+    guard let selectedDiagnosis else { return false }
+    return !isPresent(selectedDiagnosis)
+  }
 
   var body: some View {
     VStack {
-      ErrorNotice(message: message)
-      Table(rows, selection: $selection) {
+      ErrorNotice(message: errorText)
+      Table(rows, selection: $selectedDiagnosisID) {
         TableColumn("Дата") { diagnosis in
           if let event = events.first(where: {
             $0.entityId == diagnosis.id && $0.type == .diagnosisAdded
@@ -47,30 +59,24 @@ struct RecordDiagnosesView: View {
         }
       }
       HStack {
-        if editing {
-          Button("Добавить диагноз…", systemImage: "plus", action: add)
+        if isEditing {
+          Button("Добавить диагноз…", systemImage: "plus", action: addDiagnosis)
           Button("Удалить", systemImage: "minus") {
-            draft.diagnoses.removeAll { $0.id == selection }
-          }.disabled(selected.map { !isPresent($0) } ?? true)
+            if let selectedDiagnosis { removeDiagnosis(selectedDiagnosis.id) }
+          }.disabled(!canRemoveDiagnosis)
           Button("Восстановить", systemImage: "arrow.uturn.backward") {
-            guard let selected else { return }
-            if draft.base.state.diagnoses.contains(where: { $0.id == selected.id }) {
-              draft.diagnoses.append(selected)
-            } else {
-              draft.diagnoses.append(
-                RecordDiagnosis(
-                  code: selected.code, diagnosisId: selected.diagnosisId,
-                  id: UUID(), name: selected.name))
+            if let selectedDiagnosis {
+              restoreDiagnosis(selectedDiagnosis)
+              selectedDiagnosisID = nil
             }
-            selection = nil
-          }.disabled(selected.map { isPresent($0) } ?? true)
+          }.disabled(!canRestoreDiagnosis)
         }
         Spacer()
-        if loading { ProgressView().controlSize(.small) }
+        if isLoading { ProgressView().controlSize(.small) }
         Button("Обновить историю диагнозов", systemImage: "arrow.clockwise") {
           Task { await load() }
         }
-        .disabled(loading)
+        .disabled(isLoading)
       }.padding()
     }
     .task(id: draft.base.version) { await load() }
@@ -81,8 +87,8 @@ struct RecordDiagnosesView: View {
   }
 
   private func load() async {
-    loading = true
-    defer { loading = false }
+    isLoading = true
+    defer { isLoading = false }
     do {
       var history: [Event] = []
       var offset = 0
@@ -90,7 +96,9 @@ struct RecordDiagnosesView: View {
         let page = try await gateway.records.getRecordHistory(
           id: draft.base.id, limit: 200, offset: offset)
         try Task.checkCancellation()
-        history += page.items.filter { $0.version <= draft.base.version }
+        for event in page.items {
+          if event.version <= draft.base.version { history.append(event) }
+        }
         offset += page.items.count
         if page.items.isEmpty || page.offset + page.items.count >= page.total { break }
       }
@@ -103,7 +111,11 @@ struct RecordDiagnosesView: View {
       }
       events = history
       removed = snapshots
-      message = nil
-    } catch { if !Task.isCancelled { message = errorMessage(error) } }
+      errorText = nil
+    } catch {
+      if !Task.isCancelled {
+        errorText = errorMessage(error)
+      }
+    }
   }
 }

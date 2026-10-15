@@ -4,7 +4,7 @@ import SwiftUI
 struct DirectoryPicker<Item: Identifiable & Sendable>: View where Item.ID == UUID {
   let title: String
   let label: (Item) -> String
-  let fetch: (String, Int) async throws -> ([Item], Int)
+  let fetch: (String, Int) async throws -> (items: [Item], total: Int)
   let select: (Item) -> Void
   @Environment(\.dismiss) private var dismiss
   @State private var search = ""
@@ -12,16 +12,16 @@ struct DirectoryPicker<Item: Identifiable & Sendable>: View where Item.ID == UUI
   @State private var items: [Item] = []
   @State private var total = 0
   @State private var selection: UUID?
-  @State private var busy = false
-  @State private var message: String?
+  @State private var isBusy = false
+  @State private var errorText: String?
 
   var body: some View {
     VStack {
       Text(title).font(.headline).padding(.top)
       TextField("Поиск", text: $search).textFieldStyle(.roundedBorder).padding(.horizontal)
-      ErrorNotice(message: message)
+      ErrorNotice(message: errorText)
       List(items, selection: $selection) { Text(label($0)).tag($0.id) }
-        .overlay { if busy { ProgressView() } }
+        .overlay { if isBusy { ProgressView() } }
       PageControls(offset: $offset, total: total, count: items.count)
       HStack {
         Button("Обновить", systemImage: "arrow.clockwise") { Task { await load() } }
@@ -34,7 +34,7 @@ struct DirectoryPicker<Item: Identifiable & Sendable>: View where Item.ID == UUI
           }
         }
         .keyboardShortcut(.defaultAction)
-        .disabled(selection == nil || busy)
+        .disabled(selection == nil || isBusy)
       }.padding()
     }
     .frame(width: 520, height: 460)
@@ -47,14 +47,18 @@ struct DirectoryPicker<Item: Identifiable & Sendable>: View where Item.ID == UUI
   }
 
   private func load() async {
-    busy = true
-    defer { busy = false }
+    isBusy = true
+    defer { isBusy = false }
     do {
       let result = try await fetch(search, offset)
       try Task.checkCancellation()
-      items = result.0
-      total = result.1
-      message = nil
-    } catch { if !Task.isCancelled { message = errorMessage(error) } }
+      items = result.items
+      total = result.total
+      errorText = nil
+    } catch {
+      if !Task.isCancelled {
+        errorText = errorMessage(error)
+      }
+    }
   }
 }

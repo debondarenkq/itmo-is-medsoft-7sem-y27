@@ -4,23 +4,23 @@ import SwiftUI
 struct PatientsView: View {
   let gateway: Gateway
   let worker: Staff
-  @State private var items: [Patient] = []
-  @State private var selection: UUID?
+  @State private var patients: [Patient] = []
+  @State private var selectedPatientID: UUID?
   @State private var search = ""
   @State private var offset = 0
   @State private var total = 0
-  @State private var busy = false
-  @State private var message: String?
+  @State private var isBusy = false
+  @State private var errorText: String?
   @State private var editor: PatientEditorSelection?
   @State private var deleting = false
   @State private var recordPatient: Patient?
   @State private var viewedPatient: Patient?
-  private var selected: Patient? { items.first { $0.id == selection } }
+  private var selectedPatient: Patient? { patients.first { $0.id == selectedPatientID } }
 
   var body: some View {
     VStack(spacing: 0) {
-      ErrorNotice(message: message)
-      Table(items, selection: $selection) {
+      ErrorNotice(message: errorText)
+      Table(patients, selection: $selectedPatientID) {
         TableColumn("ФИО", value: \.fullName)
         TableColumn("Дата рождения") {
           Text($0.birthDate.calendarDate, format: .dateTime.day().month().year())
@@ -30,25 +30,27 @@ struct PatientsView: View {
       }
       .contextMenu(forSelectionType: UUID.self) { _ in
       } primaryAction: { ids in
-        if let value = items.first(where: { ids.contains($0.id) }) { viewedPatient = value }
+        if let value = patients.first(where: { ids.contains($0.id) }) { viewedPatient = value }
       }
-      PageControls(offset: $offset, total: total, count: items.count)
+      PageControls(offset: $offset, total: total, count: patients.count)
     }
     .navigationTitle("Пациенты")
     .searchable(text: $search, prompt: "Фамилия или имя")
     .toolbar {
-      Button("Медицинская карта", systemImage: "heart.text.clipboard") { recordPatient = selected }
-        .disabled(selected == nil)
-      Button("Просмотреть", systemImage: "eye") { viewedPatient = selected }.disabled(
-        selected == nil)
+      Button("Медицинская карта", systemImage: "heart.text.clipboard") {
+        recordPatient = selectedPatient
+      }
+      .disabled(selectedPatient == nil)
+      Button("Просмотреть", systemImage: "eye") { viewedPatient = selectedPatient }.disabled(
+        selectedPatient == nil)
       Button("Добавить", systemImage: "plus") { edit(nil) }
-      Button("Изменить", systemImage: "square.and.pencil") { edit(selected) }.disabled(
-        selected == nil)
-      Button("Удалить", systemImage: "trash") { deleting = true }.disabled(selected == nil)
+      Button("Изменить", systemImage: "square.and.pencil") { edit(selectedPatient) }.disabled(
+        selectedPatient == nil)
+      Button("Удалить", systemImage: "trash") { deleting = true }.disabled(selectedPatient == nil)
       Button("Обновить", systemImage: "arrow.clockwise") { Task { await load() } }
     }
-    .disabled(busy)
-    .overlay { if busy { ProgressView() } }
+    .disabled(isBusy)
+    .overlay { if isBusy { ProgressView() } }
     .task(id: "\(search)|\(offset)") { await load() }
     .onChange(of: search) { offset = 0 }
     .sheet(item: $viewedPatient, onDismiss: { Task { await load() } }) { patient in
@@ -63,7 +65,7 @@ struct PatientsView: View {
     .confirmationDialog("Удалить пациента?", isPresented: $deleting, titleVisibility: .visible) {
       Button("Удалить", role: .destructive) { Task { await delete() } }
     } message: {
-      Text(selected?.fullName ?? "")
+      Text(selectedPatient?.fullName ?? "")
     }
   }
 
@@ -72,25 +74,31 @@ struct PatientsView: View {
   }
 
   private func load() async {
-    busy = true
-    defer { busy = false }
+    isBusy = true
+    defer { isBusy = false }
     do {
       let page = try await gateway.patients.listPatients(limit: 50, offset: offset, search: search)
       try Task.checkCancellation()
-      items = page.items
+      patients = page.items
       total = page.total
-      message = nil
-    } catch { if !Task.isCancelled { message = errorMessage(error) } }
+      errorText = nil
+    } catch {
+      if !Task.isCancelled {
+        errorText = errorMessage(error)
+      }
+    }
   }
 
   private func delete() async {
-    guard let selected else { return }
-    busy = true
+    guard let selectedPatient else { return }
+    isBusy = true
     do {
-      try await gateway.patients.deletePatient(id: selected.id)
+      try await gateway.patients.deletePatient(id: selectedPatient.id)
       await load()
-    } catch { message = errorMessage(error) }
-    busy = false
+    } catch {
+      errorText = errorMessage(error)
+    }
+    isBusy = false
   }
 }
 
@@ -104,14 +112,14 @@ struct PatientEditor: View {
   let patient: Patient?
   let saved: () -> Void
   @Environment(\.dismiss) private var dismiss
-  @State private var firstName = ""
-  @State private var lastName = ""
-  @State private var middleName = ""
-  @State private var birthDate = Date()
-  @State private var sex: AdministrativeSex = .unknown
-  @State private var comment = ""
-  @State private var busy = false
-  @State private var message: String?
+  @State private var firstName: String
+  @State private var lastName: String
+  @State private var middleName: String
+  @State private var birthDate: Date
+  @State private var sex: AdministrativeSex
+  @State private var comment: String
+  @State private var isBusy = false
+  @State private var errorText: String?
 
   init(gateway: Gateway, patient: Patient?, saved: @escaping () -> Void) {
     self.gateway = gateway
@@ -138,17 +146,17 @@ struct PatientEditor: View {
           }
           TextField("Комментарий", text: $comment, axis: .vertical)
         }
-      }.formStyle(.grouped).disabled(busy)
-      ErrorNotice(message: message)
-      FormActions(busy: busy, cancel: { dismiss() }, save: { Task { await save() } })
+      }.formStyle(.grouped).disabled(isBusy)
+      ErrorNotice(message: errorText)
+      FormActions(isBusy: isBusy, cancel: { dismiss() }, save: { Task { await save() } })
     }
     .frame(width: 520)
     .interactiveDismissDisabled()
   }
 
   private func save() async {
-    busy = true
-    defer { busy = false }
+    isBusy = true
+    defer { isBusy = false }
     do {
       let input = PatientInput(
         administrativeSex: sex,
@@ -162,6 +170,8 @@ struct PatientEditor: View {
       }
       saved()
       dismiss()
-    } catch { message = errorMessage(error) }
+    } catch {
+      errorText = errorMessage(error)
+    }
   }
 }
