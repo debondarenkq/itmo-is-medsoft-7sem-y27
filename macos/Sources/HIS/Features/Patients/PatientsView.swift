@@ -6,7 +6,6 @@ struct PatientsView: View {
   let worker: Staff
   @State private var patients: [Patient] = []
   @State private var selectedPatientID: UUID?
-  @State private var search = ""
   @State private var offset = 0
   @State private var total = 0
   @State private var isBusy = false
@@ -35,7 +34,6 @@ struct PatientsView: View {
       PageControls(offset: $offset, total: total, count: patients.count)
     }
     .navigationTitle("Пациенты")
-    .searchable(text: $search, prompt: "Фамилия или имя")
     .toolbar {
       Button("Медицинская карта", systemImage: "heart.text.clipboard") {
         recordPatient = selectedPatient
@@ -51,8 +49,7 @@ struct PatientsView: View {
     }
     .disabled(isBusy)
     .overlay { if isBusy { ProgressView() } }
-    .task(id: "\(search)|\(offset)") { await load() }
-    .onChange(of: search) { offset = 0 }
+    .task(id: offset) { await load() }
     .sheet(item: $viewedPatient, onDismiss: { Task { await load() } }) { patient in
       PatientCardView(gateway: gateway, worker: worker, patient: patient)
     }
@@ -77,7 +74,7 @@ struct PatientsView: View {
     isBusy = true
     defer { isBusy = false }
     do {
-      let page = try await gateway.patients.listPatients(limit: 50, offset: offset, search: search)
+      let page = try await gateway.patients.listPatients(limit: 50, offset: offset)
       try Task.checkCancellation()
       patients = page.items
       total = page.total

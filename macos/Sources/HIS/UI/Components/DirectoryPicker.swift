@@ -4,10 +4,9 @@ import SwiftUI
 struct DirectoryPicker<Item: Identifiable & Sendable>: View where Item.ID == UUID {
   let title: String
   let label: (Item) -> String
-  let fetch: (String, Int) async throws -> (items: [Item], total: Int)
+  let fetch: (Int) async throws -> (items: [Item], total: Int)
   let select: (Item) -> Void
   @Environment(\.dismiss) private var dismiss
-  @State private var search = ""
   @State private var offset = 0
   @State private var items: [Item] = []
   @State private var total = 0
@@ -18,7 +17,6 @@ struct DirectoryPicker<Item: Identifiable & Sendable>: View where Item.ID == UUI
   var body: some View {
     VStack {
       Text(title).font(.headline).padding(.top)
-      TextField("Поиск", text: $search).textFieldStyle(.roundedBorder).padding(.horizontal)
       ErrorNotice(message: errorText)
       List(items, selection: $selection) { Text(label($0)).tag($0.id) }
         .overlay { if isBusy { ProgressView() } }
@@ -38,11 +36,7 @@ struct DirectoryPicker<Item: Identifiable & Sendable>: View where Item.ID == UUI
       }.padding()
     }
     .frame(width: 520, height: 460)
-    .task(id: "\(search)|\(offset)") { await load() }
-    .onChange(of: search) {
-      offset = 0
-      selection = nil
-    }
+    .task(id: offset) { await load() }
     .onChange(of: offset) { selection = nil }
   }
 
@@ -50,7 +44,7 @@ struct DirectoryPicker<Item: Identifiable & Sendable>: View where Item.ID == UUI
     isBusy = true
     defer { isBusy = false }
     do {
-      let result = try await fetch(search, offset)
+      let result = try await fetch(offset)
       try Task.checkCancellation()
       items = result.items
       total = result.total

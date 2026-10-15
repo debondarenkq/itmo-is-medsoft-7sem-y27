@@ -81,8 +81,8 @@ struct MainView: View {
       DirectoryPicker<Staff>(
         title: "Выберите профиль медработника",
         label: { worker in "\(worker.fullName) · \(worker.position)" },
-        fetch: { search, offset in
-          let page = try await gateway.staff.listStaff(limit: 50, offset: offset, search: search)
+        fetch: { offset in
+          let page = try await gateway.staff.listStaff(limit: 50, offset: offset)
           return (page.items, page.total)
         }, select: { worker in selectProfile(.worker(worker)) })
     }

@@ -6,7 +6,6 @@ struct DiagnosesView: View {
   let gateway: Gateway
   @State private var diagnoses: [Diagnosis] = []
   @State private var selectedDiagnosisID: UUID?
-  @State private var search = ""
   @State private var offset = 0
   @State private var total = 0
   @State private var isBusy = false
@@ -32,7 +31,6 @@ struct DiagnosesView: View {
       PageControls(offset: $offset, total: total, count: diagnoses.count)
     }
     .navigationTitle("Диагнозы")
-    .searchable(text: $search, prompt: "Код или наименование")
     .toolbar {
       Button("Импортировать JSON", systemImage: "square.and.arrow.down") { importing = true }
       Button("Добавить", systemImage: "plus") { edit(nil) }
@@ -43,8 +41,7 @@ struct DiagnosesView: View {
     }
     .disabled(isBusy)
     .overlay { if isBusy { ProgressView() } }
-    .task(id: "\(search)|\(offset)") { await load() }
-    .onChange(of: search) { offset = 0 }
+    .task(id: offset) { await load() }
     .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
       Task {
         do {
@@ -93,7 +90,7 @@ struct DiagnosesView: View {
     defer { isBusy = false }
     do {
       let page = try await gateway.diagnoses.listDiagnoses(
-        limit: 50, offset: offset, search: search)
+        limit: 50, offset: offset)
       try Task.checkCancellation()
       diagnoses = page.items
       total = page.total

@@ -122,9 +122,9 @@ struct RecordView: View {
       case .diagnosis:
         DirectoryPicker<Diagnosis>(
           title: "Добавить диагноз", label: { "\($0.code) · \($0.name)" },
-          fetch: { search, offset in
+          fetch: { offset in
             let page = try await gateway.diagnoses.listDiagnoses(
-              limit: 50, offset: offset, search: search)
+              limit: 50, offset: offset)
             return (page.items, page.total)
           }, select: { draft?.addDiagnosis($0) })
       case .prescription(let prescription):
