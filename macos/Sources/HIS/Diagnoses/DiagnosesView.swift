@@ -13,8 +13,7 @@ struct DiagnosesView: View {
   @State private var message: String?
   @State private var importResult: String?
   @State private var importing = false
-  @State private var editing = false
-  @State private var editedDiagnosis: Diagnosis?
+  @State private var editor: DiagnosisEditorSelection?
   @State private var deleting = false
   private var selected: Diagnosis? { items.first { $0.id == selection } }
 
@@ -57,8 +56,8 @@ struct DiagnosesView: View {
         } catch { message = errorMessage(error) }
       }
     }
-    .sheet(isPresented: $editing) {
-      DiagnosisEditor(gateway: gateway, diagnosis: editedDiagnosis) { Task { await load() } }
+    .sheet(item: $editor) { selection in
+      DiagnosisEditor(gateway: gateway, diagnosis: selection.value) { Task { await load() } }
     }
     .confirmationDialog("Удалить диагноз?", isPresented: $deleting, titleVisibility: .visible) {
       Button("Удалить", role: .destructive) { Task { await delete() } }
@@ -68,8 +67,7 @@ struct DiagnosesView: View {
   }
 
   private func edit(_ diagnosis: Diagnosis?) {
-    editedDiagnosis = diagnosis
-    editing = true
+    editor = DiagnosisEditorSelection(value: diagnosis)
   }
 
   private func load() async {
@@ -96,6 +94,11 @@ struct DiagnosesView: View {
   }
 }
 
+private struct DiagnosisEditorSelection: Identifiable {
+  let id = UUID()
+  let value: Diagnosis?
+}
+
 private struct DiagnosisEditor: View {
   let gateway: Gateway
   let diagnosis: Diagnosis?
@@ -105,6 +108,14 @@ private struct DiagnosisEditor: View {
   @State private var name = ""
   @State private var busy = false
   @State private var message: String?
+
+  init(gateway: Gateway, diagnosis: Diagnosis?, saved: @escaping () -> Void) {
+    self.gateway = gateway
+    self.diagnosis = diagnosis
+    self.saved = saved
+    _code = State(initialValue: diagnosis?.code ?? "")
+    _name = State(initialValue: diagnosis?.name ?? "")
+  }
 
   var body: some View {
     VStack(spacing: 0) {
@@ -119,10 +130,6 @@ private struct DiagnosisEditor: View {
     }
     .frame(width: 480)
     .interactiveDismissDisabled()
-    .onAppear {
-      code = diagnosis?.code ?? ""
-      name = diagnosis?.name ?? ""
-    }
   }
 
   private func save() async {

@@ -11,8 +11,7 @@ struct PatientsView: View {
   @State private var total = 0
   @State private var busy = false
   @State private var message: String?
-  @State private var editing = false
-  @State private var editedPatient: Patient?
+  @State private var editor: PatientEditorSelection?
   @State private var deleting = false
   @State private var recordPatient: Patient?
   @State private var viewedPatient: Patient?
@@ -55,8 +54,8 @@ struct PatientsView: View {
     .sheet(item: $viewedPatient, onDismiss: { Task { await load() } }) { patient in
       PatientCard(gateway: gateway, worker: worker, patient: patient)
     }
-    .sheet(isPresented: $editing) {
-      PatientEditor(gateway: gateway, patient: editedPatient) { Task { await load() } }
+    .sheet(item: $editor) { selection in
+      PatientEditor(gateway: gateway, patient: selection.value) { Task { await load() } }
     }
     .sheet(item: $recordPatient, onDismiss: { Task { await load() } }) { patient in
       RecordView(gateway: gateway, worker: worker, patient: patient)
@@ -69,8 +68,7 @@ struct PatientsView: View {
   }
 
   private func edit(_ patient: Patient?) {
-    editedPatient = patient
-    editing = true
+    editor = PatientEditorSelection(value: patient)
   }
 
   private func load() async {
@@ -96,6 +94,11 @@ struct PatientsView: View {
   }
 }
 
+private struct PatientEditorSelection: Identifiable {
+  let id = UUID()
+  let value: Patient?
+}
+
 struct PatientEditor: View {
   let gateway: Gateway
   let patient: Patient?
@@ -109,6 +112,18 @@ struct PatientEditor: View {
   @State private var comment = ""
   @State private var busy = false
   @State private var message: String?
+
+  init(gateway: Gateway, patient: Patient?, saved: @escaping () -> Void) {
+    self.gateway = gateway
+    self.patient = patient
+    self.saved = saved
+    _firstName = State(initialValue: patient?.firstName ?? "")
+    _lastName = State(initialValue: patient?.lastName ?? "")
+    _middleName = State(initialValue: patient?.middleName ?? "")
+    _birthDate = State(initialValue: patient?.birthDate.calendarDate ?? Date())
+    _sex = State(initialValue: patient?.administrativeSex ?? .unknown)
+    _comment = State(initialValue: patient?.comment ?? "")
+  }
 
   var body: some View {
     VStack(spacing: 0) {
@@ -129,14 +144,6 @@ struct PatientEditor: View {
     }
     .frame(width: 520)
     .interactiveDismissDisabled()
-    .onAppear {
-      firstName = patient?.firstName ?? ""
-      lastName = patient?.lastName ?? ""
-      middleName = patient?.middleName ?? ""
-      birthDate = patient?.birthDate.calendarDate ?? Date()
-      sex = patient?.administrativeSex ?? .unknown
-      comment = patient?.comment ?? ""
-    }
   }
 
   private func save() async {

@@ -11,8 +11,7 @@ struct StaffView: View {
   @State private var total = 0
   @State private var busy = false
   @State private var message: String?
-  @State private var editing = false
-  @State private var editedStaff: Staff?
+  @State private var editor: StaffEditorSelection?
   @State private var deleting = false
   private var selected: Staff? { items.first { $0.id == selection } }
 
@@ -48,8 +47,8 @@ struct StaffView: View {
     .task(id: "\(search)|\(offset)|\(includeDeleted)") { await load() }
     .onChange(of: search) { offset = 0 }
     .onChange(of: includeDeleted) { offset = 0 }
-    .sheet(isPresented: $editing) {
-      StaffEditor(gateway: gateway, staff: editedStaff) { Task { await load() } }
+    .sheet(item: $editor) { selection in
+      StaffEditor(gateway: gateway, staff: selection.value) { Task { await load() } }
     }
     .confirmationDialog("Удалить медработника?", isPresented: $deleting, titleVisibility: .visible)
     {
@@ -60,8 +59,7 @@ struct StaffView: View {
   }
 
   private func edit(_ staff: Staff?) {
-    editedStaff = staff
-    editing = true
+    editor = StaffEditorSelection(value: staff)
   }
 
   private func load() async {
@@ -88,6 +86,11 @@ struct StaffView: View {
   }
 }
 
+private struct StaffEditorSelection: Identifiable {
+  let id = UUID()
+  let value: Staff?
+}
+
 private struct StaffEditor: View {
   let gateway: Gateway
   let staff: Staff?
@@ -98,6 +101,15 @@ private struct StaffEditor: View {
   @State private var position = ""
   @State private var busy = false
   @State private var message: String?
+
+  init(gateway: Gateway, staff: Staff?, saved: @escaping () -> Void) {
+    self.gateway = gateway
+    self.staff = staff
+    self.saved = saved
+    _firstName = State(initialValue: staff?.firstName ?? "")
+    _lastName = State(initialValue: staff?.lastName ?? "")
+    _position = State(initialValue: staff?.position ?? "")
+  }
 
   var body: some View {
     VStack(spacing: 0) {
@@ -116,11 +128,6 @@ private struct StaffEditor: View {
     }
     .frame(width: 480)
     .interactiveDismissDisabled()
-    .onAppear {
-      firstName = staff?.firstName ?? ""
-      lastName = staff?.lastName ?? ""
-      position = staff?.position ?? ""
-    }
   }
 
   private func save() async {

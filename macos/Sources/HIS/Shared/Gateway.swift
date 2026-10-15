@@ -45,10 +45,33 @@ func errorMessage(_ error: any Error) -> String {
     return
       ([detail.message]
       + (detail.fields ?? [:]).sorted { $0.key < $1.key }
-      .map { "\($0.key): \($0.value)" }).joined(separator: "\n")
+      .map { "\(fieldLabel($0.key)): \($0.value)" }).joined(separator: "\n")
   }
   if case ErrorResponse.error(let status, _, _, let underlying) = error {
     return status > 0 ? "Сервер вернул ошибку HTTP \(status)." : underlying.localizedDescription
   }
   return error.localizedDescription
+}
+
+private func fieldLabel(_ field: String) -> String {
+  let path = field.split(separator: ".")
+  let property = path.last.map(String.init) ?? field
+  let label =
+    switch property {
+    case "first_name": "Имя"
+    case "last_name": "Фамилия"
+    case "middle_name": "Отчество"
+    case "position": "Должность"
+    case "birth_date": "Дата рождения"
+    case "administrative_sex": "Пол"
+    case "comment": "Комментарий"
+    case "code": "Код"
+    case "name": "Наименование"
+    case "text": "Назначение"
+    default: property
+    }
+  if let segment = path.dropLast().last, let index = Int(segment) {
+    return "\(label) №\(index + 1)"
+  }
+  return label
 }

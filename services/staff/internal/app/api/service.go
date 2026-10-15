@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
@@ -35,7 +37,7 @@ func (implementation *Implementation) Register(router *mux.Router) {
 	validator := nethttpmiddleware.OapiRequestValidatorWithOptions(spec, &nethttpmiddleware.Options{
 		DoNotValidateServers: true,
 		ErrorHandlerWithOpts: func(_ context.Context, err error, w http.ResponseWriter, request *http.Request, options nethttpmiddleware.ErrorHandlerOpts) {
-			writeJSON(w, options.StatusCode, contract.Error{Error: contract.ErrorDetail{Code: "INVALID_REQUEST", Message: err.Error()}})
+			writeValidationError(w, options.StatusCode, err)
 		},
 	})
 	strict := contract.NewStrictHandlerWithOptions(implementation, nil, contract.StrictHTTPServerOptions{
@@ -75,8 +77,29 @@ func writeJSON(w http.ResponseWriter, status int, value any) {
 	}
 }
 
-func writeRequestError(w http.ResponseWriter, request *http.Request, err error) {
-	writeError(w, request, fmt.Errorf("%w: %s", models.ErrInvalidInput, err))
+func writeRequestError(w http.ResponseWriter, _ *http.Request, _ error) {
+	writeJSON(w, http.StatusBadRequest, contract.Error{Error: contract.ErrorDetail{
+		Code: "INVALID_REQUEST", Message: "Некорректный формат запроса",
+	}})
+}
+
+func writeValidationError(w http.ResponseWriter, status int, err error) {
+	detail := contract.ErrorDetail{Code: "INVALID_REQUEST", Message: "Проверьте заполнение полей"}
+	var schemaError *openapi3.SchemaError
+	if errors.As(err, &schemaError) && schemaError.Schema != nil {
+		message := "Некорректное значение"
+		switch schemaError.SchemaField {
+		case "minLength", "maxLength":
+			if maximum := schemaError.Schema.MaxLength; maximum != nil {
+				message = fmt.Sprintf("От %d до %d символов", schemaError.Schema.MinLength, *maximum)
+			}
+		}
+		if path := schemaError.JSONPointer(); len(path) > 0 {
+			fields := map[string]string{strings.Join(path, "."): message}
+			detail.Fields = &fields
+		}
+	}
+	writeJSON(w, status, contract.Error{Error: detail})
 }
 
 func fromStaffInput(value contract.StaffInput) models.Staff {

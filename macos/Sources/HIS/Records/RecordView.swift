@@ -17,12 +17,18 @@ struct RecordView: View {
   @State private var pendingAction: PendingAction?
   @State private var selectedPrescription: UUID?
 
-  private enum EditorSheet: String, Identifiable {
-    case diagnosis, prescription
-    var id: Self { self }
+  private enum EditorSheet: Identifiable {
+    case diagnosis
+    case prescription(Prescription?)
+
+    var id: String {
+      switch self {
+      case .diagnosis: "diagnosis"
+      case .prescription(let prescription): prescription?.id.uuidString ?? "new-prescription"
+      }
+    }
   }
   private enum PendingAction { case close, reload, cancel }
-  @State private var editedPrescription: Prescription?
   private var dirty: Bool { draft?.isDirty ?? false }
 
   var body: some View {
@@ -118,9 +124,9 @@ struct RecordView: View {
               limit: 50, offset: offset, search: search)
             return (page.items, page.total)
           }, select: { draft?.addDiagnosis($0) })
-      case .prescription:
-        PrescriptionEditor(prescription: editedPrescription) { text in
-          draft?.setPrescription(editedPrescription, text: text)
+      case .prescription(let prescription):
+        PrescriptionEditor(prescription: prescription) { text in
+          draft?.setPrescription(prescription, text: text)
         }
       }
     }
@@ -147,12 +153,10 @@ struct RecordView: View {
       if editing {
         HStack {
           Button("Добавить…", systemImage: "plus") {
-            editedPrescription = nil
-            sheet = .prescription
+            sheet = .prescription(nil)
           }
           Button("Изменить…") {
-            editedPrescription = prescription
-            sheet = .prescription
+            sheet = .prescription(prescription)
           }.disabled(prescription == nil)
           Button("Отменить назначение") {
             if let prescription { draft?.cancelPrescription(prescription) }
@@ -237,7 +241,13 @@ private struct PrescriptionEditor: View {
   let prescription: Prescription?
   let save: (String) -> Void
   @Environment(\.dismiss) private var dismiss
-  @State private var text = ""
+  @State private var text: String
+
+  init(prescription: Prescription?, save: @escaping (String) -> Void) {
+    self.prescription = prescription
+    self.save = save
+    _text = State(initialValue: prescription?.text ?? "")
+  }
 
   var body: some View {
     VStack(spacing: 0) {
@@ -253,6 +263,5 @@ private struct PrescriptionEditor: View {
     }
     .frame(width: 520)
     .interactiveDismissDisabled()
-    .onAppear { text = prescription?.text ?? "" }
   }
 }
