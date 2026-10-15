@@ -1,6 +1,6 @@
 # Учебная госпитальная информационная система
 
-Backend на Go: три самостоятельных микросервиса, PostgreSQL и единая точка входа Nginx. Десктопный клиент реализован на Flutter для macOS и Windows: интерфейсы администратора и медработника, ЭМК, история и импорт справочника. Все запросы клиента проходят через Nginx.
+Backend на Go: три самостоятельных микросервиса, PostgreSQL и единая точка входа Nginx. Нативный клиент реализован на Swift 6 и SwiftUI для macOS 14+: интерфейсы администратора и медработника, ЭМК, история и импорт справочника. Все запросы клиента проходят через Nginx.
 
 ## Запуск
 
@@ -44,7 +44,8 @@ services/
     go.mod
     go.sum
     Dockerfile
-desktop/           Flutter-клиент для macOS и Windows
+macos/             основной нативный клиент Swift + SwiftUI
+desktop/           предыдущий Flutter-клиент, сохранён для сравнения
 deploy/            Nginx, инициализация и тестовая конфигурация PostgreSQL
 examples/          примеры файлов для ручного импорта
 scripts/           запуск Compose и сквозные проверки API
@@ -113,12 +114,17 @@ python3 scripts/smoke.py
 
 Она выполняет сценарии задания, включая CRUD, изменения ЭМК, исторические снимки, восстановление и ошибки API. Проверка создаёт учебные записи, в том числе ЭМК; карты намеренно не удаляются через API. Для чистой проверки используйте отдельный Compose-проект.
 
-## Десктопное приложение
+## Приложение для macOS
 
-Инструкция запуска и сборки — [desktop/README.md](desktop/README.md). После запуска backend выполните `flutter pub get` и `flutter run -d macos` либо `flutter run -d windows` внутри `desktop/`. Минимальная проверенная версия — Flutter 3.44. Клиент использует один адрес Nginx, настраиваемый через `API_BASE_URL` или окно «Подключение».
+Инструкция — [macos/README.md](macos/README.md). После запуска backend выполните:
 
-Нативные сборки и проверка GUI выполняются workflow [Desktop](https://github.com/debondarenkq/itmo-is-medsoft-7sem-y27/actions/workflows/desktop.yml). Для локальных проверок Flutter-кода без установленного SDK доступен `./scripts/test-desktop.sh` с Docker.
+```sh
+make macos-build
+open macos/build/HIS.app
+```
+
+Нужны macOS 14+ и Swift 6 с macOS SDK. Адрес Nginx задаётся в меню HIS → Настройки… (`⌘,`). Workflow [macOS](https://github.com/debondarenkq/itmo-is-medsoft-7sem-y27/actions/workflows/desktop.yml) собирает `.app` и публикует ZIP. Старый Flutter-клиент сохранён в `desktop/` для сравнения.
 
 ## Контракты
 
-HTTP API описывается в корневом каталоге [`contracts/`](contracts/README.md). Локальные схемы в сервисах обновляются генератором и не редактируются вручную. Go DTO, интерфейсы ручек, binding для gorilla/mux и HTTP-клиенты генерируются через `oapi-codegen`. Flutter использует сгенерированный пакет `desktop/packages/his_api` для единственного gateway. Подробности — [docs/contracts.md](docs/contracts.md). После изменения YAML выполните `make generate-contracts`; CI проверяет отсутствие расхождений между схемами и кодом.
+HTTP API описывается в корневом каталоге [`contracts/`](contracts/README.md). Локальные схемы в сервисах обновляются генератором и не редактируются вручную. Go DTO, интерфейсы ручек, binding для gorilla/mux и HTTP-клиенты генерируются через `oapi-codegen`. SwiftUI-приложение использует сгенерированный Swift-пакет `macos/Generated` для единственного gateway. Подробности — [docs/contracts.md](docs/contracts.md). После изменения YAML выполните `make generate-contracts`; CI проверяет отсутствие расхождений между схемами и кодом.

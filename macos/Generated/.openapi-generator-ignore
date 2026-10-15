@@ -1,0 +1,6 @@
+Cartfile
+*.podspec
+project.yml
+git_push.sh
+.swiftformat
+README.md

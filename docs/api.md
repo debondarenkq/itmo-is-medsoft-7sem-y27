@@ -1,6 +1,6 @@
 # HTTP API HIS
 
-Источник контрактов — корневые `contracts/staff.yaml`, `contracts/catalog.yaml`, `contracts/clinical.yaml`; структуры Go, binding и клиент Flutter генерируются из этих описаний. Порядок изменения и генерации — в [contracts.md](contracts.md).
+Источник контрактов — корневые `contracts/staff.yaml`, `contracts/catalog.yaml`, `contracts/clinical.yaml`; структуры Go, binding и клиент Swift генерируются из этих описаний. Порядок изменения и генерации — в [contracts.md](contracts.md).
 
 Базовый адрес при запуске Compose: `http://localhost:8080`. Все бизнес-методы имеют префикс `/api/v1`. Для JSON-тела обязателен `Content-Type: application/json`. PUT полностью заменяет редактируемые поля, служебные поля назначает сервер. Неизвестные поля тела отклоняются. Ограничения длины считаются в символах Unicode.
 
@@ -46,7 +46,7 @@
 
 ### Файл импорта
 
-Кнопка «Загрузить из файла» открывает выбор JSON-файла. Flutter-клиент отправляет его содержимое как тело `POST /api/v1/diagnoses/import` с `Content-Type: application/json`. Серверу не передаётся путь к локальному файлу; multipart не требуется.
+Кнопка «Загрузить из файла» открывает выбор JSON-файла. Swift-клиент отправляет его содержимое как тело `POST /api/v1/diagnoses/import` с `Content-Type: application/json`. Серверу не передаётся путь к локальному файлу; multipart не требуется.
 
 ```json
 {

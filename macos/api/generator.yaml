@@ -1,0 +1,17 @@
+generatorName: swift6
+inputSpec: /local/macos/api/openapi.json
+outputDir: /local/macos/Generated
+additionalProperties:
+  projectName: HISAPI
+  library: urlsession
+  responseAs: AsyncAwait
+  apiStaticMethod: false
+  useCustomDateWithoutTime: true
+  validatable: false
+  useParameterConvertible: false
+  hideGenerationTimestamp: true
+globalProperties:
+  apiTests: 'false'
+  modelTests: 'false'
+  apiDocs: 'false'
+  modelDocs: 'false'

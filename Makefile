@@ -1,4 +1,4 @@
-.PHONY: test integration check up down smoke desktop-test generate-contracts
+.PHONY: test integration check up down smoke macos-build generate-contracts
 
 test:
 	@for service in staff catalog clinical; do (cd services/$$service && go test -race ./...) || exit 1; done
@@ -18,8 +18,8 @@ smoke:
 integration:
 	./scripts/test-integration.sh
 
-desktop-test:
-	./scripts/test-desktop.sh
+macos-build:
+	./macos/build.sh
 
 generate-contracts:
 	./scripts/generate-contracts.sh

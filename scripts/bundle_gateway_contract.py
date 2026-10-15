@@ -22,4 +22,4 @@ for service in ('staff', 'catalog', 'clinical'):
         if existing is not None and existing != value:
             raise SystemExit(f'Conflicting schema: {name}')
         spec['components']['schemas'][name] = value
-(root / 'desktop' / 'api' / 'openapi.json').write_text(json.dumps(spec, ensure_ascii=False, indent=2) + '\n')
+(root / 'macos' / 'api' / 'openapi.json').write_text(json.dumps(spec, ensure_ascii=False, indent=2) + '\n')
