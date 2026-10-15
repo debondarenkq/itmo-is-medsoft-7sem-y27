@@ -2,7 +2,8 @@ import SwiftUI
 
 @main
 struct HISApp: App {
-  @AppStorage("gatewayAddress") private var address = "http://localhost:8080"
+  @AppStorage(AppConfiguration.gatewayAddressKey)
+  private var address = AppConfiguration.defaultGatewayAddress
 
   var body: some Scene {
     Window("Госпитальная информационная система", id: "main") {

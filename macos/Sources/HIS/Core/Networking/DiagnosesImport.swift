@@ -3,10 +3,11 @@ import HISAPI
 
 extension DiagnosesAPI {
   func importDiagnoses(contents: Data) async throws -> ImportResult {
-    guard let url = URL(string: apiConfiguration.basePath + "/api/v1/diagnoses/import") else {
+    guard let url = URL(string: apiConfiguration.basePath + AppConfiguration.diagnosesImportPath)
+    else {
       throw URLError(.badURL)
     }
-    var request = URLRequest(url: url, timeoutInterval: 20)
+    var request = URLRequest(url: url, timeoutInterval: AppConfiguration.requestTimeout)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.httpBody = contents
