@@ -12,6 +12,11 @@ import (
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/validation"
 )
 
+const (
+	prescriptionTextMinLength = 3
+	prescriptionTextMaxLength = 128
+)
+
 func ValidateCommands(commands []models.Command) error {
 	if len(commands) == 0 || len(commands) > 100 {
 		return fmt.Errorf("%w: Требуется от 1 до 100 команд", models.ErrInvalidInput)
@@ -33,7 +38,7 @@ func ValidateCommands(commands []models.Command) error {
 				return fmt.Errorf("%w: Для этой команды допускается только id", models.ErrInvalidInput)
 			}
 		case "add_prescription":
-			if err := validation.Text("text", strings.TrimSpace(command.Text), 3, 128); err != nil {
+			if err := validation.Text("text", strings.TrimSpace(command.Text), prescriptionTextMinLength, prescriptionTextMaxLength); err != nil {
 				return err
 			}
 			if command.ID != "" || command.DiagnosisID != "" {
@@ -43,7 +48,7 @@ func ValidateCommands(commands []models.Command) error {
 			if _, err := validation.ParseID(command.ID); err != nil {
 				return err
 			}
-			if err := validation.Text("text", strings.TrimSpace(command.Text), 3, 128); err != nil {
+			if err := validation.Text("text", strings.TrimSpace(command.Text), prescriptionTextMinLength, prescriptionTextMaxLength); err != nil {
 				return err
 			}
 			if command.DiagnosisID != "" {

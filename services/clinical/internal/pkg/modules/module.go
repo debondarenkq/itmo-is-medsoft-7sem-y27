@@ -11,6 +11,13 @@ import (
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/validation"
 )
 
+const (
+	patientNameMinLength    = 1
+	patientNameMaxLength    = 64
+	patientCommentMinLength = 0
+	patientCommentMaxLength = 32
+)
+
 var (
 	errPatientHasRecord = fmt.Errorf("%w: Нельзя удалить пациента, для которого создана ЭМК", models.ErrConflict)
 	errRecordExists     = fmt.Errorf("%w: У пациента уже есть ЭМК", models.ErrConflict)
@@ -52,10 +59,10 @@ func New(deps Deps) *Module {
 func ValidatePatient(patientData models.PatientData) (models.PatientData, error) {
 	patientData.FirstName = strings.TrimSpace(patientData.FirstName)
 	patientData.LastName = strings.TrimSpace(patientData.LastName)
-	if err := validation.Text("first_name", patientData.FirstName, 1, 64); err != nil {
+	if err := validation.Text("first_name", patientData.FirstName, patientNameMinLength, patientNameMaxLength); err != nil {
 		return patientData, err
 	}
-	if err := validation.Text("last_name", patientData.LastName, 1, 64); err != nil {
+	if err := validation.Text("last_name", patientData.LastName, patientNameMinLength, patientNameMaxLength); err != nil {
 		return patientData, err
 	}
 	if patientData.MiddleName != nil {
@@ -64,7 +71,7 @@ func ValidatePatient(patientData models.PatientData) (models.PatientData, error)
 			patientData.MiddleName = nil
 		} else {
 			patientData.MiddleName = &middleName
-			if err := validation.Text("middle_name", middleName, 1, 64); err != nil {
+			if err := validation.Text("middle_name", middleName, patientNameMinLength, patientNameMaxLength); err != nil {
 				return patientData, err
 			}
 		}
@@ -76,7 +83,7 @@ func ValidatePatient(patientData models.PatientData) (models.PatientData, error)
 	if patientData.AdministrativeSex != "M" && patientData.AdministrativeSex != "F" && patientData.AdministrativeSex != "UNKNOWN" {
 		return patientData, fmt.Errorf("%w: Пол должен быть M, F или UNKNOWN", models.ErrInvalidInput)
 	}
-	if err := validation.Text("comment", patientData.Comment, 0, 32); err != nil {
+	if err := validation.Text("comment", patientData.Comment, patientCommentMinLength, patientCommentMaxLength); err != nil {
 		return patientData, err
 	}
 	return patientData, nil

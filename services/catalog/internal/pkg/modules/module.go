@@ -10,6 +10,12 @@ import (
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/validation"
 )
 
+const (
+	diagnosisCodeLength    = 6
+	diagnosisNameMinLength = 3
+	diagnosisNameMaxLength = 24
+)
+
 type Storage interface {
 	List(context.Context, models.Page) ([]models.Diagnosis, int, error)
 	Get(context.Context, string) (models.Diagnosis, error)
@@ -29,11 +35,11 @@ func New(deps Deps) *Module {
 
 func Validate(diagnosis models.Diagnosis) (models.Diagnosis, error) {
 	diagnosis.Code = strings.TrimSpace(diagnosis.Code)
-	if err := validation.Text("code", diagnosis.Code, 6, 6); err != nil {
+	if err := validation.Text("code", diagnosis.Code, diagnosisCodeLength, diagnosisCodeLength); err != nil {
 		return diagnosis, err
 	}
 	diagnosis.Name = strings.TrimSpace(diagnosis.Name)
-	if err := validation.Text("name", diagnosis.Name, 3, 24); err != nil {
+	if err := validation.Text("name", diagnosis.Name, diagnosisNameMinLength, diagnosisNameMaxLength); err != nil {
 		return diagnosis, err
 	}
 	return diagnosis, nil

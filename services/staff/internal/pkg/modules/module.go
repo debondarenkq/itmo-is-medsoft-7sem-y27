@@ -9,6 +9,13 @@ import (
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/validation"
 )
 
+const (
+	staffNameMinLength     = 3
+	staffNameMaxLength     = 24
+	staffPositionMinLength = 3
+	staffPositionMaxLength = 24
+)
+
 type Storage interface {
 	List(context.Context, models.Page) ([]models.Staff, int, error)
 	Get(context.Context, string) (models.Staff, error)
@@ -27,15 +34,15 @@ func New(deps Deps) *Module {
 
 func Validate(staff models.Staff) (models.Staff, error) {
 	staff.FirstName = strings.TrimSpace(staff.FirstName)
-	if err := validation.Text("first_name", staff.FirstName, 3, 24); err != nil {
+	if err := validation.Text("first_name", staff.FirstName, staffNameMinLength, staffNameMaxLength); err != nil {
 		return staff, err
 	}
 	staff.LastName = strings.TrimSpace(staff.LastName)
-	if err := validation.Text("last_name", staff.LastName, 3, 24); err != nil {
+	if err := validation.Text("last_name", staff.LastName, staffNameMinLength, staffNameMaxLength); err != nil {
 		return staff, err
 	}
 	staff.Position = strings.TrimSpace(staff.Position)
-	if err := validation.Text("position", staff.Position, 3, 24); err != nil {
+	if err := validation.Text("position", staff.Position, staffPositionMinLength, staffPositionMaxLength); err != nil {
 		return staff, err
 	}
 	return staff, nil
