@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -27,23 +28,8 @@ func Run(name string, migrations fs.FS, register func(*mux.Router, *pgxpool.Pool
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	if len(os.Args) > 1 {
-		if os.Args[1] != "migrate" {
-			return errors.New("usage: service [migrate]")
-		}
-		db, err := sql.Open("pgx", dsn)
-		if err != nil {
-			return err
-		}
-		defer db.Close()
-		provider, err := goose.NewProvider(goose.DialectPostgres, db, migrations)
-		if err != nil {
-			return err
-		}
-		migrationCtx, cancel := context.WithTimeout(ctx, time.Minute)
-		defer cancel()
-		_, err = provider.Up(migrationCtx)
-		return err
+	if err := applyMigrations(ctx, dsn, migrations); err != nil {
+		return fmt.Errorf("apply migrations: %w", err)
 	}
 	cfg, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
@@ -104,6 +90,22 @@ func Run(name string, migrations fs.FS, register func(*mux.Router, *pgxpool.Pool
 		}
 	}
 	return nil
+}
+
+func applyMigrations(ctx context.Context, dsn string, migrations fs.FS) error {
+	db, err := sql.Open("pgx", dsn)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	provider, err := goose.NewProvider(goose.DialectPostgres, db, migrations)
+	if err != nil {
+		return err
+	}
+	migrationCtx, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
+	_, err = provider.Up(migrationCtx)
+	return err
 }
 
 func env(key, fallback string) string {

@@ -29,6 +29,8 @@ x-health: &health
 services:
   postgres:
     image: postgres:17-alpine
+    ports:
+      - '127.0.0.1:55432:5432'
     environment:
       POSTGRES_USER: his_admin
       POSTGRES_PASSWORD: his_local
@@ -42,46 +44,25 @@ services:
       timeout: 2s
       retries: 20
 
-  staff-migrate:
-    <<: *staff
-    command: [migrate]
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  catalog-migrate:
-    <<: *catalog
-    command: [migrate]
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  clinical-migrate:
-    <<: *clinical
-    command: [migrate]
-    depends_on:
-      postgres:
-        condition: service_healthy
-
   staff-service:
     <<: *staff
     depends_on:
-      staff-migrate:
-        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
     healthcheck: *health
 
   catalog-service:
     <<: *catalog
     depends_on:
-      catalog-migrate:
-        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
     healthcheck: *health
 
   clinical-service:
     <<: *clinical
     depends_on:
-      clinical-migrate:
-        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
     healthcheck: *health
 
   nginx:
