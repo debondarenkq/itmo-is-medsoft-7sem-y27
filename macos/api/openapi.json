@@ -2458,12 +2458,12 @@
         "description": "Поля команды зависят от type. Их соответствие проверяет бизнес-модуль до сохранения всей группы.",
         "properties": {
           "diagnosis_id": {
-            "description": "Обязателен для add_diagnosis; ID из справочника.",
+            "description": "Обязателен для add_diagnosis и edit_diagnosis; ID из справочника.",
             "format": "uuid",
             "type": "string"
           },
           "id": {
-            "description": "Обязателен для удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК.",
+            "description": "Обязателен для изменения/удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК.",
             "format": "uuid",
             "type": "string"
           },
@@ -2485,6 +2485,7 @@
       "CommandType": {
         "enum": [
           "add_diagnosis",
+          "edit_diagnosis",
           "remove_diagnosis",
           "add_prescription",
           "edit_prescription",
@@ -2595,8 +2596,10 @@
         "enum": [
           "record_created",
           "diagnosis_added",
+          "diagnosis_updated",
           "diagnosis_removed",
           "prescription_added",
+          "prescription_updated",
           "prescription_cancelled",
           "prescription_removed"
         ],

@@ -890,11 +890,11 @@ components:
         diagnosis_id:
           type: string
           format: uuid
-          description: Обязателен для add_diagnosis; ID из справочника.
+          description: Обязателен для add_diagnosis и edit_diagnosis; ID из справочника.
         id:
           type: string
           format: uuid
-          description: Обязателен для удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК.
+          description: Обязателен для изменения/удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК.
         text:
           type: string
           minLength: 3
@@ -1014,6 +1014,7 @@ components:
       type: string
       enum:
       - add_diagnosis
+      - edit_diagnosis
       - remove_diagnosis
       - add_prescription
       - edit_prescription
@@ -1024,7 +1025,9 @@ components:
       enum:
       - record_created
       - diagnosis_added
+      - diagnosis_updated
       - diagnosis_removed
       - prescription_added
+      - prescription_updated
       - prescription_cancelled
       - prescription_removed

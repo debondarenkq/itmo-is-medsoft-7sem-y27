@@ -15,8 +15,12 @@ struct RecordDraft {
   var commands: [Command] {
     var result: [Command] = []
     for original in base.state.diagnoses {
-      let stillPresent = diagnoses.contains { diagnosis in diagnosis.id == original.id }
-      if !stillPresent {
+      if let current = diagnoses.first(where: { $0.id == original.id }) {
+        if current.diagnosisId != original.diagnosisId {
+          result.append(
+            Command(diagnosisId: current.diagnosisId, id: original.id, type: .editDiagnosis))
+        }
+      } else {
         result.append(Command(id: original.id, type: .removeDiagnosis))
       }
     }
@@ -51,6 +55,15 @@ struct RecordDraft {
   }
 
   var isDirty: Bool { !commands.isEmpty }
+
+  mutating func setDiagnosis(_ original: RecordDiagnosis?, diagnosis: Diagnosis) {
+    if let original, let index = diagnoses.firstIndex(where: { $0.id == original.id }) {
+      diagnoses[index] = RecordDiagnosis(
+        code: diagnosis.code, diagnosisId: diagnosis.id, id: original.id, name: diagnosis.name)
+    } else {
+      addDiagnosis(diagnosis)
+    }
+  }
 
   mutating func addDiagnosis(_ diagnosis: Diagnosis) {
     let removedDiagnosis = base.state.diagnoses.first { original in

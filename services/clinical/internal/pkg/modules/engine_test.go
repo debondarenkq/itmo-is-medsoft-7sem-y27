@@ -35,11 +35,11 @@ func TestHistoryRestoresEveryChange(t *testing.T) {
 	apply(models.Command{Type: "add_diagnosis", DiagnosisID: id}, models.Command{Type: "add_prescription", Text: "Пить больше воды"})
 	originalID := state.Prescriptions[0].ID
 	events := apply(models.Command{Type: "edit_prescription", ID: originalID, Text: "Пить воду после еды"})
-	if len(events) != 2 || events[0].Type != "prescription_removed" || events[1].Type != "prescription_added" {
+	if len(events) != 1 || events[0].Type != "prescription_updated" {
 		t.Fatalf("edit events: %#v", events)
 	}
-	if state.Prescriptions[0].ID == originalID {
-		t.Fatal("editing reused prescription ID")
+	if state.Prescriptions[0].ID != originalID {
+		t.Fatal("editing changed prescription ID")
 	}
 	apply(models.Command{Type: "cancel_prescription", ID: state.Prescriptions[0].ID})
 	if state.Prescriptions[0].Status != "cancelled" {

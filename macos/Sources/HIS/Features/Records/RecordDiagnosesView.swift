@@ -6,6 +6,7 @@ struct RecordDiagnosesView: View {
   let draft: RecordDraft
   let isEditing: Bool
   let addDiagnosis: () -> Void
+  let editDiagnosis: (RecordDiagnosis) -> Void
   let removeDiagnosis: (UUID) -> Void
   let restoreDiagnosis: (RecordDiagnosis) -> Void
   @State private var events: [Event] = []
@@ -61,6 +62,9 @@ struct RecordDiagnosesView: View {
       HStack {
         if isEditing {
           Button("Добавить диагноз…", systemImage: "plus", action: addDiagnosis)
+          Button("Изменить диагноз…", systemImage: "pencil") {
+            if let selectedDiagnosis { editDiagnosis(selectedDiagnosis) }
+          }.disabled(!canRemoveDiagnosis)
           Button("Удалить", systemImage: "minus") {
             if let selectedDiagnosis { removeDiagnosis(selectedDiagnosis.id) }
           }.disabled(!canRemoveDiagnosis)

@@ -104,22 +104,21 @@ def main():
     call('PUT', f'/api/v1/diagnoses/{did}', diagnosis_input)
     edited = save(2, [{'type': 'edit_prescription', 'id': old_rx, 'text': 'Пить воду после еды'}])
     new_rx = edited['state']['prescriptions'][0]['id']
-    assert new_rx != old_rx and edited['version'] == 3
+    assert new_rx == old_rx and edited['version'] == 3
     assert edited['state']['diagnoses'][0]['name'] == diagnosis['name']
     cancelled = save(3, [{'type': 'cancel_prescription', 'id': new_rx}, {'type': 'remove_diagnosis', 'id': entry_id}])
     assert cancelled['version'] == 4
     assert cancelled['state']['diagnoses'] == []
     assert cancelled['state']['prescriptions'][0]['status'] == 'cancelled'
     save(4, [{'type': 'cancel_prescription', 'id': new_rx}], 409)
-    save(4, [{'type': 'edit_prescription', 'id': old_rx, 'text': 'Новое назначение'}], 404)
+    save(4, [{'type': 'edit_prescription', 'id': str(uuid.uuid4()), 'text': 'Новое назначение'}], 404)
     history = call('GET', path + '/history')['items']
-    assert len(history) == 7
-    assert [e['sequence'] for e in history] == list(range(1, 8))
+    assert len(history) == 6
+    assert [e['sequence'] for e in history] == list(range(1, 7))
     assert history[1]['actor']['first_name'] == 'Анна'
     assert history[3]['actor']['first_name'] == 'Мария'
-    assert [e['type'] for e in history[3:5]] == ['prescription_removed', 'prescription_added']
-    assert history[3]['occurred_at'] == history[4]['occurred_at']
-    assert history[3]['version'] == history[4]['version'] == 3
+    assert history[3]['type'] == 'prescription_updated'
+    assert history[3]['version'] == 3
     assert history[3]['before']['text'] == 'Пить больше воды'
     for snapshot in (added, edited, cancelled):
         restored = call('GET', path + '/state?' + urllib.parse.urlencode({'at': snapshot['updated_at']}))
@@ -133,7 +132,7 @@ def main():
     call('GET', path + '/state?version=999', status=404)
     call('GET', path + '/state?version=1&at=2000-01-01T00:00:00Z', status=400)
     page = call('GET', path + '/history?limit=2&offset=3')
-    assert len(page['items']) == 2 and page['total'] == 7
+    assert len(page['items']) == 2 and page['total'] == 6
 
     call('DELETE', f'/api/v1/staff/{sid}', status=204)
     assert call('GET', f'/api/v1/staff/{sid}')['deleted_at'] is not None

@@ -39,8 +39,10 @@ extension EventType {
     switch self {
     case .recordCreated: return "Создана медицинская карта"
     case .diagnosisAdded: return "Добавлен диагноз"
+    case .diagnosisUpdated: return "Изменён диагноз"
     case .diagnosisRemoved: return "Удалён диагноз"
     case .prescriptionAdded: return "Добавлено назначение"
+    case .prescriptionUpdated: return "Изменено назначение"
     case .prescriptionCancelled: return "Отменено назначение"
     case .prescriptionRemoved: return "Удалено назначение"
     }

@@ -62,8 +62,8 @@ func TestRecordLifecycleAndHistoricalState(t *testing.T) {
 		t.Fatal(err)
 	}
 	edited := record
-	if record.State.Prescriptions[0].ID == originalID {
-		t.Fatal("ID must change when editing")
+	if record.State.Prescriptions[0].ID != originalID {
+		t.Fatal("ID must stay the same when editing")
 	}
 	record, err = saveRecord(ctx, r, record.ID, 3, a, []models.Command{{Type: "cancel_prescription", ID: record.State.Prescriptions[0].ID}, {Type: "remove_diagnosis", ID: record.State.Diagnoses[0].ID}}, nil)
 	if err != nil {
@@ -73,11 +73,11 @@ func TestRecordLifecycleAndHistoricalState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if total != 7 || len(events) != 7 {
+	if total != 6 || len(events) != 6 {
 		t.Fatalf("events=%d/%d", len(events), total)
 	}
-	if !events[3].OccurredAt.Equal(events[4].OccurredAt) || events[3].Version != events[4].Version {
-		t.Fatal("edit not atomic in history")
+	if events[3].Type != "prescription_updated" || events[3].Version != edited.Version {
+		t.Fatal("edit event missing from history")
 	}
 	for _, e := range events {
 		if e.Actor != a {

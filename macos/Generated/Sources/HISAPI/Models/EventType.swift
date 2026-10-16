@@ -10,8 +10,10 @@ import Foundation
 public enum EventType: String, Sendable, Codable, CaseIterable {
     case recordCreated = "record_created"
     case diagnosisAdded = "diagnosis_added"
+    case diagnosisUpdated = "diagnosis_updated"
     case diagnosisRemoved = "diagnosis_removed"
     case prescriptionAdded = "prescription_added"
+    case prescriptionUpdated = "prescription_updated"
     case prescriptionCancelled = "prescription_cancelled"
     case prescriptionRemoved = "prescription_removed"
 }

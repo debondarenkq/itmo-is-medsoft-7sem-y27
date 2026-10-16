@@ -179,7 +179,7 @@ func (module *Module) Save(ctx context.Context, id string, changes models.Record
 	}
 	diagnoses := map[string]models.DiagnosisSnapshot{}
 	for _, command := range changes.Commands {
-		if command.Type == "add_diagnosis" {
+		if command.Type == "add_diagnosis" || command.Type == "edit_diagnosis" {
 			diagnosisID, _ := validation.ParseID(command.DiagnosisID)
 			if _, ok := diagnoses[diagnosisID]; ok {
 				continue

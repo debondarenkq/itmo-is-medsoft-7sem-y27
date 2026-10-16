@@ -19,12 +19,12 @@ struct RecordView: View {
   @State private var selectedPrescriptionID: UUID?
 
   private enum EditorSheet: Identifiable {
-    case diagnosis
+    case diagnosis(RecordDiagnosis?)
     case prescription(Prescription?)
 
     var id: String {
       switch self {
-      case .diagnosis: return "diagnosis"
+      case .diagnosis(let diagnosis): return diagnosis?.id.uuidString ?? "new-diagnosis"
       case .prescription(let prescription): return prescription?.id.uuidString ?? "new-prescription"
       }
     }
@@ -72,7 +72,8 @@ struct RecordView: View {
             gateway: gateway,
             draft: draft,
             isEditing: isEditing,
-            addDiagnosis: { sheet = .diagnosis },
+            addDiagnosis: { sheet = .diagnosis(nil) },
+            editDiagnosis: { diagnosis in sheet = .diagnosis(diagnosis) },
             removeDiagnosis: { diagnosisID in self.draft?.removeDiagnosis(id: diagnosisID) },
             restoreDiagnosis: { diagnosis in self.draft?.restoreDiagnosis(diagnosis) }
           )
@@ -119,14 +120,15 @@ struct RecordView: View {
     }
     .sheet(item: $sheet) { destination in
       switch destination {
-      case .diagnosis:
+      case .diagnosis(let original):
         DirectoryPicker<Diagnosis>(
-          title: "Добавить диагноз", label: { "\($0.code) · \($0.name)" },
+          title: original == nil ? "Добавить диагноз" : "Изменить диагноз",
+          label: { "\($0.code) · \($0.name)" },
           fetch: { offset in
             let page = try await gateway.diagnoses.listDiagnoses(
               limit: 50, offset: offset)
             return (page.items, page.total)
-          }, select: { draft?.addDiagnosis($0) })
+          }, select: { draft?.setDiagnosis(original, diagnosis: $0) })
       case .prescription(let prescription):
         PrescriptionEditorView(prescription: prescription) { text in
           draft?.setPrescription(prescription, text: text)

@@ -49,6 +49,7 @@ const (
 	AddDiagnosis       CommandType = "add_diagnosis"
 	AddPrescription    CommandType = "add_prescription"
 	CancelPrescription CommandType = "cancel_prescription"
+	EditDiagnosis      CommandType = "edit_diagnosis"
 	EditPrescription   CommandType = "edit_prescription"
 	RemoveDiagnosis    CommandType = "remove_diagnosis"
 	RemovePrescription CommandType = "remove_prescription"
@@ -62,6 +63,8 @@ func (e CommandType) Valid() bool {
 	case AddPrescription:
 		return true
 	case CancelPrescription:
+		return true
+	case EditDiagnosis:
 		return true
 	case EditPrescription:
 		return true
@@ -78,9 +81,11 @@ func (e CommandType) Valid() bool {
 const (
 	DiagnosisAdded        EventType = "diagnosis_added"
 	DiagnosisRemoved      EventType = "diagnosis_removed"
+	DiagnosisUpdated      EventType = "diagnosis_updated"
 	PrescriptionAdded     EventType = "prescription_added"
 	PrescriptionCancelled EventType = "prescription_cancelled"
 	PrescriptionRemoved   EventType = "prescription_removed"
+	PrescriptionUpdated   EventType = "prescription_updated"
 	RecordCreated         EventType = "record_created"
 )
 
@@ -91,11 +96,15 @@ func (e EventType) Valid() bool {
 		return true
 	case DiagnosisRemoved:
 		return true
+	case DiagnosisUpdated:
+		return true
 	case PrescriptionAdded:
 		return true
 	case PrescriptionCancelled:
 		return true
 	case PrescriptionRemoved:
+		return true
+	case PrescriptionUpdated:
 		return true
 	case RecordCreated:
 		return true
@@ -142,10 +151,10 @@ type ChangesInput struct {
 
 // Command Поля команды зависят от type. Их соответствие проверяет бизнес-модуль до сохранения всей группы.
 type Command struct {
-	// DiagnosisID Обязателен для add_diagnosis; ID из справочника.
+	// DiagnosisID Обязателен для add_diagnosis и edit_diagnosis; ID из справочника.
 	DiagnosisID *openapi_types.UUID `json:"diagnosis_id,omitempty"`
 
-	// ID Обязателен для удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК.
+	// ID Обязателен для изменения/удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК.
 	ID *openapi_types.UUID `json:"id,omitempty"`
 
 	// Text Обязателен для add_prescription и edit_prescription.
@@ -2408,47 +2417,48 @@ func (sh *strictHandler) GetRecordState(w http.ResponseWriter, r *http.Request, 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
+	"Nxs3G6j3oPffAAAA//8=",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

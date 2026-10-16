@@ -9,6 +9,7 @@ import Foundation
 
 public enum CommandType: String, Sendable, Codable, CaseIterable {
     case addDiagnosis = "add_diagnosis"
+    case editDiagnosis = "edit_diagnosis"
     case removeDiagnosis = "remove_diagnosis"
     case addPrescription = "add_prescription"
     case editPrescription = "edit_prescription"

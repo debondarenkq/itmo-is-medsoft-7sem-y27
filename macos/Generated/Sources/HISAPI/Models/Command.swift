@@ -10,9 +10,9 @@ import Foundation
 /** Поля команды зависят от type. Их соответствие проверяет бизнес-модуль до сохранения всей группы. */
 public struct Command: Sendable, Codable, Hashable {
 
-    /** Обязателен для add_diagnosis; ID из справочника. */
+    /** Обязателен для add_diagnosis и edit_diagnosis; ID из справочника. */
     public var diagnosisId: UUID?
-    /** Обязателен для удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК. */
+    /** Обязателен для изменения/удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК. */
     public var id: UUID?
     /** Обязателен для add_prescription и edit_prescription. */
     public var text: String?
