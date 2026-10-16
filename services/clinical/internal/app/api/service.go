@@ -54,18 +54,18 @@ func (implementation *Implementation) Register(router *mux.Router) {
 }
 
 func writeError(w http.ResponseWriter, request *http.Request, err error) {
-	status, code := http.StatusInternalServerError, "INTERNAL"
+	status, code := http.StatusInternalServerError, contract.INTERNAL
 	switch {
 	case errors.Is(err, models.ErrVersionConflict):
-		status, code = http.StatusConflict, "VERSION_CONFLICT"
+		status, code = http.StatusConflict, contract.VERSIONCONFLICT
 	case errors.Is(err, models.ErrUnavailable):
-		status, code = http.StatusServiceUnavailable, "DEPENDENCY_UNAVAILABLE"
+		status, code = http.StatusServiceUnavailable, contract.DEPENDENCYUNAVAILABLE
 	case errors.Is(err, models.ErrInvalidInput):
-		status, code = http.StatusBadRequest, "INVALID_REQUEST"
+		status, code = http.StatusBadRequest, contract.INVALIDREQUEST
 	case errors.Is(err, models.ErrNotFound):
-		status, code = http.StatusNotFound, "NOT_FOUND"
+		status, code = http.StatusNotFound, contract.NOTFOUND
 	case errors.Is(err, models.ErrConflict):
-		status, code = http.StatusConflict, "CONFLICT"
+		status, code = http.StatusConflict, contract.CONFLICT
 	}
 	message := err.Error()
 	if status == http.StatusInternalServerError {
@@ -85,12 +85,12 @@ func writeJSON(w http.ResponseWriter, status int, value any) {
 
 func writeRequestError(w http.ResponseWriter, _ *http.Request, _ error) {
 	writeJSON(w, http.StatusBadRequest, contract.Error{Error: contract.ErrorDetail{
-		Code: "INVALID_REQUEST", Message: "Некорректный формат запроса",
+		Code: contract.INVALIDREQUEST, Message: "Некорректный формат запроса",
 	}})
 }
 
 func writeValidationError(w http.ResponseWriter, status int, err error) {
-	detail := contract.ErrorDetail{Code: "INVALID_REQUEST", Message: "Проверьте заполнение полей"}
+	detail := contract.ErrorDetail{Code: contract.INVALIDREQUEST, Message: "Проверьте заполнение полей"}
 	var schemaError *openapi3.SchemaError
 	if errors.As(err, &schemaError) && schemaError.Schema != nil {
 		message := "Некорректное значение"
@@ -135,7 +135,7 @@ func fromPatientInput(value contract.PatientInput) models.PatientData {
 		LastName:          value.LastName,
 		MiddleName:        value.MiddleName,
 		BirthDate:         value.BirthDate.Time.Format(time.DateOnly),
-		AdministrativeSex: string(value.AdministrativeSex),
+		AdministrativeSex: models.AdministrativeSex(value.AdministrativeSex),
 		Comment:           stringValue(value.Comment),
 	}
 }

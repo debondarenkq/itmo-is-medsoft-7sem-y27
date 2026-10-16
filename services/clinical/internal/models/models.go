@@ -2,17 +2,25 @@ package models
 
 import "time"
 
+type AdministrativeSex string
+
+const (
+	SexMale    AdministrativeSex = "M"
+	SexFemale  AdministrativeSex = "F"
+	SexUnknown AdministrativeSex = "UNKNOWN"
+)
+
 type Patient struct {
-	ID                string    `json:"id"`
-	FirstName         string    `json:"first_name"`
-	LastName          string    `json:"last_name"`
-	MiddleName        *string   `json:"middle_name"`
-	BirthDate         string    `json:"birth_date"`
-	AdministrativeSex string    `json:"administrative_sex"`
-	Comment           string    `json:"comment"`
-	HasRecord         bool      `json:"has_record"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID                string            `json:"id"`
+	FirstName         string            `json:"first_name"`
+	LastName          string            `json:"last_name"`
+	MiddleName        *string           `json:"middle_name"`
+	BirthDate         string            `json:"birth_date"`
+	AdministrativeSex AdministrativeSex `json:"administrative_sex"`
+	Comment           string            `json:"comment"`
+	HasRecord         bool              `json:"has_record"`
+	CreatedAt         time.Time         `json:"created_at"`
+	UpdatedAt         time.Time         `json:"updated_at"`
 }
 
 // Snapshots deliberately omit mutable service metadata.
@@ -30,10 +38,17 @@ type RecordDiagnosis struct {
 	Name        string `json:"name"`
 }
 
+type PrescriptionStatus string
+
+const (
+	PrescriptionActive    PrescriptionStatus = "active"
+	PrescriptionCancelled PrescriptionStatus = "cancelled"
+)
+
 type Prescription struct {
-	ID     string `json:"id"`
-	Text   string `json:"text"`
-	Status string `json:"status"`
+	ID     string             `json:"id"`
+	Text   string             `json:"text"`
+	Status PrescriptionStatus `json:"status"`
 }
 
 type State struct {

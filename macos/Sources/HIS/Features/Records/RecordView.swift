@@ -251,7 +251,7 @@ struct RecordView: View {
       replaceDraft(record)
     } catch {
       errorText = errorMessage(error)
-      hasVersionConflict = serverDetail(error)?.code == "VERSION_CONFLICT"
+      hasVersionConflict = serverDetail(error)?.code == .versionConflict
     }
   }
 }

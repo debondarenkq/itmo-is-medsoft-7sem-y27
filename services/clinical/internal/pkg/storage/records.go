@@ -72,7 +72,7 @@ func (repository *Repository) CreateRecord(ctx context.Context, patientID string
 		return record, err
 	}
 	after, _ := json.Marshal(map[string]string{"id": record.ID, "patient_id": record.PatientID})
-	event := models.Event{ID: uuid.NewString(), RecordID: record.ID, Sequence: 1, Version: 1, OccurredAt: record.CreatedAt, Actor: actor, Type: "record_created", EntityID: record.ID, Before: json.RawMessage("null"), After: after}
+	event := models.Event{ID: uuid.NewString(), RecordID: record.ID, Sequence: 1, Version: 1, OccurredAt: record.CreatedAt, Actor: actor, Type: models.EventRecordCreated, EntityID: record.ID, Before: json.RawMessage("null"), After: after}
 	if err = insertEvent(ctx, tx, event); err != nil {
 		return record, err
 	}

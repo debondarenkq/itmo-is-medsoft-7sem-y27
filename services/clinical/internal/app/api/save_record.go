@@ -29,7 +29,7 @@ func fromChangesInput(value contract.ChangesInput) models.RecordChanges {
 	commands := make([]models.Command, len(value.Commands))
 	for index, command := range value.Commands {
 		commands[index] = models.Command{
-			Type:        string(command.Type),
+			Type:        models.CommandType(command.Type),
 			ID:          optionalID(command.ID),
 			DiagnosisID: optionalID(command.DiagnosisID),
 			Text:        stringValue(command.Text),

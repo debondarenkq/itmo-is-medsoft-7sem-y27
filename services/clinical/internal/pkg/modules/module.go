@@ -80,7 +80,9 @@ func ValidatePatient(patientData models.PatientData) (models.PatientData, error)
 	if err != nil || birthDate.After(time.Now().UTC()) {
 		return patientData, fmt.Errorf("%w: Дата рождения обязательна, формат YYYY-MM-DD, не в будущем", models.ErrInvalidInput)
 	}
-	if patientData.AdministrativeSex != "M" && patientData.AdministrativeSex != "F" && patientData.AdministrativeSex != "UNKNOWN" {
+	switch patientData.AdministrativeSex {
+	case models.SexMale, models.SexFemale, models.SexUnknown:
+	default:
 		return patientData, fmt.Errorf("%w: Пол должен быть M, F или UNKNOWN", models.ErrInvalidInput)
 	}
 	if err := validation.Text("comment", patientData.Comment, patientCommentMinLength, patientCommentMaxLength); err != nil {
@@ -179,7 +181,7 @@ func (module *Module) Save(ctx context.Context, id string, changes models.Record
 	}
 	diagnoses := map[string]models.DiagnosisSnapshot{}
 	for _, command := range changes.Commands {
-		if command.Type == "add_diagnosis" || command.Type == "edit_diagnosis" {
+		if command.Type == models.CommandAddDiagnosis || command.Type == models.CommandEditDiagnosis {
 			diagnosisID, _ := validation.ParseID(command.DiagnosisID)
 			if _, ok := diagnoses[diagnosisID]; ok {
 				continue

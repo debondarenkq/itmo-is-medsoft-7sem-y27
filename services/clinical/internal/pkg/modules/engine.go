@@ -23,11 +23,11 @@ func ValidateCommands(commands []models.Command) error {
 	}
 	for _, command := range commands {
 		switch command.Type {
-		case "add_diagnosis", "edit_diagnosis":
+		case models.CommandAddDiagnosis, models.CommandEditDiagnosis:
 			if _, err := validation.ParseID(command.DiagnosisID); err != nil {
 				return err
 			}
-			if command.Type == "edit_diagnosis" {
+			if command.Type == models.CommandEditDiagnosis {
 				if _, err := validation.ParseID(command.ID); err != nil {
 					return err
 				}
@@ -37,21 +37,21 @@ func ValidateCommands(commands []models.Command) error {
 			if command.Text != "" {
 				return fmt.Errorf("%w: Для диагноза нельзя передавать текст назначения", models.ErrInvalidInput)
 			}
-		case "remove_diagnosis", "cancel_prescription", "remove_prescription":
+		case models.CommandRemoveDiagnosis, models.CommandCancelPrescription, models.CommandRemovePrescription:
 			if _, err := validation.ParseID(command.ID); err != nil {
 				return err
 			}
 			if command.Text != "" || command.DiagnosisID != "" {
 				return fmt.Errorf("%w: Для этой команды допускается только id", models.ErrInvalidInput)
 			}
-		case "add_prescription":
+		case models.CommandAddPrescription:
 			if err := validation.Text("text", strings.TrimSpace(command.Text), prescriptionTextMinLength, prescriptionTextMaxLength); err != nil {
 				return err
 			}
 			if command.ID != "" || command.DiagnosisID != "" {
 				return fmt.Errorf("%w: Для add_prescription допускается только text", models.ErrInvalidInput)
 			}
-		case "edit_prescription":
+		case models.CommandEditPrescription:
 			if _, err := validation.ParseID(command.ID); err != nil {
 				return err
 			}
@@ -62,7 +62,7 @@ func ValidateCommands(commands []models.Command) error {
 				return fmt.Errorf("%w: Для edit_prescription допускаются id и text", models.ErrInvalidInput)
 			}
 		default:
-			return fmt.Errorf("%w: %s", models.ErrInvalidInput, "Неизвестный тип команды: "+command.Type)
+			return fmt.Errorf("%w: Неизвестный тип команды: %s", models.ErrInvalidInput, command.Type)
 		}
 	}
 	return nil
@@ -77,7 +77,7 @@ func Apply(state models.State, commands []models.Command, diagnoses map[string]m
 	nextState.Diagnoses = append(nextState.Diagnoses, state.Diagnoses...)
 	nextState.Prescriptions = append(nextState.Prescriptions, state.Prescriptions...)
 	events := []models.Event{}
-	emit := func(kind, id string, before, after any) {
+	emit := func(kind models.EventType, id string, before, after any) {
 		beforeData, _ := json.Marshal(before)
 		afterData, _ := json.Marshal(after)
 		events = append(events, models.Event{ID: uuid.NewString(), Type: kind, EntityID: id, Before: beforeData, After: afterData})
@@ -91,7 +91,7 @@ func Apply(state models.State, commands []models.Command, diagnoses map[string]m
 			command.DiagnosisID, _ = validation.ParseID(command.DiagnosisID)
 		}
 		switch command.Type {
-		case "add_diagnosis":
+		case models.CommandAddDiagnosis:
 			if slices.ContainsFunc(nextState.Diagnoses, func(diagnosis models.RecordDiagnosis) bool { return diagnosis.DiagnosisID == command.DiagnosisID }) {
 				return state, nil, fmt.Errorf("%w: Диагноз уже содержится в ЭМК", models.ErrConflict)
 			}
@@ -101,8 +101,8 @@ func Apply(state models.State, commands []models.Command, diagnoses map[string]m
 			}
 			recordDiagnosis := models.RecordDiagnosis{ID: uuid.NewString(), DiagnosisID: diagnosis.ID, Code: diagnosis.Code, Name: diagnosis.Name}
 			nextState.Diagnoses = append(nextState.Diagnoses, recordDiagnosis)
-			emit("diagnosis_added", recordDiagnosis.ID, nil, recordDiagnosis)
-		case "edit_diagnosis":
+			emit(models.EventDiagnosisAdded, recordDiagnosis.ID, nil, recordDiagnosis)
+		case models.CommandEditDiagnosis:
 			index := slices.IndexFunc(nextState.Diagnoses, func(diagnosis models.RecordDiagnosis) bool { return diagnosis.ID == command.ID })
 			if index < 0 {
 				return state, nil, models.ErrNotFound
@@ -118,35 +118,35 @@ func Apply(state models.State, commands []models.Command, diagnoses map[string]m
 			}
 			previousDiagnosis := nextState.Diagnoses[index]
 			nextState.Diagnoses[index] = models.RecordDiagnosis{ID: command.ID, DiagnosisID: diagnosis.ID, Code: diagnosis.Code, Name: diagnosis.Name}
-			emit("diagnosis_updated", command.ID, previousDiagnosis, nextState.Diagnoses[index])
-		case "remove_diagnosis":
+			emit(models.EventDiagnosisUpdated, command.ID, previousDiagnosis, nextState.Diagnoses[index])
+		case models.CommandRemoveDiagnosis:
 			index := slices.IndexFunc(nextState.Diagnoses, func(diagnosis models.RecordDiagnosis) bool { return diagnosis.ID == command.ID })
 			if index < 0 {
 				return state, nil, models.ErrNotFound
 			}
-			emit("diagnosis_removed", command.ID, nextState.Diagnoses[index], nil)
+			emit(models.EventDiagnosisRemoved, command.ID, nextState.Diagnoses[index], nil)
 			nextState.Diagnoses = slices.Delete(nextState.Diagnoses, index, index+1)
-		case "add_prescription":
-			prescription := models.Prescription{ID: uuid.NewString(), Text: command.Text, Status: "active"}
+		case models.CommandAddPrescription:
+			prescription := models.Prescription{ID: uuid.NewString(), Text: command.Text, Status: models.PrescriptionActive}
 			nextState.Prescriptions = append(nextState.Prescriptions, prescription)
-			emit("prescription_added", prescription.ID, nil, prescription)
-		case "cancel_prescription", "edit_prescription", "remove_prescription":
+			emit(models.EventPrescriptionAdded, prescription.ID, nil, prescription)
+		case models.CommandCancelPrescription, models.CommandEditPrescription, models.CommandRemovePrescription:
 			index := slices.IndexFunc(nextState.Prescriptions, func(prescription models.Prescription) bool { return prescription.ID == command.ID })
 			if index < 0 {
 				return state, nil, models.ErrNotFound
 			}
 			previousPrescription := nextState.Prescriptions[index]
-			if command.Type != "remove_prescription" && previousPrescription.Status != "active" {
+			if command.Type != models.CommandRemovePrescription && previousPrescription.Status != models.PrescriptionActive {
 				return state, nil, fmt.Errorf("%w: Отменённое назначение нельзя повторно отменить или редактировать", models.ErrConflict)
 			}
-			if command.Type == "cancel_prescription" {
-				nextState.Prescriptions[index].Status = "cancelled"
-				emit("prescription_cancelled", command.ID, previousPrescription, nextState.Prescriptions[index])
-			} else if command.Type == "edit_prescription" {
+			if command.Type == models.CommandCancelPrescription {
+				nextState.Prescriptions[index].Status = models.PrescriptionCancelled
+				emit(models.EventPrescriptionCancelled, command.ID, previousPrescription, nextState.Prescriptions[index])
+			} else if command.Type == models.CommandEditPrescription {
 				nextState.Prescriptions[index].Text = command.Text
-				emit("prescription_updated", command.ID, previousPrescription, nextState.Prescriptions[index])
+				emit(models.EventPrescriptionUpdated, command.ID, previousPrescription, nextState.Prescriptions[index])
 			} else {
-				emit("prescription_removed", command.ID, previousPrescription, nil)
+				emit(models.EventPrescriptionRemoved, command.ID, previousPrescription, nil)
 				nextState.Prescriptions = slices.Delete(nextState.Prescriptions, index, index+1)
 			}
 		}
@@ -158,35 +158,35 @@ func Replay(events []models.Event) (models.State, error) {
 	state := models.EmptyState()
 	for _, event := range events {
 		switch event.Type {
-		case "record_created":
-		case "diagnosis_added":
+		case models.EventRecordCreated:
+		case models.EventDiagnosisAdded:
 			var diagnosis models.RecordDiagnosis
 			if err := json.Unmarshal(event.After, &diagnosis); err != nil {
 				return state, err
 			}
 			state.Diagnoses = append(state.Diagnoses, diagnosis)
-		case "diagnosis_removed", "diagnosis_updated":
+		case models.EventDiagnosisRemoved, models.EventDiagnosisUpdated:
 			index := slices.IndexFunc(state.Diagnoses, func(diagnosis models.RecordDiagnosis) bool { return diagnosis.ID == event.EntityID })
 			if index < 0 {
 				return state, fmt.Errorf("invalid diagnosis event %s", event.ID)
 			}
-			if event.Type == "diagnosis_removed" {
+			if event.Type == models.EventDiagnosisRemoved {
 				state.Diagnoses = slices.Delete(state.Diagnoses, index, index+1)
 			} else if err := json.Unmarshal(event.After, &state.Diagnoses[index]); err != nil {
 				return state, err
 			}
-		case "prescription_added":
+		case models.EventPrescriptionAdded:
 			var prescription models.Prescription
 			if err := json.Unmarshal(event.After, &prescription); err != nil {
 				return state, err
 			}
 			state.Prescriptions = append(state.Prescriptions, prescription)
-		case "prescription_cancelled", "prescription_removed", "prescription_updated":
+		case models.EventPrescriptionCancelled, models.EventPrescriptionRemoved, models.EventPrescriptionUpdated:
 			index := slices.IndexFunc(state.Prescriptions, func(prescription models.Prescription) bool { return prescription.ID == event.EntityID })
 			if index < 0 {
 				return state, fmt.Errorf("invalid prescription event %s", event.ID)
 			}
-			if event.Type == "prescription_removed" {
+			if event.Type == models.EventPrescriptionRemoved {
 				state.Prescriptions = slices.Delete(state.Prescriptions, index, index+1)
 			} else {
 				if err := json.Unmarshal(event.After, &state.Prescriptions[index]); err != nil {

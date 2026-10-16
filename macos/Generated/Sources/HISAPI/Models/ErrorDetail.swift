@@ -9,11 +9,11 @@ import Foundation
 
 public struct ErrorDetail: Sendable, Codable, Hashable {
 
-    public var code: String
+    public var code: ErrorCode
     public var fields: [String: String]?
     public var message: String
 
-    public init(code: String, fields: [String: String]? = nil, message: String) {
+    public init(code: ErrorCode, fields: [String: String]? = nil, message: String) {
         self.code = code
         self.fields = fields
         self.message = message

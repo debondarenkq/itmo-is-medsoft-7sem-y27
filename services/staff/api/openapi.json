@@ -12,10 +12,21 @@
         ],
         "type": "object"
       },
+      "ErrorCode": {
+        "enum": [
+          "INTERNAL",
+          "INVALID_REQUEST",
+          "NOT_FOUND",
+          "CONFLICT",
+          "VERSION_CONFLICT",
+          "DEPENDENCY_UNAVAILABLE"
+        ],
+        "type": "string"
+      },
       "ErrorDetail": {
         "properties": {
           "code": {
-            "type": "string"
+            "$ref": "#/components/schemas/ErrorCode"
           },
           "fields": {
             "additionalProperties": {

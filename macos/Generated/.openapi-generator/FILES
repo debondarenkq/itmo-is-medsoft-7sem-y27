@@ -26,6 +26,7 @@ Sources/HISAPI/Models/CreateRecordInput.swift
 Sources/HISAPI/Models/Diagnosis.swift
 Sources/HISAPI/Models/DiagnosisInput.swift
 Sources/HISAPI/Models/DiagnosisPage.swift
+Sources/HISAPI/Models/ErrorCode.swift
 Sources/HISAPI/Models/ErrorDetail.swift
 Sources/HISAPI/Models/Event.swift
 Sources/HISAPI/Models/EventPage.swift

@@ -985,11 +985,20 @@ components:
       - total
       - limit
       - offset
+    ErrorCode:
+      type: string
+      enum:
+      - INTERNAL
+      - INVALID_REQUEST
+      - NOT_FOUND
+      - CONFLICT
+      - VERSION_CONFLICT
+      - DEPENDENCY_UNAVAILABLE
     ErrorDetail:
       type: object
       properties:
         code:
-          type: string
+          $ref: '#/components/schemas/ErrorCode'
         message:
           type: string
         fields:

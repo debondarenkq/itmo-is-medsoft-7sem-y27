@@ -440,11 +440,20 @@ components:
           maxItems: 1000
           items:
             $ref: '#/components/schemas/DiagnosisInput'
+    ErrorCode:
+      type: string
+      enum:
+      - INTERNAL
+      - INVALID_REQUEST
+      - NOT_FOUND
+      - CONFLICT
+      - VERSION_CONFLICT
+      - DEPENDENCY_UNAVAILABLE
     ErrorDetail:
       type: object
       properties:
         code:
-          type: string
+          $ref: '#/components/schemas/ErrorCode'
         message:
           type: string
         fields:

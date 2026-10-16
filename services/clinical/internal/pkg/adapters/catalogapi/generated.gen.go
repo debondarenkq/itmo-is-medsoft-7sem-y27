@@ -17,6 +17,36 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for ErrorCode.
+const (
+	CONFLICT              ErrorCode = "CONFLICT"
+	DEPENDENCYUNAVAILABLE ErrorCode = "DEPENDENCY_UNAVAILABLE"
+	INTERNAL              ErrorCode = "INTERNAL"
+	INVALIDREQUEST        ErrorCode = "INVALID_REQUEST"
+	NOTFOUND              ErrorCode = "NOT_FOUND"
+	VERSIONCONFLICT       ErrorCode = "VERSION_CONFLICT"
+)
+
+// Valid indicates whether the value is a known member of the ErrorCode enum.
+func (e ErrorCode) Valid() bool {
+	switch e {
+	case CONFLICT:
+		return true
+	case DEPENDENCYUNAVAILABLE:
+		return true
+	case INTERNAL:
+		return true
+	case INVALIDREQUEST:
+		return true
+	case NOTFOUND:
+		return true
+	case VERSIONCONFLICT:
+		return true
+	default:
+		return false
+	}
+}
+
 // Diagnosis defines model for Diagnosis.
 type Diagnosis struct {
 	Code      string             `json:"code"`
@@ -32,9 +62,12 @@ type Error struct {
 	Error ErrorDetail `json:"error"`
 }
 
+// ErrorCode defines model for ErrorCode.
+type ErrorCode string
+
 // ErrorDetail defines model for ErrorDetail.
 type ErrorDetail struct {
-	Code    string             `json:"code"`
+	Code    ErrorCode          `json:"code"`
 	Fields  *map[string]string `json:"fields,omitempty"`
 	Message string             `json:"message"`
 }
