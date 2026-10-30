@@ -17,11 +17,11 @@ func New(pool *pgxpool.Pool) *Repository {
 	return &Repository{pool: pool}
 }
 
-const columns = "id, first_name, last_name, position, role, created_at, updated_at, deleted_at"
+const columns = "id, first_name, last_name, position, role, created_at, updated_at, deleted_at, identity_revision, security_revision"
 
 func scan(row pgx.Row) (models.Staff, error) {
 	var staff models.Staff
-	err := row.Scan(&staff.ID, &staff.FirstName, &staff.LastName, &staff.Position, &staff.Role, &staff.CreatedAt, &staff.UpdatedAt, &staff.DeletedAt)
+	err := row.Scan(&staff.ID, &staff.FirstName, &staff.LastName, &staff.Position, &staff.Role, &staff.CreatedAt, &staff.UpdatedAt, &staff.DeletedAt, &staff.Revision, &staff.SecurityRevision)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return staff, models.ErrNotFound
 	}

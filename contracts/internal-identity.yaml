@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: HIS internal identity synchronization
+  version: 1.0.0
+security:
+  - ServiceKey: []
+paths:
+  /internal/staff/{id}:
+    get:
+      operationId: getStaffIdentity
+      description: Staff-service returns authoritative staff state, including logically deleted records.
+      parameters:
+        - $ref: '#/components/parameters/StaffID'
+      responses:
+        '200':
+          $ref: '#/components/responses/Profile'
+        '403':
+          description: Invalid service key
+        '404':
+          description: Staff does not exist
+  /internal/staff/{id}/role:
+    put:
+      operationId: updateStaffIdentityRole
+      description: Identity requests a role change in staff-service; staff persists an outbox event in the same transaction.
+      parameters:
+        - $ref: '#/components/parameters/StaffID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [role]
+              properties:
+                role:
+                  $ref: '#/components/schemas/Role'
+      responses:
+        '200':
+          $ref: '#/components/responses/Profile'
+        '400':
+          description: Invalid role or request
+        '403':
+          description: Invalid service key
+        '404':
+          description: Staff does not exist
+        '409':
+          description: Staff is deleted
+  /internal/staff:
+    post:
+      operationId: synchronizeStaffIdentity
+      description: Identity-service applies a staff snapshot. Duplicate or older revisions are acknowledged without changing state. A newer security_revision revokes refresh tokens even if the role has returned to its previous value.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffProfile'
+      responses:
+        '200':
+          description: Committed or already applied
+        '400':
+          description: Invalid snapshot
+        '403':
+          description: Invalid service key
+components:
+  securitySchemes:
+    ServiceKey:
+      type: apiKey
+      in: header
+      name: X-Service-Key
+  parameters:
+    StaffID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Profile:
+      description: Authoritative staff state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StaffProfile'
+  schemas:
+    Role:
+      type: string
+      enum: [doctor, nurse, laboratory-technician, other]
+    StaffProfile:
+      type: object
+      additionalProperties: false
+      required: [id, first_name, last_name, role, identity_revision, security_revision]
+      properties:
+        id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        position:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        identity_revision:
+          type: integer
+          format: int64
+          minimum: 1
+        security_revision:
+          type: integer
+          format: int64
+          minimum: 0

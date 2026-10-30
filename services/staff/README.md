@@ -9,7 +9,7 @@ go vet ./...
 docker build -t his-staff .
 ```
 
-Перед запуском задайте `DATABASE_URL`, указывающий на собственную PostgreSQL-базу сервиса. Примените миграции `go run ./cmd/staff-service migrate`, затем запустите `go run ./cmd/staff-service`. Адрес HTTP-сервера задаётся `HTTP_ADDR` (по умолчанию `:8080`).
+Перед запуском задайте `DATABASE_URL`, указывающий на собственную PostgreSQL-базу сервиса. Задайте также `AUTH_URL` (identity-service) и `SERVICE_KEY_FILE`, затем запустите `go run ./cmd/staff-service`; миграции применяются при старте. При обновлении существующей лабораторной сначала выполните `make migrate-identity` из корня проекта. Адрес HTTP-сервера задаётся `HTTP_ADDR` (по умолчанию `:8080`).
 
 API: `/api/v1/staff`. Источник контракта в репозитории — `contracts/staff.yaml`; `api/openapi.yaml` — локальная копия для самостоятельной генерации; JSON-документация — сгенерированный `api/openapi.json`, работающий сервис отдаёт её через `GET /openapi.json`. Диагностика: `GET /live`, `GET /ready`.
 

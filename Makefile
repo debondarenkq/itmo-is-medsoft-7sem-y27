@@ -1,12 +1,12 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help test integration check certs prepare prepare-local up demo down status doctor cert-info images-save images-load smoke macos-build generate-contracts
+.PHONY: help test integration check certs prepare prepare-local up demo down status doctor cert-info images-save images-load smoke macos-build generate-contracts migrate-identity
 
 test:
-	@for service in staff catalog clinical; do (cd services/$$service && go test -race ./...) || exit 1; done
+	@for service in identity staff catalog clinical; do (cd services/$$service && go test -race ./...) || exit 1; done
 
 check:
-	@for service in staff catalog clinical; do (cd services/$$service && go vet ./... && test -z "$$(gofmt -l .)") || exit 1; done
+	@for service in identity staff catalog clinical; do (cd services/$$service && go vet ./... && test -z "$$(gofmt -l .)") || exit 1; done
 
 help:
 	@printf '%s\n' \
@@ -32,7 +32,10 @@ prepare-local: certs
 	./scripts/build-local.sh
 	./macos/build.sh
 
-up: certs
+migrate-identity:
+	./scripts/migrate-identity.sh
+
+up: certs migrate-identity
 	./scripts/compose.sh up --no-build --pull never -d --wait
 
 demo:
@@ -54,7 +57,7 @@ cert-info:
 
 images-save:
 	mkdir -p build
-	./scripts/docker.sh image save -o build/his-images.tar his-staff:local his-catalog:local his-clinical:local postgres:17-alpine nginx:1.28-alpine
+	./scripts/docker.sh image save -o build/his-images.tar his-identity:local his-staff:local his-catalog:local his-clinical:local postgres:17-alpine nginx:1.28-alpine
 
 images-load:
 	./scripts/docker.sh image load -i build/his-images.tar

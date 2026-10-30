@@ -20,7 +20,7 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
-func Run(name string, migrations fs.FS, register func(*mux.Router, *pgxpool.Pool)) error {
+func Run(name string, migrations fs.FS, register func(context.Context, *mux.Router, *pgxpool.Pool)) error {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)).With("service", name))
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
@@ -62,7 +62,7 @@ func Run(name string, migrations fs.FS, register func(*mux.Router, *pgxpool.Pool
 		}
 		writeHealth(w, 200, map[string]string{"status": "ready"})
 	}).Methods("GET")
-	register(router, pool)
+	register(ctx, router, pool)
 	server := &http.Server{
 		Addr:              env("HTTP_ADDR", ":8080"),
 		Handler:           http.MaxBytesHandler(router, 1<<20),

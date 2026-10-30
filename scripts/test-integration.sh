@@ -3,8 +3,9 @@ set -eu
 cd "$(dirname "$0")/.."
 ./scripts/compose.sh -p his-db-tests -f deploy/postgres-test.compose.yaml up -d --wait
 trap './scripts/compose.sh -p his-db-tests -f deploy/postgres-test.compose.yaml down' EXIT
-for service in staff catalog clinical; do
+for service in identity staff catalog clinical; do
     case "$service" in
+        identity) password=identity_local ;;
         staff) password=staff_local ;;
         catalog) password=catalog_local ;;
         clinical) password=clinical_local ;;

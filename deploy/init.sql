@@ -11,3 +11,8 @@ REVOKE CONNECT ON DATABASE clinical FROM PUBLIC;
 GRANT CONNECT ON DATABASE staff TO staff_user;
 GRANT CONNECT ON DATABASE catalog TO catalog_user;
 GRANT CONNECT ON DATABASE clinical TO clinical_user;
+
+CREATE ROLE identity_user LOGIN PASSWORD 'identity_local';
+CREATE DATABASE identity OWNER identity_user;
+REVOKE CONNECT ON DATABASE identity FROM PUBLIC;
+GRANT CONNECT ON DATABASE identity TO identity_user;

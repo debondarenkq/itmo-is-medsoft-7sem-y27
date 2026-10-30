@@ -5,8 +5,8 @@ for service in staff catalog clinical; do
     cp "contracts/$service.yaml" "services/$service/api/openapi.yaml"
     (cd "services/$service" && go generate ./api)
 done
-cp contracts/security.yaml services/staff/api/security/openapi.yaml
-(cd services/staff && go generate ./api/security && go run ./api/security/export > api/security/openapi.json)
+cp contracts/security.yaml services/identity/api/security/openapi.yaml
+(cd services/identity && go generate ./api/security && go run ./api/security/export > api/security/openapi.json)
 # Vendor external API descriptions so clinical-service still builds independently.
 for service in staff catalog; do
     cp "contracts/$service.yaml" "services/clinical/internal/pkg/adapters/${service}api/openapi.yaml"

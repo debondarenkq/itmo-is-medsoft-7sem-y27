@@ -31,12 +31,12 @@ def main():
         # Compose versions return either one JSON array or JSON objects per line.
         content = result.stdout.strip()
         rows = json.loads(content) if content.startswith('[') else [json.loads(line) for line in content.splitlines()]
-        expected = {'postgres', 'staff-service', 'catalog-service', 'clinical-service', 'nginx'}
+        expected = {'postgres', 'identity-service', 'staff-service', 'catalog-service', 'clinical-service', 'nginx'}
         ready = {row['Service'] for row in rows if row.get('State') == 'running' and row.get('Health') == 'healthy'}
         missing = expected - ready
         if missing:
             raise RuntimeError('не готовы: ' + ', '.join(sorted(missing)) + '; выполните make up')
-        return 'все 5 компонентов готовы'
+        return 'все 6 компонентов готовы'
 
     def app_exists():
         if not (ROOT / 'macos/build/HIS.app/Contents/MacOS/HIS').is_file():

@@ -12,8 +12,8 @@ spec = {
     'components': {'schemas': {}, 'securitySchemes': {'BearerAuth': {'type': 'http', 'scheme': 'bearer', 'bearerFormat': 'JWT'}}},
     'security': [{'BearerAuth': []}],
 }
-for service in ('staff', 'catalog', 'clinical', 'staff/api/security'):
-    source_path = root / 'services' / service / ('openapi.json' if service == 'staff/api/security' else 'api/openapi.json')
+for service in ('staff', 'catalog', 'clinical', 'identity/api/security'):
+    source_path = root / 'services' / service / ('openapi.json' if service == 'identity/api/security' else 'api/openapi.json')
     source = json.loads(source_path.read_text())
     for path, value in source['paths'].items():
         if path in spec['paths']:

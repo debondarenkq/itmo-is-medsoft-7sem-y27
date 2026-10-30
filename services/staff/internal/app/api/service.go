@@ -2,9 +2,11 @@ package api
 
 import (
 	"context"
+	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/adapters/security"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -31,6 +33,11 @@ func (implementation *Implementation) Register(router *mux.Router) {
 	router.HandleFunc("/openapi.json", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(w, http.StatusOK, json.RawMessage(contract.Specification()))
 	}).Methods(http.MethodGet)
+	auth, err := security.New()
+	if err != nil {
+		panic(err)
+	}
+	router.Use(auth.Middleware)
 	spec, err := contract.GetSwagger()
 	if err != nil {
 		panic(err)
@@ -136,4 +143,43 @@ func roleValue(role *contract.StaffRole) string {
 		return "other"
 	}
 	return string(*role)
+}
+
+func (i *Implementation) RegisterInternal(router *mux.Router, key string) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if key == "" || subtle.ConstantTimeCompare([]byte(r.Header.Get("X-Service-Key")), []byte(key)) != 1 {
+			writeJSON(w, 403, map[string]string{"error": "forbidden"})
+			return
+		}
+		id := mux.Vars(r)["id"]
+		if _, err := uuid.Parse(id); err != nil {
+			writeRequestError(w, r, err)
+			return
+		}
+		staff, err := i.Module.Get(r.Context(), id)
+		if err != nil {
+			writeError(w, r, err)
+			return
+		}
+		if r.Method == "PUT" {
+			var input struct {
+				Role string `json:"role"`
+			}
+			decoder := json.NewDecoder(r.Body)
+			decoder.DisallowUnknownFields()
+			if decoder.Decode(&input) != nil {
+				writeRequestError(w, r, nil)
+				return
+			}
+			staff.Role = input.Role
+			staff, err = i.Module.Update(r.Context(), id, staff)
+			if err != nil {
+				writeError(w, r, err)
+				return
+			}
+		}
+		writeJSON(w, 200, staff)
+	}
+	router.HandleFunc("/internal/staff/{id}", handler).Methods("GET")
+	router.HandleFunc("/internal/staff/{id}/role", handler).Methods("PUT")
 }
