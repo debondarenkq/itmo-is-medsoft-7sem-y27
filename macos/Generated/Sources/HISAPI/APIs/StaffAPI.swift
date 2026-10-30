@@ -26,6 +26,9 @@ open class StaffAPI {
     /**
      Создать запись
      - POST /api/v1/staff
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter staffInput: (body)
      - returns: RequestBuilder<Staff>
      */
@@ -44,7 +47,7 @@ open class StaffAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Staff>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -60,6 +63,9 @@ open class StaffAPI {
     /**
      Мягкое удаление
      - DELETE /api/v1/staff/{id}
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - returns: RequestBuilder<Void>
      */
@@ -81,7 +87,7 @@ open class StaffAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Void>.Type = apiConfiguration.requestBuilderFactory.getNonDecodableBuilder()
 
-        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -97,6 +103,9 @@ open class StaffAPI {
     /**
      Карточка, включая мягко удалённые записи
      - GET /api/v1/staff/{id}
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - returns: RequestBuilder<Staff>
      */
@@ -118,7 +127,7 @@ open class StaffAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Staff>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -137,6 +146,9 @@ open class StaffAPI {
     /**
      Список активных записей
      - GET /api/v1/staff
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter limit: (query)  (optional, default to 50)
      - parameter offset: (query)  (optional, default to 0)
      - parameter search: (query)  (optional)
@@ -165,7 +177,7 @@ open class StaffAPI {
 
         let localVariableRequestBuilder: RequestBuilder<StaffPage>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -182,6 +194,9 @@ open class StaffAPI {
     /**
      Полностью обновить активную запись
      - PUT /api/v1/staff/{id}
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - parameter staffInput: (body)
      - returns: RequestBuilder<Staff>
@@ -204,6 +219,6 @@ open class StaffAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Staff>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 }

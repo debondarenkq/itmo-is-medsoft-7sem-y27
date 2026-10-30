@@ -79,26 +79,35 @@ func (e CommandType) Valid() bool {
 
 // Defines values for ErrorCode.
 const (
+	ACCESSDENIED          ErrorCode = "ACCESS_DENIED"
 	CONFLICT              ErrorCode = "CONFLICT"
 	DEPENDENCYUNAVAILABLE ErrorCode = "DEPENDENCY_UNAVAILABLE"
+	FORBIDDEN             ErrorCode = "FORBIDDEN"
 	INTERNAL              ErrorCode = "INTERNAL"
 	INVALIDREQUEST        ErrorCode = "INVALID_REQUEST"
 	NOTFOUND              ErrorCode = "NOT_FOUND"
+	UNAUTHORIZED          ErrorCode = "UNAUTHORIZED"
 	VERSIONCONFLICT       ErrorCode = "VERSION_CONFLICT"
 )
 
 // Valid indicates whether the value is a known member of the ErrorCode enum.
 func (e ErrorCode) Valid() bool {
 	switch e {
+	case ACCESSDENIED:
+		return true
 	case CONFLICT:
 		return true
 	case DEPENDENCYUNAVAILABLE:
+		return true
+	case FORBIDDEN:
 		return true
 	case INTERNAL:
 		return true
 	case INVALIDREQUEST:
 		return true
 	case NOTFOUND:
+		return true
+	case UNAUTHORIZED:
 		return true
 	case VERSIONCONFLICT:
 		return true
@@ -246,16 +255,18 @@ type EventType string
 
 // Patient defines model for Patient.
 type Patient struct {
-	AdministrativeSex AdministrativeSex  `json:"administrative_sex"`
-	BirthDate         openapi_types.Date `json:"birth_date"`
-	Comment           string             `json:"comment"`
-	CreatedAt         time.Time          `json:"created_at"`
-	FirstName         string             `json:"first_name"`
-	HasRecord         bool               `json:"has_record"`
-	ID                openapi_types.UUID `json:"id"`
-	LastName          string             `json:"last_name"`
-	MiddleName        *string            `json:"middle_name"`
-	UpdatedAt         time.Time          `json:"updated_at"`
+	AdministrativeSex AdministrativeSex   `json:"administrative_sex"`
+	BirthDate         openapi_types.Date  `json:"birth_date"`
+	Comment           string              `json:"comment"`
+	CreatedAt         time.Time           `json:"created_at"`
+	FirstName         string              `json:"first_name"`
+	HasRecord         bool                `json:"has_record"`
+	ID                openapi_types.UUID  `json:"id"`
+	LastName          string              `json:"last_name"`
+	MiddleName        *string             `json:"middle_name"`
+	RecordID          *openapi_types.UUID `json:"record_id,omitempty"`
+	RecordNumber      *int64              `json:"record_number,omitempty"`
+	UpdatedAt         time.Time           `json:"updated_at"`
 }
 
 // PatientInput defines model for PatientInput.
@@ -290,6 +301,7 @@ type PrescriptionStatus string
 type Record struct {
 	CreatedAt time.Time          `json:"created_at"`
 	ID        openapi_types.UUID `json:"id"`
+	Number    int64              `json:"number"`
 	PatientID openapi_types.UUID `json:"patient_id"`
 	State     State              `json:"state"`
 	UpdatedAt time.Time          `json:"updated_at"`
@@ -312,9 +324,10 @@ type State struct {
 
 // ListPatientsParams defines parameters for ListPatients.
 type ListPatientsParams struct {
-	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
-	Offset *int    `form:"offset,omitempty" json:"offset,omitempty"`
-	Search *string `form:"search,omitempty" json:"search,omitempty"`
+	Limit     *int    `form:"limit,omitempty" json:"limit,omitempty"`
+	Offset    *int    `form:"offset,omitempty" json:"offset,omitempty"`
+	Search    *string `form:"search,omitempty" json:"search,omitempty"`
+	HasRecord *bool   `form:"has_record,omitempty" json:"has_record,omitempty"`
 }
 
 // GetRecordHistoryParams defines parameters for GetRecordHistory.
@@ -431,6 +444,19 @@ func (siw *ServerInterfaceWrapper) ListPatients(w http.ResponseWriter, r *http.R
 			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "search"})
 		} else {
 			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "search", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "has_record" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "has_record", r.URL.Query(), &params.HasRecord, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "has_record"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "has_record", Err: err})
 		}
 		return
 	}
@@ -926,6 +952,34 @@ func (response ListPatients400JSONResponse) VisitListPatientsResponse(w http.Res
 	return err
 }
 
+type ListPatients401JSONResponse Error
+
+func (response ListPatients401JSONResponse) VisitListPatientsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListPatients403JSONResponse Error
+
+func (response ListPatients403JSONResponse) VisitListPatientsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type ListPatients404JSONResponse Error
 
 func (response ListPatients404JSONResponse) VisitListPatientsResponse(w http.ResponseWriter) error {
@@ -1032,6 +1086,34 @@ func (response CreatePatient400JSONResponse) VisitCreatePatientResponse(w http.R
 	return err
 }
 
+type CreatePatient401JSONResponse Error
+
+func (response CreatePatient401JSONResponse) VisitCreatePatientResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreatePatient403JSONResponse Error
+
+func (response CreatePatient403JSONResponse) VisitCreatePatientResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreatePatient404JSONResponse Error
 
 func (response CreatePatient404JSONResponse) VisitCreatePatientResponse(w http.ResponseWriter) error {
@@ -1128,6 +1210,34 @@ func (response DeletePatient400JSONResponse) VisitDeletePatientResponse(w http.R
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeletePatient401JSONResponse Error
+
+func (response DeletePatient401JSONResponse) VisitDeletePatientResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeletePatient403JSONResponse Error
+
+func (response DeletePatient403JSONResponse) VisitDeletePatientResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -1234,6 +1344,34 @@ func (response GetPatient400JSONResponse) VisitGetPatientResponse(w http.Respons
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetPatient401JSONResponse Error
+
+func (response GetPatient401JSONResponse) VisitGetPatientResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetPatient403JSONResponse Error
+
+func (response GetPatient403JSONResponse) VisitGetPatientResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -1345,6 +1483,34 @@ func (response UpdatePatient400JSONResponse) VisitUpdatePatientResponse(w http.R
 	return err
 }
 
+type UpdatePatient401JSONResponse Error
+
+func (response UpdatePatient401JSONResponse) VisitUpdatePatientResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdatePatient403JSONResponse Error
+
+func (response UpdatePatient403JSONResponse) VisitUpdatePatientResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type UpdatePatient404JSONResponse Error
 
 func (response UpdatePatient404JSONResponse) VisitUpdatePatientResponse(w http.ResponseWriter) error {
@@ -1447,6 +1613,34 @@ func (response GetPatientRecord400JSONResponse) VisitGetPatientRecordResponse(w 
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetPatientRecord401JSONResponse Error
+
+func (response GetPatientRecord401JSONResponse) VisitGetPatientRecordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetPatientRecord403JSONResponse Error
+
+func (response GetPatientRecord403JSONResponse) VisitGetPatientRecordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -1558,6 +1752,34 @@ func (response CreateRecord400JSONResponse) VisitCreateRecordResponse(w http.Res
 	return err
 }
 
+type CreateRecord401JSONResponse Error
+
+func (response CreateRecord401JSONResponse) VisitCreateRecordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateRecord403JSONResponse Error
+
+func (response CreateRecord403JSONResponse) VisitCreateRecordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreateRecord404JSONResponse Error
 
 func (response CreateRecord404JSONResponse) VisitCreateRecordResponse(w http.ResponseWriter) error {
@@ -1660,6 +1882,34 @@ func (response GetRecord400JSONResponse) VisitGetRecordResponse(w http.ResponseW
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecord401JSONResponse Error
+
+func (response GetRecord401JSONResponse) VisitGetRecordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecord403JSONResponse Error
+
+func (response GetRecord403JSONResponse) VisitGetRecordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -1771,6 +2021,34 @@ func (response SaveRecord400JSONResponse) VisitSaveRecordResponse(w http.Respons
 	return err
 }
 
+type SaveRecord401JSONResponse Error
+
+func (response SaveRecord401JSONResponse) VisitSaveRecordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SaveRecord403JSONResponse Error
+
+func (response SaveRecord403JSONResponse) VisitSaveRecordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type SaveRecord404JSONResponse Error
 
 func (response SaveRecord404JSONResponse) VisitSaveRecordResponse(w http.ResponseWriter) error {
@@ -1878,6 +2156,34 @@ func (response GetRecordHistory400JSONResponse) VisitGetRecordHistoryResponse(w 
 	return err
 }
 
+type GetRecordHistory401JSONResponse Error
+
+func (response GetRecordHistory401JSONResponse) VisitGetRecordHistoryResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordHistory403JSONResponse Error
+
+func (response GetRecordHistory403JSONResponse) VisitGetRecordHistoryResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetRecordHistory404JSONResponse Error
 
 func (response GetRecordHistory404JSONResponse) VisitGetRecordHistoryResponse(w http.ResponseWriter) error {
@@ -1981,6 +2287,34 @@ func (response GetRecordState400JSONResponse) VisitGetRecordStateResponse(w http
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordState401JSONResponse Error
+
+func (response GetRecordState401JSONResponse) VisitGetRecordStateResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRecordState403JSONResponse Error
+
+func (response GetRecordState403JSONResponse) VisitGetRecordStateResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -2450,49 +2784,52 @@ func (sh *strictHandler) GetRecordState(w http.ResponseWriter, r *http.Request, 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

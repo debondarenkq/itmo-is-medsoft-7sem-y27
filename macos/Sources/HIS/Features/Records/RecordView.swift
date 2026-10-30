@@ -5,6 +5,8 @@ struct RecordView: View {
   let gateway: Gateway
   let worker: Staff
   let patient: Patient
+  var close: (() -> Void)? = nil
+  var editingChanged: (Bool) -> Void = { _ in }
   @Environment(\.dismiss) private var dismiss
   @State private var draft: RecordDraft?
   @State private var isEditing = false
@@ -33,19 +35,33 @@ struct RecordView: View {
   private var hasUnsavedChanges: Bool { draft?.isDirty ?? false }
 
   var body: some View {
+    HStack(alignment: .top, spacing: 0) {
+      recordContent
+      Divider()
+      WorkerPermissionsView(worker: worker).padding()
+    }
+    .frame(minWidth: 850, idealWidth: 1000, minHeight: 600, idealHeight: 700)
+    .onChange(of: isEditing) { editingChanged(isEditing) }
+    .onDisappear { editingChanged(false) }
+  }
+
+  private var recordContent: some View {
     VStack(spacing: 0) {
       HStack {
         VStack(alignment: .leading) {
           Text(patient.fullName).font(.title2)
           Text("Электронная медицинская карта").foregroundStyle(.secondary)
           Text(
-            "\(patient.birthDate.calendarDate.formatted(date: .numeric, time: .omitted)) · \(patient.administrativeSex.label)"
+            "\(patient.birthDate.calendarDate.formatted(date: .numeric, time: .omitted)) · Возраст: \(patient.age) · \(patient.administrativeSex.label)"
           )
           .foregroundStyle(.secondary)
+          if let draft {
+            Text(String(format: "Номер ЭМК: ЭМК-%06lld", draft.base.number)).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+          }
         }
         Spacer()
         Button("Обновить", systemImage: "arrow.clockwise") { requestAction(.reload) }
-        Button("Закрыть") { requestAction(.close) }.keyboardShortcut(.cancelAction)
+        Button("К списку пациентов", systemImage: "chevron.left") { requestAction(.close) }.keyboardShortcut(.cancelAction)
       }.padding()
       ErrorNotice(message: errorText)
       if hasVersionConflict {
@@ -63,7 +79,7 @@ struct RecordView: View {
           Spacer()
           if isEditing {
             Text("Автор: \(worker.fullName)")
-          } else {
+          } else if worker.role == .doctor {
             Button("Разблокировать…") { confirmingUnlock = true }
           }
         }.padding()
@@ -97,7 +113,7 @@ struct RecordView: View {
         ContentUnavailableView {
           Label("Медицинская карта не создана", systemImage: "heart.text.clipboard")
         } actions: {
-          Button("Создать ЭМК") { Task { await createRecord() } }
+          Button("Создать ЭМК") { Task { await createRecord() } }.disabled(!worker.role.canCreate)
         }
       } else {
         ContentUnavailableView(
@@ -105,7 +121,7 @@ struct RecordView: View {
           description: Text("Если сервер недоступен, проверьте подключение и повторите запрос."))
       }
     }
-    .frame(minWidth: 800, idealWidth: 960, minHeight: 580, idealHeight: 680)
+    .frame(minWidth: 560, minHeight: 580)
     .disabled(isBusy)
     .overlay { if isBusy { ProgressView() } }
     .interactiveDismissDisabled()
@@ -130,7 +146,7 @@ struct RecordView: View {
             return (page.items, page.total)
           }, select: { draft?.setDiagnosis(original, diagnosis: $0) })
       case .prescription(let prescription):
-        PrescriptionEditorView(prescription: prescription) { text in
+        PrescriptionEditorView(prescription: prescription, worker: worker) { text in
           draft?.setPrescription(prescription, text: text)
         }
       }
@@ -194,7 +210,7 @@ struct RecordView: View {
 
   private func performAction(_ action: PendingAction) {
     switch action {
-    case .close: dismiss()
+    case .close: if let close { close() } else { dismiss() }
     case .reload: Task { await loadRecord() }
     case .cancel:
       if let draft { self.draft = RecordDraft(draft.base) }

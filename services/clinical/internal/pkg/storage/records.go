@@ -14,13 +14,13 @@ import (
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/models"
 )
 
-const recordColumns = "id,patient_id,version,created_at,updated_at,state"
+const recordColumns = "id,patient_id,version,created_at,updated_at,state,number"
 const eventColumns = "id,record_id,sequence,version,occurred_at,actor,event_type,entity_id,before_data,after_data"
 
 func scanRecord(row pgx.Row) (models.Record, error) {
 	var record models.Record
 	var state []byte
-	if err := row.Scan(&record.ID, &record.PatientID, &record.Version, &record.CreatedAt, &record.UpdatedAt, &state); err != nil {
+	if err := row.Scan(&record.ID, &record.PatientID, &record.Version, &record.CreatedAt, &record.UpdatedAt, &state, &record.Number); err != nil {
 		return record, mapNotFoundError(err)
 	}
 	return record, json.Unmarshal(state, &record.State)

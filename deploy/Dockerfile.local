@@ -1,0 +1,7 @@
+# Build a runtime image from a previously prepared local image, without a registry.
+ARG RUNTIME_IMAGE=alpine:3.23
+FROM ${RUNTIME_IMAGE}
+COPY --chown=65532:65532 service /service
+USER 65532:65532
+EXPOSE 8080
+ENTRYPOINT ["/service"]

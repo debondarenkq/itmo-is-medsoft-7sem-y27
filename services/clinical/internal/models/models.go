@@ -18,6 +18,8 @@ type Patient struct {
 	BirthDate         string            `json:"birth_date"`
 	AdministrativeSex AdministrativeSex `json:"administrative_sex"`
 	Comment           string            `json:"comment"`
+	RecordNumber      *int64            `json:"record_number,omitempty"`
+	RecordID          *string           `json:"record_id,omitempty"`
 	HasRecord         bool              `json:"has_record"`
 	CreatedAt         time.Time         `json:"created_at"`
 	UpdatedAt         time.Time         `json:"updated_at"`
@@ -61,6 +63,7 @@ func EmptyState() State {
 }
 
 type Record struct {
+	Number    int64     `json:"number"`
 	ID        string    `json:"id"`
 	PatientID string    `json:"patient_id"`
 	Version   int64     `json:"version"`

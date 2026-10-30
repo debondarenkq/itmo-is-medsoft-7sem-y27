@@ -15,15 +15,17 @@ public struct Staff: Sendable, Codable, Hashable {
     public var id: UUID
     public var lastName: String
     public var position: String
+    public var role: StaffRole
     public var updatedAt: Date
 
-    public init(createdAt: Date, deletedAt: Date?, firstName: String, id: UUID, lastName: String, position: String, updatedAt: Date) {
+    public init(createdAt: Date, deletedAt: Date?, firstName: String, id: UUID, lastName: String, position: String, role: StaffRole, updatedAt: Date) {
         self.createdAt = createdAt
         self.deletedAt = deletedAt
         self.firstName = firstName
         self.id = id
         self.lastName = lastName
         self.position = position
+        self.role = role
         self.updatedAt = updatedAt
     }
 
@@ -34,6 +36,7 @@ public struct Staff: Sendable, Codable, Hashable {
         case id
         case lastName = "last_name"
         case position
+        case role
         case updatedAt = "updated_at"
     }
 
@@ -47,6 +50,7 @@ public struct Staff: Sendable, Codable, Hashable {
         try container.encode(id, forKey: .id)
         try container.encode(lastName, forKey: .lastName)
         try container.encode(position, forKey: .position)
+        try container.encode(role, forKey: .role)
         try container.encode(updatedAt, forKey: .updatedAt)
     }
 }

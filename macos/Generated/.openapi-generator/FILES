@@ -3,6 +3,7 @@ Package.swift
 Sources/HISAPI/APIs/DiagnosesAPI.swift
 Sources/HISAPI/APIs/PatientsAPI.swift
 Sources/HISAPI/APIs/RecordsAPI.swift
+Sources/HISAPI/APIs/SecurityAPI.swift
 Sources/HISAPI/APIs/StaffAPI.swift
 Sources/HISAPI/Infrastructure/APIHelper.swift
 Sources/HISAPI/Infrastructure/APIs.swift
@@ -17,8 +18,16 @@ Sources/HISAPI/Infrastructure/OpenAPIMutex.swift
 Sources/HISAPI/Infrastructure/OpenISO8601DateFormatter.swift
 Sources/HISAPI/Infrastructure/SynchronizedDictionary.swift
 Sources/HISAPI/Infrastructure/URLSessionImplementations.swift
+Sources/HISAPI/Models/Account.swift
+Sources/HISAPI/Models/AccountInput.swift
+Sources/HISAPI/Models/AccountPassword.swift
+Sources/HISAPI/Models/AccountUpdate.swift
+Sources/HISAPI/Models/AccountsPage.swift
 Sources/HISAPI/Models/Actor.swift
 Sources/HISAPI/Models/AdministrativeSex.swift
+Sources/HISAPI/Models/AuditEvent.swift
+Sources/HISAPI/Models/AuditEventKind.swift
+Sources/HISAPI/Models/AuditPage.swift
 Sources/HISAPI/Models/ChangesInput.swift
 Sources/HISAPI/Models/Command.swift
 Sources/HISAPI/Models/CommandType.swift
@@ -33,6 +42,7 @@ Sources/HISAPI/Models/EventPage.swift
 Sources/HISAPI/Models/EventType.swift
 Sources/HISAPI/Models/ImportInput.swift
 Sources/HISAPI/Models/ImportResult.swift
+Sources/HISAPI/Models/LoginInput.swift
 Sources/HISAPI/Models/ModelError.swift
 Sources/HISAPI/Models/Patient.swift
 Sources/HISAPI/Models/PatientInput.swift
@@ -41,7 +51,14 @@ Sources/HISAPI/Models/Prescription.swift
 Sources/HISAPI/Models/PrescriptionStatus.swift
 Sources/HISAPI/Models/Record.swift
 Sources/HISAPI/Models/RecordDiagnosis.swift
+Sources/HISAPI/Models/SecurityError.swift
+Sources/HISAPI/Models/SecurityErrorError.swift
+Sources/HISAPI/Models/Session.swift
+Sources/HISAPI/Models/SetupInput.swift
+Sources/HISAPI/Models/SetupStatus.swift
 Sources/HISAPI/Models/Staff.swift
 Sources/HISAPI/Models/StaffInput.swift
 Sources/HISAPI/Models/StaffPage.swift
+Sources/HISAPI/Models/StaffRole.swift
 Sources/HISAPI/Models/State.swift
+Sources/HISAPI/Models/TokenInput.swift

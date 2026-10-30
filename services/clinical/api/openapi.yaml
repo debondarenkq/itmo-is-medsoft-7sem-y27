@@ -1,4 +1,3 @@
-# Source contract. Edit this file, then run go generate ./api.
 openapi: 3.0.3
 info:
   title: clinical-service
@@ -53,6 +52,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       parameters:
       - name: limit
         in: query
@@ -71,6 +82,10 @@ paths:
         in: query
         schema:
           type: string
+      - name: has_record
+        in: query
+        schema:
+          type: boolean
       tags:
       - Patients
     post:
@@ -115,6 +130,18 @@ paths:
                 $ref: '#/components/schemas/Error'
         '503':
           description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
           content:
             application/json:
               schema:
@@ -174,6 +201,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       parameters:
       - name: id
         in: path
@@ -225,6 +264,18 @@ paths:
                 $ref: '#/components/schemas/Error'
         '503':
           description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
           content:
             application/json:
               schema:
@@ -286,6 +337,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       parameters:
       - name: id
         in: path
@@ -342,6 +405,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       parameters:
       - name: id
         in: path
@@ -393,6 +468,18 @@ paths:
                 $ref: '#/components/schemas/Error'
         '503':
           description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
           content:
             application/json:
               schema:
@@ -459,6 +546,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       parameters:
       - name: id
         in: path
@@ -511,6 +610,18 @@ paths:
                 $ref: '#/components/schemas/Error'
         '503':
           description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
           content:
             application/json:
               schema:
@@ -573,6 +684,18 @@ paths:
                 $ref: '#/components/schemas/Error'
         '503':
           description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
           content:
             application/json:
               schema:
@@ -646,6 +769,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       parameters:
       - name: id
         in: path
@@ -666,7 +801,8 @@ paths:
           minimum: 1
       tags:
       - Records
-      description: Требуется ровно один параметр at или version. Несуществующая версия и момент до создания карты возвращают 404.
+      description: Требуется ровно один параметр at или version. Несуществующая версия
+        и момент до создания карты возвращают 404.
 components:
   schemas:
     Error:
@@ -743,6 +879,14 @@ components:
           maxLength: 32
         has_record:
           type: boolean
+        record_id:
+          type: string
+          format: uuid
+          nullable: true
+        record_number:
+          type: integer
+          format: int64
+          nullable: true
       required:
       - id
       - created_at
@@ -862,6 +1006,9 @@ components:
           minimum: 1
         state:
           $ref: '#/components/schemas/State'
+        number:
+          type: integer
+          format: int64
       required:
       - id
       - created_at
@@ -869,6 +1016,7 @@ components:
       - patient_id
       - version
       - state
+      - number
     CreateRecordInput:
       type: object
       properties:
@@ -883,7 +1031,8 @@ components:
       additionalProperties: false
       required:
       - type
-      description: Поля команды зависят от type. Их соответствие проверяет бизнес-модуль до сохранения всей группы.
+      description: Поля команды зависят от type. Их соответствие проверяет бизнес-модуль
+        до сохранения всей группы.
       properties:
         type:
           $ref: '#/components/schemas/CommandType'
@@ -894,7 +1043,8 @@ components:
         id:
           type: string
           format: uuid
-          description: Обязателен для изменения/удаления диагноза и изменения/отмены/удаления назначения; ID записи внутри ЭМК.
+          description: Обязателен для изменения/удаления диагноза и изменения/отмены/удаления
+            назначения; ID записи внутри ЭМК.
         text:
           type: string
           minLength: 3
@@ -994,6 +1144,9 @@ components:
       - CONFLICT
       - VERSION_CONFLICT
       - DEPENDENCY_UNAVAILABLE
+      - UNAUTHORIZED
+      - FORBIDDEN
+      - ACCESS_DENIED
     ErrorDetail:
       type: object
       properties:
@@ -1040,3 +1193,10 @@ components:
       - prescription_updated
       - prescription_cancelled
       - prescription_removed
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+- BearerAuth: []

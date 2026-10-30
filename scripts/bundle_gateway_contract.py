@@ -7,12 +7,14 @@ root = Path(__file__).resolve().parent.parent
 spec = {
     'openapi': '3.0.3',
     'info': {'title': 'HIS Gateway', 'version': '1.0.0'},
-    'servers': [{'url': 'http://localhost:8080'}],
+    'servers': [{'url': 'https://localhost:8443'}],
     'paths': {},
-    'components': {'schemas': {}},
+    'components': {'schemas': {}, 'securitySchemes': {'BearerAuth': {'type': 'http', 'scheme': 'bearer', 'bearerFormat': 'JWT'}}},
+    'security': [{'BearerAuth': []}],
 }
-for service in ('staff', 'catalog', 'clinical'):
-    source = json.loads((root / 'services' / service / 'api' / 'openapi.json').read_text())
+for service in ('staff', 'catalog', 'clinical', 'staff/api/security'):
+    source_path = root / 'services' / service / ('openapi.json' if service == 'staff/api/security' else 'api/openapi.json')
+    source = json.loads(source_path.read_text())
     for path, value in source['paths'].items():
         if path in spec['paths']:
             raise SystemExit(f'Duplicate route: {path}')

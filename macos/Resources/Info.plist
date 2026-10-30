@@ -14,9 +14,5 @@
     <key>NSHighResolutionCapable</key><true/>
     <key>CFBundleDevelopmentRegion</key><string>ru</string>
     <key>CFBundleLocalizations</key><array><string>ru</string></array>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key><true/>
-    </dict>
 </dict>
 </plist>

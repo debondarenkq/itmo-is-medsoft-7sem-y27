@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
@@ -38,6 +39,8 @@ func (implementation *Implementation) Register(router *mux.Router) {
 	}
 	validator := nethttpmiddleware.OapiRequestValidatorWithOptions(spec, &nethttpmiddleware.Options{
 		DoNotValidateServers: true,
+		// Authentication and role checks run before OpenAPI request validation.
+		Options: openapi3filter.Options{AuthenticationFunc: func(context.Context, *openapi3filter.AuthenticationInput) error { return nil }},
 		ErrorHandlerWithOpts: func(_ context.Context, err error, w http.ResponseWriter, request *http.Request, options nethttpmiddleware.ErrorHandlerOpts) {
 			writeValidationError(w, options.StatusCode, err)
 		},
@@ -149,6 +152,14 @@ func toPatient(value models.Patient) (contract.Patient, error) {
 	if err != nil {
 		return contract.Patient{}, fmt.Errorf("map patient birth date: %w", err)
 	}
+	var recordID *uuid.UUID
+	if value.RecordID != nil {
+		parsed, err := uuid.Parse(*value.RecordID)
+		if err != nil {
+			return contract.Patient{}, err
+		}
+		recordID = &parsed
+	}
 	return contract.Patient{
 		ID:                id,
 		FirstName:         value.FirstName,
@@ -158,6 +169,8 @@ func toPatient(value models.Patient) (contract.Patient, error) {
 		AdministrativeSex: contract.AdministrativeSex(value.AdministrativeSex),
 		Comment:           value.Comment,
 		HasRecord:         value.HasRecord,
+		RecordID:          recordID,
+		RecordNumber:      value.RecordNumber,
 		CreatedAt:         value.CreatedAt,
 		UpdatedAt:         value.UpdatedAt,
 	}, nil
@@ -187,6 +200,7 @@ func toRecord(value models.Record) (contract.Record, error) {
 		}
 	}
 	return contract.Record{
+		Number:    value.Number,
 		ID:        id,
 		PatientID: patientID,
 		Version:   value.Version,

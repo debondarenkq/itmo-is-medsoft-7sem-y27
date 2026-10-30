@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/adapters/security"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -49,6 +50,10 @@ func Run(name string, migrations fs.FS, register func(*mux.Router, *pgxpool.Pool
 	if err != nil {
 		return err
 	}
+	authorization, err := security.New()
+	if err != nil {
+		return err
+	}
 	router := mux.NewRouter()
 	router.HandleFunc("/live", func(w http.ResponseWriter, _ *http.Request) {
 		writeHealth(w, 200, map[string]any{"service": name, "status": "ok"})
@@ -65,7 +70,7 @@ func Run(name string, migrations fs.FS, register func(*mux.Router, *pgxpool.Pool
 	register(router, pool)
 	server := &http.Server{
 		Addr:              env("HTTP_ADDR", ":8080"),
-		Handler:           http.MaxBytesHandler(router, 1<<20),
+		Handler:           http.MaxBytesHandler(authorization.Middleware(router), 1<<20),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      20 * time.Second,

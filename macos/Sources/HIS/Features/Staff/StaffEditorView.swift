@@ -8,6 +8,7 @@ struct StaffEditorView: View {
   @Environment(\.dismiss) private var dismiss
   @State private var firstName: String
   @State private var lastName: String
+  @State private var role: StaffRole
   @State private var position: String
   @State private var isBusy = false
   @State private var errorText: String?
@@ -19,6 +20,7 @@ struct StaffEditorView: View {
     _firstName = State(initialValue: staff?.firstName ?? "")
     _lastName = State(initialValue: staff?.lastName ?? "")
     _position = State(initialValue: staff?.position ?? "")
+    _role = State(initialValue: staff?.role ?? .other)
   }
 
   var body: some View {
@@ -28,6 +30,9 @@ struct StaffEditorView: View {
           TextField("Фамилия", text: $lastName)
           TextField("Имя", text: $firstName)
           TextField("Должность", text: $position)
+          Picker("Роль", selection: $role) {
+            ForEach(StaffRole.allCases, id: \.self) { Text($0.label).tag($0) }
+          }
           if let staff {
             LabeledContent("Статус", value: staff.deletedAt == nil ? "Активен" : "Удалён")
           }
@@ -44,7 +49,7 @@ struct StaffEditorView: View {
     isBusy = true
     defer { isBusy = false }
     do {
-      let input = StaffInput(firstName: firstName, lastName: lastName, position: position)
+      let input = StaffInput(firstName: firstName, lastName: lastName, position: position, role: role)
       if let staff {
         _ = try await gateway.staff.updateStaff(id: staff.id, staffInput: input)
       } else {

@@ -14,7 +14,8 @@ func errorMessage(_ error: any Error) -> String {
   }
   if let responseError = error as? ErrorResponse {
     switch responseError {
-    case .error(let statusCode, _, _, let underlyingError):
+    case .error(let statusCode, let data, _, let underlyingError):
+      if let data, let problem = try? JSONDecoder().decode(SecurityError.self, from: data) { return problem.error.message }
       if statusCode > 0 { return "Сервер вернул ошибку HTTP \(statusCode)." }
       return underlyingError.localizedDescription
     }

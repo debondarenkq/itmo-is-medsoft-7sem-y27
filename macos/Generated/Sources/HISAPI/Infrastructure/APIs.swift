@@ -74,7 +74,7 @@ open class HISAPIAPIConfiguration: @unchecked Sendable {
     // MARK: - Init
 
     public init(
-        basePath: String = "http://localhost:8080",
+        basePath: String = "https://localhost:8443",
         customHeaders: [String: String] = [:],
         credential: URLCredential? = nil,
         requestBuilderFactory: RequestBuilderFactory = URLSessionRequestBuilderFactory(),

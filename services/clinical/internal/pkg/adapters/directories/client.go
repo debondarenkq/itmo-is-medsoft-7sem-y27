@@ -3,6 +3,7 @@ package directories
 import (
 	"context"
 	"fmt"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/adapters/security"
 	"net/http"
 	"net/url"
 	"strings"
@@ -28,11 +29,17 @@ func New(gatewayURL string) (*Client, error) {
 	gatewayURL = strings.TrimRight(gatewayURL, "/")
 
 	httpClient := &http.Client{Timeout: 3 * time.Second}
-	staff, err := staffapi.NewClientWithResponses(gatewayURL, staffapi.WithHTTPClient(httpClient))
+	staff, err := staffapi.NewClientWithResponses(gatewayURL, staffapi.WithHTTPClient(httpClient), staffapi.WithRequestEditorFn(func(ctx context.Context, r *http.Request) error {
+		r.Header.Set("Authorization", security.Authorization(ctx))
+		return nil
+	}))
 	if err != nil {
 		return nil, err
 	}
-	catalog, err := catalogapi.NewClientWithResponses(gatewayURL, catalogapi.WithHTTPClient(httpClient))
+	catalog, err := catalogapi.NewClientWithResponses(gatewayURL, catalogapi.WithHTTPClient(httpClient), catalogapi.WithRequestEditorFn(func(ctx context.Context, r *http.Request) error {
+		r.Header.Set("Authorization", security.Authorization(ctx))
+		return nil
+	}))
 	if err != nil {
 		return nil, err
 	}

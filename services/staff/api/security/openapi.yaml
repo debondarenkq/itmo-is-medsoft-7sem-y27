@@ -1,0 +1,904 @@
+openapi: 3.0.3
+info:
+  title: security
+  version: 2.0.0
+paths:
+  /api/v1/auth/setup:
+    get:
+      operationId: getSetup
+      tags:
+      - Security
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupStatus'
+        '400':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '401':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '403':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '409':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '429':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '500':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '503':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+      security: []
+    post:
+      operationId: setupAdmin
+      tags:
+      - Security
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '401':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '403':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '409':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '429':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '500':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '503':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetupInput'
+      security: []
+  /api/v1/auth/login:
+    post:
+      operationId: login
+      tags:
+      - Security
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '401':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '403':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '409':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '429':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '500':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '503':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+      security: []
+  /api/v1/auth/refresh:
+    post:
+      operationId: refreshSession
+      tags:
+      - Security
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '401':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '403':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '409':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '429':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '500':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '503':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenInput'
+      security: []
+  /api/v1/auth/logout:
+    post:
+      operationId: logout
+      tags:
+      - Security
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupStatus'
+        '400':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '401':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '403':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '409':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '429':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '500':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '503':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenInput'
+  /api/v1/accounts:
+    get:
+      operationId: listAccounts
+      tags:
+      - Security
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsPage'
+        '400':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '401':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '403':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '409':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '429':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '500':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '503':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+      - name: search
+        in: query
+        schema:
+          type: string
+      - name: is_active
+        in: query
+        schema:
+          type: boolean
+    post:
+      operationId: createAccount
+      tags:
+      - Security
+      responses:
+        '201':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountPassword'
+        '400':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '401':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '403':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '409':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '429':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '500':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '503':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountInput'
+  /api/v1/accounts/{id}:
+    put:
+      operationId: updateAccount
+      tags:
+      - Security
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '401':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '403':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '409':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '429':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '500':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '503':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountUpdate'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /api/v1/accounts/{id}/password:
+    post:
+      operationId: resetPassword
+      tags:
+      - Security
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountPassword'
+        '400':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '401':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '403':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '409':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '429':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '500':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '503':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /api/v1/audit:
+    get:
+      operationId: listAudit
+      tags:
+      - Security
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditPage'
+        '400':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '401':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '403':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '409':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '429':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '500':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+        '503':
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityError'
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+      - name: event_type
+        in: query
+        schema:
+          $ref: '#/components/schemas/AuditEventKind'
+      - name: from
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        schema:
+          type: string
+          format: date-time
+components:
+  schemas:
+    LoginInput:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 16
+        password:
+          type: string
+          minLength: 1
+          maxLength: 72
+        totp:
+          type: string
+      required:
+      - username
+      - password
+      additionalProperties: false
+    SetupInput:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+        confirmation:
+          type: string
+          minLength: 8
+          maxLength: 72
+        secret:
+          type: string
+        totp:
+          type: string
+      required:
+      - password
+      - confirmation
+      - secret
+      - totp
+      additionalProperties: false
+    SetupStatus:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        secret:
+          type: string
+      required:
+      - configured
+      additionalProperties: false
+    TokenInput:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+      required:
+      - refresh_token
+      additionalProperties: false
+    Session:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        account_id:
+          type: string
+          format: uuid
+        staff_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+      required:
+      - access_token
+      - refresh_token
+      - expires_at
+      - account_id
+      - role
+      additionalProperties: false
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+        staff_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum:
+          - admin
+          - doctor
+          - laboratory-technician
+          - nurse
+          - other
+        staff_name:
+          type: string
+      required:
+      - id
+      - username
+      - created_at
+      - updated_at
+      - is_active
+      - role
+      - staff_name
+      additionalProperties: false
+    AccountInput:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 16
+        staff_id:
+          type: string
+          format: uuid
+      required:
+      - username
+      - staff_id
+      additionalProperties: false
+    AccountUpdate:
+      type: object
+      properties:
+        is_active:
+          type: boolean
+        username:
+          type: string
+          minLength: 3
+          maxLength: 16
+        role:
+          type: string
+          enum:
+          - doctor
+          - laboratory-technician
+          - nurse
+          - other
+      required:
+      - is_active
+      additionalProperties: false
+    AccountPassword:
+      type: object
+      properties:
+        account:
+          $ref: '#/components/schemas/Account'
+        password:
+          type: string
+      required:
+      - account
+      - password
+      additionalProperties: false
+    AuditEvent:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        event_time:
+          type: string
+          format: date-time
+        actor:
+          type: string
+        message:
+          type: string
+        event_type:
+          $ref: '#/components/schemas/AuditEventKind'
+        actor_name:
+          type: string
+      required:
+      - event_id
+      - event_time
+      - actor
+      - message
+      - event_type
+      - actor_name
+      additionalProperties: false
+    AccountsPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+        total:
+          type: integer
+      required:
+      - items
+      - total
+      additionalProperties: false
+    AuditPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
+        total:
+          type: integer
+      required:
+      - items
+      - total
+      additionalProperties: false
+    SecurityError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+          required:
+          - code
+          - message
+      required:
+      - error
+      additionalProperties: false
+    AuditEventKind:
+      type: string
+      enum:
+      - admin_setup
+      - login
+      - login_failed
+      - logout
+      - access_denied
+      - staff_created
+      - staff_updated
+      - staff_deleted
+      - patient_created
+      - patient_updated
+      - patient_deleted
+      - record_created
+      - record_updated
+      - account_created
+      - account_updated
+      - token_refreshed
+      - other
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+- BearerAuth: []

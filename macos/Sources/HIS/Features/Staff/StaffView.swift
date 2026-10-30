@@ -12,6 +12,7 @@ struct StaffView: View {
   @State private var errorText: String?
   @State private var editor: StaffEditorSelection?
   @State private var deleting = false
+  @State private var accountStaff: Staff?
   private var selectedStaff: Staff? { staffMembers.first { $0.id == selectedStaffID } }
 
   var body: some View {
@@ -20,6 +21,7 @@ struct StaffView: View {
       Table(staffMembers, selection: $selectedStaffID) {
         TableColumn("Фамилия и имя", value: \.fullName)
         TableColumn("Должность", value: \.position)
+        TableColumn("Роль") { Text($0.role.label) }
         TableColumn("Статус") { staff in
           Text(staff.deletedAt == nil ? "Активен" : "Удалён")
             .foregroundStyle(staff.deletedAt == nil ? .green : .red)
@@ -38,12 +40,17 @@ struct StaffView: View {
       Button("Изменить", systemImage: "square.and.pencil") { edit(selectedStaff) }.disabled(
         selectedStaff == nil)
       Button("Удалить", systemImage: "trash") { deleting = true }.disabled(selectedStaff == nil)
+      Button("Создать аккаунт", systemImage: "person.badge.plus") { accountStaff = selectedStaff }
+        .disabled(selectedStaff == nil || selectedStaff?.deletedAt != nil)
       Button("Обновить", systemImage: "arrow.clockwise") { Task { await load() } }
     }
     .disabled(isBusy)
     .overlay { if isBusy { ProgressView() } }
     .task(id: "\(offset)|\(includeDeleted)") { await load() }
     .onChange(of: includeDeleted) { offset = 0 }
+    .sheet(item: $accountStaff) { staff in
+      AccountCreationView(gateway: gateway, staff: staff)
+    }
     .sheet(item: $editor) { selection in
       StaffEditorView(gateway: gateway, staff: selection.value) { Task { await load() } }
     }

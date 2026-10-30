@@ -1,7 +1,8 @@
 package models
 
 type Page struct {
-	Limit  int
-	Offset int
-	Search string
+	Limit     int
+	Offset    int
+	Search    string
+	HasRecord *bool
 }

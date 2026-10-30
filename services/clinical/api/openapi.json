@@ -133,7 +133,10 @@
           "NOT_FOUND",
           "CONFLICT",
           "VERSION_CONFLICT",
-          "DEPENDENCY_UNAVAILABLE"
+          "DEPENDENCY_UNAVAILABLE",
+          "UNAUTHORIZED",
+          "FORBIDDEN",
+          "ACCESS_DENIED"
         ],
         "type": "string"
       },
@@ -296,6 +299,16 @@
             "nullable": true,
             "type": "string"
           },
+          "record_id": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "record_number": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
           "updated_at": {
             "format": "date-time",
             "type": "string"
@@ -419,6 +432,10 @@
             "format": "uuid",
             "type": "string"
           },
+          "number": {
+            "format": "int64",
+            "type": "integer"
+          },
           "patient_id": {
             "format": "uuid",
             "type": "string"
@@ -442,7 +459,8 @@
           "updated_at",
           "patient_id",
           "version",
-          "state"
+          "state",
+          "number"
         ],
         "type": "object"
       },
@@ -496,6 +514,13 @@
         ],
         "type": "object"
       }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      }
     }
   },
   "info": {
@@ -533,6 +558,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "has_record",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -555,6 +587,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -645,6 +697,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -729,6 +801,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -819,6 +911,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -920,6 +1032,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1011,6 +1143,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -1112,6 +1264,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1203,6 +1375,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -1305,6 +1497,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -1417,6 +1629,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1527,6 +1759,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1585,6 +1837,11 @@
       }
     }
   },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
   "servers": [
     {
       "url": "http://localhost:8080"

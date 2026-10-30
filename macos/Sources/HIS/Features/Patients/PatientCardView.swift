@@ -24,16 +24,16 @@ struct PatientCardView: View {
             value: patient.birthDate.calendarDate.formatted(date: .numeric, time: .omitted))
           LabeledContent("Пол", value: patient.administrativeSex.label)
           LabeledContent("Комментарий", value: patient.comment)
-          LabeledContent("ЭМК", value: patient.hasRecord ? "Создана" : "Нет")
+          LabeledContent("ЭМК", value: patient.recordLabel)
         }
         Section {
           Button(
             patient.hasRecord ? "Открыть ЭМК" : "Создать ЭМК…", systemImage: "heart.text.clipboard"
           ) {
             showingRecord = true
-          }
-          Button("Изменить данные", systemImage: "square.and.pencil") { editing = true }
-          Button("Удалить пациента", role: .destructive) { deleting = true }
+          }.disabled(!patient.hasRecord && !worker.role.canCreate)
+          Button("Изменить данные", systemImage: "square.and.pencil") { editing = true }.disabled(!worker.role.canCreate)
+          Button("Удалить пациента", role: .destructive) { deleting = true }.disabled(!worker.role.canCreate)
         }
       }
       .formStyle(.grouped)

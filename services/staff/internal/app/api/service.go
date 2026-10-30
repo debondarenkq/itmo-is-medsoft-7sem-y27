@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
@@ -36,6 +37,8 @@ func (implementation *Implementation) Register(router *mux.Router) {
 	}
 	validator := nethttpmiddleware.OapiRequestValidatorWithOptions(spec, &nethttpmiddleware.Options{
 		DoNotValidateServers: true,
+		// Authentication and role checks run before OpenAPI request validation.
+		Options: openapi3filter.Options{AuthenticationFunc: func(context.Context, *openapi3filter.AuthenticationInput) error { return nil }},
 		ErrorHandlerWithOpts: func(_ context.Context, err error, w http.ResponseWriter, request *http.Request, options nethttpmiddleware.ErrorHandlerOpts) {
 			writeValidationError(w, options.StatusCode, err)
 		},
@@ -107,6 +110,7 @@ func fromStaffInput(value contract.StaffInput) models.Staff {
 		FirstName: value.FirstName,
 		LastName:  value.LastName,
 		Position:  value.Position,
+		Role:      roleValue(value.Role),
 	}
 }
 
@@ -120,8 +124,16 @@ func toStaff(value models.Staff) (contract.Staff, error) {
 		FirstName: value.FirstName,
 		LastName:  value.LastName,
 		Position:  value.Position,
+		Role:      contract.StaffRole(value.Role),
 		CreatedAt: value.CreatedAt,
 		UpdatedAt: value.UpdatedAt,
 		DeletedAt: value.DeletedAt,
 	}, nil
+}
+
+func roleValue(role *contract.StaffRole) string {
+	if role == nil {
+		return "other"
+	}
+	return string(*role)
 }

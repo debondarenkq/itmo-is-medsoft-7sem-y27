@@ -6,6 +6,8 @@ extension Staff {
 }
 
 extension Patient {
+  var age: Int { Calendar.current.dateComponents([.year], from: birthDate.calendarDate, to: Date()).year ?? 0 }
+  var recordLabel: String { recordNumber.map { String(format: "ЭМК-%06lld", $0) } ?? "Не создана" }
   var fullName: String {
     var parts = [lastName, firstName]
     if let middleName { parts.append(middleName) }

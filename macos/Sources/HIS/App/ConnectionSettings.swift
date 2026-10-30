@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ConnectionSettings: View {
+  @Environment(\.openWindow) private var openWindow
   @AppStorage(AppConfiguration.gatewayAddressKey)
   private var savedAddress = AppConfiguration.defaultGatewayAddress
   @State private var address = ""
@@ -12,6 +13,7 @@ struct ConnectionSettings: View {
       Text("Например, \(AppConfiguration.defaultGatewayAddress)").foregroundStyle(.secondary)
       ErrorNotice(message: errorText)
       Button("Применить", action: applySettings)
+      Button("Сертификаты сервера…") { openWindow(id: "server-certificates") }
     }
     .formStyle(.grouped)
     .frame(width: 480)
@@ -25,7 +27,7 @@ struct ConnectionSettings: View {
     }
     let value = address.trimmingCharacters(in: .whitespacesAndNewlines)
     guard let url = URLComponents(string: value),
-      ["http", "https"].contains(url.scheme),
+      url.scheme == "https",
       let host = url.host, !host.isEmpty,
       url.user == nil, url.password == nil, url.query == nil, url.fragment == nil
     else {

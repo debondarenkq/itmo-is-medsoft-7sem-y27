@@ -19,20 +19,27 @@ import (
 
 // Defines values for ErrorCode.
 const (
+	ACCESSDENIED          ErrorCode = "ACCESS_DENIED"
 	CONFLICT              ErrorCode = "CONFLICT"
 	DEPENDENCYUNAVAILABLE ErrorCode = "DEPENDENCY_UNAVAILABLE"
+	FORBIDDEN             ErrorCode = "FORBIDDEN"
 	INTERNAL              ErrorCode = "INTERNAL"
 	INVALIDREQUEST        ErrorCode = "INVALID_REQUEST"
 	NOTFOUND              ErrorCode = "NOT_FOUND"
+	UNAUTHORIZED          ErrorCode = "UNAUTHORIZED"
 	VERSIONCONFLICT       ErrorCode = "VERSION_CONFLICT"
 )
 
 // Valid indicates whether the value is a known member of the ErrorCode enum.
 func (e ErrorCode) Valid() bool {
 	switch e {
+	case ACCESSDENIED:
+		return true
 	case CONFLICT:
 		return true
 	case DEPENDENCYUNAVAILABLE:
+		return true
+	case FORBIDDEN:
 		return true
 	case INTERNAL:
 		return true
@@ -40,7 +47,33 @@ func (e ErrorCode) Valid() bool {
 		return true
 	case NOTFOUND:
 		return true
+	case UNAUTHORIZED:
+		return true
 	case VERSIONCONFLICT:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StaffRole.
+const (
+	Doctor               StaffRole = "doctor"
+	LaboratoryTechnician StaffRole = "laboratory-technician"
+	Nurse                StaffRole = "nurse"
+	Other                StaffRole = "other"
+)
+
+// Valid indicates whether the value is a known member of the StaffRole enum.
+func (e StaffRole) Valid() bool {
+	switch e {
+	case Doctor:
+		return true
+	case LaboratoryTechnician:
+		return true
+	case Nurse:
+		return true
+	case Other:
 		return true
 	default:
 		return false
@@ -70,8 +103,12 @@ type Staff struct {
 	ID        openapi_types.UUID `json:"id"`
 	LastName  string             `json:"last_name"`
 	Position  string             `json:"position"`
+	Role      StaffRole          `json:"role"`
 	UpdatedAt time.Time          `json:"updated_at"`
 }
+
+// StaffRole defines model for StaffRole.
+type StaffRole string
 
 // RequestEditorFn is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -261,6 +298,10 @@ type GetStaffResponse struct {
 	JSON200 *Staff
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *Error
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Error
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON409 the response for an HTTP 409 `application/json` response
@@ -281,6 +322,16 @@ func (r GetStaffResponse) GetJSON200() *Staff {
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
 func (r GetStaffResponse) GetJSON400() *Error {
 	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetStaffResponse) GetJSON401() *Error {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetStaffResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -377,6 +428,20 @@ func ParseGetStaffResponse(rsp *http.Response) (*GetStaffResponse, error) {
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error

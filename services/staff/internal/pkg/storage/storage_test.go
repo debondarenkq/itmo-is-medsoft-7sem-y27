@@ -10,7 +10,7 @@ import (
 func TestStaffSoftDelete(t *testing.T) {
 	r := testRepository(t)
 	ctx := context.Background()
-	v, err := r.Create(ctx, models.Staff{FirstName: "Анна", LastName: "Петрова", Position: "Терапевт"})
+	v, err := r.Create(ctx, models.Staff{Role: "other", FirstName: "Анна", LastName: "Петрова", Position: "Терапевт"})
 	if err != nil {
 		t.Fatal(err)
 	}

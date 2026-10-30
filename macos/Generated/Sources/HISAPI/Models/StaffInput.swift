@@ -12,17 +12,20 @@ public struct StaffInput: Sendable, Codable, Hashable {
     public var firstName: String
     public var lastName: String
     public var position: String
+    public var role: StaffRole?
 
-    public init(firstName: String, lastName: String, position: String) {
+    public init(firstName: String, lastName: String, position: String, role: StaffRole? = nil) {
         self.firstName = firstName
         self.lastName = lastName
         self.position = position
+        self.role = role
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case firstName = "first_name"
         case lastName = "last_name"
         case position
+        case role
     }
 
     // Encodable protocol methods
@@ -32,5 +35,6 @@ public struct StaffInput: Sendable, Codable, Hashable {
         try container.encode(firstName, forKey: .firstName)
         try container.encode(lastName, forKey: .lastName)
         try container.encode(position, forKey: .position)
+        try container.encodeIfPresent(role, forKey: .role)
     }
 }

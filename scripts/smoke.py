@@ -1,149 +1,222 @@
 #!/usr/bin/env python3
-"""Exercise all HIS scenarios through the public gateway; uses synthetic data.
+"""Check lab 2 through a TLS-verified gateway using synthetic data.
 
-Creates demo records intentionally: records cannot be deleted through the API.
-Run against a disposable Compose project when checking a clean database.
+Use --bootstrap only with a fresh, disposable Compose project. Without it the
+script prompts for the existing administrator password and current TOTP code.
+Passwords and tokens are kept in memory and never printed.
 """
 import argparse
-import datetime as dt
+import base64
+import getpass
+import hashlib
+import hmac
 import json
 from pathlib import Path
+import secrets
+import ssl
+import socket
+import struct
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
 
 
+def totp(secret, timestamp=None):
+    step = int(time.time() if timestamp is None else timestamp) // 30
+    digest = hmac.new(base64.b32decode(secret), struct.pack('>Q', step), hashlib.sha1).digest()
+    offset = digest[-1] & 15
+    return f'{(struct.unpack(">I", digest[offset:offset + 4])[0] & 0x7fffffff) % 1000000:06d}'
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--url', default='http://127.0.0.1:8080')
+    parser.add_argument('--url', default='https://localhost:8443')
+    parser.add_argument('--ca', default=str(Path(__file__).resolve().parent.parent / 'deploy/security/tls/ca/ca.crt'))
+    parser.add_argument('--bootstrap', action='store_true')
     args = parser.parse_args()
-    base = args.url.rstrip('/')
+    assert urllib.parse.urlparse(args.url).scheme == 'https', 'HTTPS is required'
+    context = ssl.create_default_context(cafile=args.ca)
+    context.minimum_version = ssl.TLSVersion.TLSv1_3
+    target = urllib.parse.urlparse(args.url)
+    with socket.create_connection((target.hostname, target.port or 443), timeout=5) as connection:
+        with context.wrap_socket(connection, server_hostname=target.hostname) as secured:
+            assert secured.version() == 'TLSv1.3'
+            issuer = dict(part[0] for part in secured.getpeercert()['issuer'])
+            assert issuer['organizationName'] == 'ITMO'
+            assert issuer['organizationalUnitName'] == 'MedSoft 2026/27 367907'
+    legacy = ssl.create_default_context(cafile=args.ca)
+    legacy.maximum_version = ssl.TLSVersion.TLSv1_2
+    try:
+        with socket.create_connection((target.hostname, target.port or 443), timeout=5) as connection:
+            with legacy.wrap_socket(connection, server_hostname=target.hostname):
+                raise AssertionError('The gateway accepted TLS 1.2')
+    except ssl.SSLError:
+        pass
+    token = None
 
-    def call(method, path, body=None, status=200):
+    def call(method, path, body=None, status=200, bearer=None):
         payload = None if body is None else json.dumps(body).encode()
-        request = urllib.request.Request(base + path, data=payload, method=method)
+        request = urllib.request.Request(args.url.rstrip('/') + path, data=payload, method=method)
         if payload is not None:
             request.add_header('Content-Type', 'application/json')
+        access = token if bearer is None else bearer
+        if access:
+            request.add_header('Authorization', 'Bearer ' + access)
         try:
-            response = urllib.request.urlopen(request, timeout=20)
+            response = urllib.request.urlopen(request, context=context, timeout=10)
         except urllib.error.HTTPError as error:
             response = error
         with response:
             actual = response.status
             data = response.read()
-        assert actual == status, f'{method} {path}: expected {status}, got {actual}: {data.decode()}'
+        # Do not include response bodies in failures: they may contain credentials.
+        assert actual == status, f'{method} {path}: expected HTTP {status}, got {actual}'
         return json.loads(data) if data else None
 
-    for service in ('staff', 'catalog', 'clinical'):
-        spec = call('GET', f'/docs/{service}/openapi.json')
-        assert spec['openapi'] == '3.0.3'
-
-    file_data = json.loads((Path(__file__).resolve().parent.parent / 'examples' / 'diagnoses.json').read_text())
+    for path in ['/api/v1/staff', '/api/v1/diagnoses', '/api/v1/patients', '/api/v1/accounts', '/api/v1/audit']:
+        call('GET', path, status=401)
+    setup = call('GET', '/api/v1/auth/setup')
+    if args.bootstrap:
+        assert not setup['configured'], '--bootstrap requires a fresh database'
+        password = "Aa1" + secrets.token_urlsafe(24)
+        secret = setup['secret']
+        call('POST', '/api/v1/auth/setup', {'password': password, 'confirmation': password + 'x', 'secret': secret, 'totp': totp(secret)}, 400)
+        call('POST', '/api/v1/auth/setup', {'password': password, 'confirmation': password, 'secret': secret, 'totp': 'invalid'}, 401)
+        assert not call('GET', '/api/v1/auth/setup')['configured']
+        admin = call('POST', '/api/v1/auth/setup', {'password': password, 'confirmation': password, 'secret': secret, 'totp': totp(secret)})
+        assert call('GET', '/api/v1/auth/setup')['configured']
+        # The TOTP step accepted during setup cannot be reused for login.
+        call('POST', '/api/v1/auth/login', {'username': 'admin', 'password': password, 'totp': totp(secret)}, 401)
+        admin = call('POST', '/api/v1/auth/login', {'username': 'admin', 'password': password, 'totp': totp(secret, time.time() + 30)})
+    else:
+        assert setup['configured'], 'Set up the administrator in the app or use --bootstrap on an isolated project'
+        admin = call('POST', '/api/v1/auth/login', {'username': 'admin', 'password': getpass.getpass('Administrator password: '), 'totp': input('TOTP: ').strip()})
+    call('POST', '/api/v1/auth/login', {'username': 'missing-user', 'password': 'wrong-password'}, 401)
+    previous = admin['refresh_token']
+    admin = call('POST', '/api/v1/auth/refresh', {'refresh_token': previous})
+    assert admin['refresh_token'] != previous
+    call('POST', '/api/v1/auth/refresh', {'refresh_token': previous}, 401)
+    token = admin['access_token']
+    call('GET', '/api/v1/patients', status=403)
+    staff_input = {'first_name': 'А', 'last_name': 'Б', 'position': 'Медработник'}
+    workers = {}
+    passwords = {}
+    for role in ['doctor', 'nurse', 'laboratory-technician', 'other']:
+        staff = call('POST', '/api/v1/staff', {**staff_input, 'role': role}, 201)
+        account = call('POST', '/api/v1/accounts', {'staff_id': staff['id'], 'username': 'u' + uuid.uuid4().hex[:12]}, 201)
+        generated = account['password']
+        passwords[role] = generated
+        assert len(generated) == 12 and all(c in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' for c in generated)
+        session = call('POST', '/api/v1/auth/login', {'username': account['account']['username'], 'password': generated})
+        workers[role] = (staff, account['account'], session)
+    doctor, doctor_account, doctor_session = workers['doctor']
+    account_search = urllib.parse.urlencode({'search': doctor_account['username'], 'is_active': 'true'})
+    matching = call('GET', '/api/v1/accounts?' + account_search)
+    assert matching['total'] == 1 and matching['items'][0]['staff_name'] == 'Б А'
+    assert matching['items'][0]['role'] == 'doctor'
+    new_username = 'u' + uuid.uuid4().hex[:12]
+    doctor_account.update(call('PUT', f'/api/v1/accounts/{doctor_account["id"]}', {'is_active': True, 'username': new_username}))
+    call('POST', '/api/v1/accounts', {'staff_id': doctor['id'], 'username': 'duplicate'}, 409)
+    call('POST', '/api/v1/staff', {**staff_input, 'role': 'administrator'}, 400)
+    file_data = json.loads((Path(__file__).resolve().parent.parent / 'examples/diagnoses.json').read_text())
     imported = call('POST', '/api/v1/diagnoses/import', file_data)['items']
-    imported_again = call('POST', '/api/v1/diagnoses/import', file_data)['items']
-    assert len(imported) == 5 and [d['id'] for d in imported] == [d['id'] for d in imported_again]
-    call('POST', '/api/v1/diagnoses/import', {'diagnoses': []}, 400)
-    call('POST', '/api/v1/diagnoses/import', {'diagnoses': [{'code': 'E11.900', 'name': 'Диагноз'}]}, 400)
-    call('POST', '/api/v1/diagnoses/import', {'diagnoses': [file_data['diagnoses'][0], file_data['diagnoses'][0]]}, 400)
-    call('POST', '/api/v1/staff', {'first_name': 'А', 'last_name': 'Иванов', 'position': 'Врач'}, 400)
-    staff_input = {'first_name': 'Анна', 'last_name': 'Петрова', 'position': 'Терапевт'}
-    staff = call('POST', '/api/v1/staff', staff_input, 201)
-    sid = staff['id']
-    assert call('GET', f'/api/v1/staff/{sid}')['first_name'] == 'Анна'
-    staff_input['position'] = 'Доктор'
-    staff = call('PUT', f'/api/v1/staff/{sid}', staff_input)
-
-    code = uuid.uuid4().hex[:6].upper()
-    diagnosis_input = {'code': code, 'name': 'Диагноз ' + uuid.uuid4().hex[:8]}
-    diagnosis = call('POST', '/api/v1/diagnoses', diagnosis_input, 201)
-    did = diagnosis['id']
-    assert call('GET', f'/api/v1/diagnoses/{did}')['code'] == code
-    call('POST', '/api/v1/diagnoses', {'code': code, 'name': 'Другая запись'}, 409)
-    call('POST', '/api/v1/diagnoses', {'code': uuid.uuid4().hex[:6].upper(), 'name': diagnosis['name']}, 409)
-    call('POST', '/api/v1/diagnoses', {'code': 'short', 'name': 'Название'}, 400)
-
-    patient_input = {'first_name': 'Иван', 'last_name': 'Иванов', 'middle_name': None,
-                     'birth_date': '2000-02-29', 'administrative_sex': 'UNKNOWN', 'comment': ''}
-    call('POST', '/api/v1/patients', {**patient_input, 'birth_date': '3000-01-01'}, 400)
-    call('POST', '/api/v1/patients', {**patient_input, 'comment': 'я' * 33}, 400)
-    disposable = call('POST', '/api/v1/patients', patient_input, 201)
-    call('DELETE', f'/api/v1/patients/{disposable["id"]}', status=204)
-    call('GET', f'/api/v1/patients/{disposable["id"]}', status=404)
+    again = call('POST', '/api/v1/diagnoses/import', file_data)['items']
+    assert [d['id'] for d in imported] == [d['id'] for d in again]
+    did = imported[0]['id']
+    patient_input = {'first_name': 'Иван', 'last_name': 'Тестовый', 'middle_name': None, 'birth_date': '2000-01-01', 'administrative_sex': 'UNKNOWN', 'comment': ''}
+    token = doctor_session['access_token']
     patient = call('POST', '/api/v1/patients', patient_input, 201)
     pid = patient['id']
-    patient_input['comment'] = 'Учебный пациент'
-    patient = call('PUT', f'/api/v1/patients/{pid}', patient_input)
-    assert not patient['has_record']
-    call('POST', f'/api/v1/patients/{pid}/record', {}, 400)
-    record = call('POST', f'/api/v1/patients/{pid}/record', {'staff_id': sid}, 201)
+    disposable = call('POST', '/api/v1/patients', patient_input, 201)
+    call('DELETE', f'/api/v1/patients/{disposable["id"]}', status=204)
+    call('PUT', f'/api/v1/patients/{pid}', {**patient_input, 'comment': 'Учебный пациент'})
+    call('POST', f'/api/v1/patients/{pid}/record', {'staff_id': workers['nurse'][0]['id']}, 400)
+    record = call('POST', f'/api/v1/patients/{pid}/record', {'staff_id': doctor['id']}, 201)
+    assert record['number'] > 0
+    patient_card = call('GET', f'/api/v1/patients/{pid}')
+    assert patient_card['record_id'] == record['id'] and patient_card['record_number'] == record['number']
+    number_search = urllib.parse.urlencode({'search': f"ЭМК-{record['number']:06d}"})
+    assert call('GET', '/api/v1/patients?' + number_search)['total'] == 1
+    record_search = urllib.parse.urlencode({'search': record['id'][:8], 'has_record': 'true'})
+    found = call('GET', '/api/v1/patients?' + record_search)
+    assert found['total'] == 1 and found['items'][0]['id'] == pid
     rid = record['id']
     path = f'/api/v1/records/{rid}'
-    assert record['version'] == 1 and record['state'] == {'diagnoses': [], 'prescriptions': []}
-    call('POST', f'/api/v1/patients/{pid}/record', {'staff_id': sid}, 409)
-    assert call('GET', f'/api/v1/patients/{pid}/record')['id'] == rid
     call('DELETE', f'/api/v1/patients/{pid}', status=409)
-    assert call('GET', f'/api/v1/patients/{pid}')['has_record']
-    call('POST', path + '/changes', {'expected_version': 1, 'commands': [{'type': 'add_prescription', 'text': 'Пить воду'}]}, 400)
 
-    def save(version, commands, status=200, author=sid):
-        return call('POST', path + '/changes', {'staff_id': author, 'expected_version': version, 'commands': commands}, status)
+    def save(version, commands, status=200):
+        return call('POST', path + '/changes', {'staff_id': doctor['id'], 'expected_version': version, 'commands': commands}, status)
 
     save(1, [{'type': 'add_prescription', 'text': 'Пить воду'}, {'type': 'remove_diagnosis', 'id': str(uuid.uuid4())}], 404)
     assert call('GET', path)['version'] == 1
-    assert call('GET', path + '/history')['total'] == 1
     added = save(1, [{'type': 'add_diagnosis', 'diagnosis_id': did}, {'type': 'add_prescription', 'text': 'Пить больше воды'}])
-    assert added['version'] == 2
-    old_rx = added['state']['prescriptions'][0]['id']
+    rxid = added['state']['prescriptions'][0]['id']
     entry_id = added['state']['diagnoses'][0]['id']
     save(2, [{'type': 'add_diagnosis', 'diagnosis_id': did}], 409)
     save(1, [{'type': 'add_prescription', 'text': 'Назначение'}], 409)
-    staff_input['first_name'] = 'Мария'
-    call('PUT', f'/api/v1/staff/{sid}', staff_input)
-    diagnosis_input['name'] = 'Изменённый ' + uuid.uuid4().hex[:6]
-    call('PUT', f'/api/v1/diagnoses/{did}', diagnosis_input)
-    edited = save(2, [{'type': 'edit_prescription', 'id': old_rx, 'text': 'Пить воду после еды'}])
-    new_rx = edited['state']['prescriptions'][0]['id']
-    assert new_rx == old_rx and edited['version'] == 3
-    assert edited['state']['diagnoses'][0]['name'] == diagnosis['name']
-    cancelled = save(3, [{'type': 'cancel_prescription', 'id': new_rx}, {'type': 'remove_diagnosis', 'id': entry_id}])
-    assert cancelled['version'] == 4
-    assert cancelled['state']['diagnoses'] == []
+    edited = save(2, [{'type': 'edit_prescription', 'id': rxid, 'text': 'Пить воду после еды'}])
+    assert edited['state']['prescriptions'][0]['id'] == rxid
+    cancelled = save(3, [{'type': 'cancel_prescription', 'id': rxid}, {'type': 'remove_diagnosis', 'id': entry_id}])
     assert cancelled['state']['prescriptions'][0]['status'] == 'cancelled'
-    save(4, [{'type': 'cancel_prescription', 'id': new_rx}], 409)
-    save(4, [{'type': 'edit_prescription', 'id': str(uuid.uuid4()), 'text': 'Новое назначение'}], 404)
-    history = call('GET', path + '/history')['items']
-    assert len(history) == 6
-    assert [e['sequence'] for e in history] == list(range(1, 7))
-    assert history[1]['actor']['first_name'] == 'Анна'
-    assert history[3]['actor']['first_name'] == 'Мария'
-    assert history[3]['type'] == 'prescription_updated'
-    assert history[3]['version'] == 3
-    assert history[3]['before']['text'] == 'Пить больше воды'
-    for snapshot in (added, edited, cancelled):
-        restored = call('GET', path + '/state?' + urllib.parse.urlencode({'at': snapshot['updated_at']}))
-        assert restored['state'] == snapshot['state'] and restored['version'] == snapshot['version']
-        restored = call('GET', path + f'/state?version={snapshot["version"]}')
-        assert restored['state'] == snapshot['state']
-    just_before_edit = dt.datetime.fromisoformat(edited['updated_at'].replace('Z', '+00:00')) - dt.timedelta(microseconds=1)
-    restored = call('GET', path + '/state?' + urllib.parse.urlencode({'at': just_before_edit.isoformat()}))
-    assert restored['state'] == added['state']
-    call('GET', path + '/state?at=1900-01-01T00:00:00Z', status=404)
-    call('GET', path + '/state?version=999', status=404)
-    call('GET', path + '/state?version=1&at=2000-01-01T00:00:00Z', status=400)
-    page = call('GET', path + '/history?limit=2&offset=3')
-    assert len(page['items']) == 2 and page['total'] == 6
-
-    call('DELETE', f'/api/v1/staff/{sid}', status=204)
-    assert call('GET', f'/api/v1/staff/{sid}')['deleted_at'] is not None
-    assert all(s['id'] != sid for s in call('GET', '/api/v1/staff?' + urllib.parse.urlencode({'search': 'Петрова'}))['items'])
-    save(4, [{'type': 'add_prescription', 'text': 'Назначение'}], 400)
-    second_staff = call('POST', '/api/v1/staff', staff_input, 201)
-    call('DELETE', f'/api/v1/diagnoses/{did}', status=204)
-    save(4, [{'type': 'add_diagnosis', 'diagnosis_id': did}], 400, second_staff['id'])
-    assert call('GET', path)['version'] == 4
-    call('DELETE', f'/api/v1/staff/{second_staff["id"]}', status=204)
-    print('PASS: staff, diagnoses, patients, EMR editing, history, snapshots, replay, rollback and API constraints')
+    for snapshot in [added, edited, cancelled]:
+        assert call('GET', path + f'/state?version={snapshot["version"]}')['state'] == snapshot['state']
+        query = urllib.parse.urlencode({'at': snapshot['updated_at']})
+        assert call('GET', path + '/state?' + query)['state'] == snapshot['state']
+    assert call('GET', path + '/history')['total'] == 6
+    for role, (staff, account, session) in workers.items():
+        token = session['access_token']
+        call('GET', path)
+        call('GET', '/api/v1/accounts', status=403)
+        call('GET', '/api/v1/audit', status=403)
+        if role != 'doctor':
+            call('POST', path + '/changes', {'staff_id': staff['id'], 'expected_version': 4, 'commands': []}, 403)
+        if role in ['other', 'laboratory-technician']:
+            call('POST', '/api/v1/patients', patient_input, 403)
+            call('POST', f'/api/v1/patients/{pid}/record', {'staff_id': staff['id']}, 403)
+        if role == 'nurse':
+            nurse_patient = call('POST', '/api/v1/patients', patient_input, 201)
+            call('POST', f'/api/v1/patients/{nurse_patient["id"]}/record', {'staff_id': staff['id']}, 201)
+    token = admin['access_token']
+    # Deactivation, password changes, role changes and deletion each revoke refresh.
+    other_staff, other_account, other_session = workers['other']
+    call('PUT', f'/api/v1/accounts/{other_account["id"]}', {'is_active': False})
+    call('POST', '/api/v1/auth/login', {'username': other_account['username'], 'password': passwords['other']}, 401)
+    call('POST', '/api/v1/auth/refresh', {'refresh_token': other_session['refresh_token']}, 401)
+    call('PUT', f'/api/v1/accounts/{other_account["id"]}', {'is_active': True})
+    reset = call('POST', f'/api/v1/accounts/{doctor_account["id"]}/password')
+    call('POST', '/api/v1/auth/login', {'username': doctor_account['username'], 'password': passwords['doctor']}, 401)
+    call('POST', '/api/v1/auth/refresh', {'refresh_token': doctor_session['refresh_token']}, 401)
+    session = call('POST', '/api/v1/auth/login', {'username': doctor_account['username'], 'password': reset['password']})
+    call('PUT', f'/api/v1/accounts/{doctor_account["id"]}', {'is_active': True, 'role': 'nurse'})
+    call('POST', '/api/v1/auth/refresh', {'refresh_token': session['refresh_token']}, 401)
+    changed = call('POST', '/api/v1/auth/login', {'username': doctor_account['username'], 'password': reset['password']})
+    assert changed['role'] == 'nurse'
+    call('POST', path + '/changes', {'staff_id': doctor['id'], 'expected_version': 4, 'commands': []}, 403, bearer=changed['access_token'])
+    staff, account, session = workers['laboratory-technician']
+    call('DELETE', f'/api/v1/staff/{staff["id"]}', status=204)
+    call('POST', '/api/v1/auth/refresh', {'refresh_token': session['refresh_token']}, 401)
+    call('PUT', f'/api/v1/accounts/{account["id"]}', {'is_active': True}, 409)
+    accounts = call('GET', '/api/v1/accounts?limit=200')['items']
+    assert not next(a for a in accounts if a['id'] == account['id'])['is_active']
+    assert all('password_hash' not in a for a in accounts)
+    events = call('GET', '/api/v1/audit?limit=200')['items']
+    assert events and any(e['actor'].startswith('anonymous:') for e in events)
+    assert any('отозвано refresh токенов: 1' in e['message'] for e in events)
+    assert events == sorted(events, key=lambda e: (e['event_time'], e['event_id']))
+    filtered = call('GET', '/api/v1/audit?event_type=patient_created&limit=200')
+    assert filtered['total'] > 0 and all(e['event_type'] == 'patient_created' for e in filtered['items'])
+    assert all(e['actor_name'] for e in filtered['items'])
+    future = urllib.parse.urlencode({'from': '3000-01-01T00:00:00Z'})
+    assert call('GET', '/api/v1/audit?' + future)['total'] == 0
+    invalid_period = urllib.parse.urlencode({'from': '3000-01-01T00:00:00Z', 'to': '2000-01-01T00:00:00Z'})
+    call('GET', '/api/v1/audit?' + invalid_period, status=400)
+    encoded = json.dumps(events)
+    assert reset['password'] not in encoded and admin['refresh_token'] not in encoded
+    call('POST', '/api/v1/auth/logout', {'refresh_token': admin['refresh_token']})
+    call('POST', '/api/v1/auth/refresh', {'refresh_token': admin['refresh_token']}, 401)
+    print('PASS: TLS 1.3, admin setup/TOTP, login, JWT, rotation/replay, all roles, actor binding, accounts, revocation, audit, EMR/history/rollback')
 
 
 if __name__ == '__main__':

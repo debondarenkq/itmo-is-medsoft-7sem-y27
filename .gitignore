@@ -6,3 +6,12 @@
 /coverage.out
 services/*/bin/
 services/*/*-service
+
+# Local teaching CA, private signing and service keys
+/deploy/security/
+
+# Local archives of prepared Docker images
+/build/
+
+# Optional per-machine Docker context; never changes the global context
+/deploy/docker-context

@@ -14,4 +14,7 @@ public enum ErrorCode: String, Sendable, Codable, CaseIterable {
     case conflict = "CONFLICT"
     case versionConflict = "VERSION_CONFLICT"
     case dependencyUnavailable = "DEPENDENCY_UNAVAILABLE"
+    case unauthorized = "UNAUTHORIZED"
+    case forbidden = "FORBIDDEN"
+    case accessDenied = "ACCESS_DENIED"
 }

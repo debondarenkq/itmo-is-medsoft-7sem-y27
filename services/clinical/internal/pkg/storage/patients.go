@@ -19,12 +19,12 @@ func New(pool *pgxpool.Pool) *Repository {
 	return &Repository{pool: pool}
 }
 
-const patientColumns = "p.id,p.first_name,p.last_name,p.middle_name,to_char(p.birth_date,'YYYY-MM-DD'),p.administrative_sex,p.comment,EXISTS(SELECT 1 FROM records r WHERE r.patient_id=p.id),p.created_at,p.updated_at"
+const patientColumns = "p.id,p.first_name,p.last_name,p.middle_name,to_char(p.birth_date,'YYYY-MM-DD'),p.administrative_sex,p.comment,EXISTS(SELECT 1 FROM records r WHERE r.patient_id=p.id),p.created_at,p.updated_at,(SELECT r.id FROM records r WHERE r.patient_id=p.id),(SELECT r.number FROM records r WHERE r.patient_id=p.id)"
 const patientReturning = "id,first_name,last_name,middle_name,to_char(birth_date,'YYYY-MM-DD'),administrative_sex,comment,created_at,updated_at"
 
 func scanPatient(row pgx.Row) (models.Patient, error) {
 	var patient models.Patient
-	err := row.Scan(&patient.ID, &patient.FirstName, &patient.LastName, &patient.MiddleName, &patient.BirthDate, &patient.AdministrativeSex, &patient.Comment, &patient.HasRecord, &patient.CreatedAt, &patient.UpdatedAt)
+	err := row.Scan(&patient.ID, &patient.FirstName, &patient.LastName, &patient.MiddleName, &patient.BirthDate, &patient.AdministrativeSex, &patient.Comment, &patient.HasRecord, &patient.CreatedAt, &patient.UpdatedAt, &patient.RecordID, &patient.RecordNumber)
 	return patient, mapNotFoundError(err)
 }
 
@@ -39,12 +39,12 @@ func (repository *Repository) GetPatient(ctx context.Context, id string) (models
 }
 
 func (repository *Repository) ListPatients(ctx context.Context, page models.Page) ([]models.Patient, int, error) {
-	filter := " FROM patients p WHERE ($1='' OR (p.first_name || ' ' || p.last_name || ' ' || COALESCE(p.middle_name,'')) ILIKE '%' || $1 || '%')"
+	filter := " FROM patients p WHERE ($1='' OR (p.first_name || ' ' || p.last_name || ' ' || COALESCE(p.middle_name,'')) ILIKE '%' || $1 || '%' OR EXISTS(SELECT 1 FROM records r WHERE r.patient_id=p.id AND (r.id::text ILIKE '%' || $1 || '%' OR ('ЭМК-'||lpad(r.number::text,GREATEST(6,length(r.number::text)),'0')) ILIKE '%'||$1||'%'))) AND ($2::boolean IS NULL OR EXISTS(SELECT 1 FROM records r WHERE r.patient_id=p.id)=$2)"
 	var total int
-	if err := repository.pool.QueryRow(ctx, "SELECT count(*)"+filter, page.Search).Scan(&total); err != nil {
+	if err := repository.pool.QueryRow(ctx, "SELECT count(*)"+filter, page.Search, page.HasRecord).Scan(&total); err != nil {
 		return nil, 0, err
 	}
-	rows, err := repository.pool.Query(ctx, "SELECT "+patientColumns+filter+" ORDER BY p.last_name,p.first_name,p.id LIMIT $2 OFFSET $3", page.Search, page.Limit, page.Offset)
+	rows, err := repository.pool.Query(ctx, "SELECT "+patientColumns+filter+" ORDER BY p.last_name,p.first_name,p.id LIMIT $3 OFFSET $4", page.Search, page.HasRecord, page.Limit, page.Offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -75,9 +75,10 @@ func (repository *Repository) UpdatePatient(ctx context.Context, id string, pati
 	if err != nil {
 		return patient, err
 	}
-	if err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM records WHERE patient_id=$1)", id).Scan(&patient.HasRecord); err != nil {
+	if err = tx.QueryRow(ctx, "SELECT (SELECT id FROM records WHERE patient_id=$1),(SELECT number FROM records WHERE patient_id=$1)", id).Scan(&patient.RecordID, &patient.RecordNumber); err != nil {
 		return patient, err
 	}
+	patient.HasRecord = patient.RecordID != nil
 	return patient, tx.Commit(ctx)
 }
 

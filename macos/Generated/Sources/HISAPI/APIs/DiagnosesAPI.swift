@@ -26,6 +26,9 @@ open class DiagnosesAPI {
     /**
      Создать запись
      - POST /api/v1/diagnoses
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter diagnosisInput: (body)
      - returns: RequestBuilder<Diagnosis>
      */
@@ -44,7 +47,7 @@ open class DiagnosesAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Diagnosis>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -60,6 +63,9 @@ open class DiagnosesAPI {
     /**
      Мягкое удаление
      - DELETE /api/v1/diagnoses/{id}
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - returns: RequestBuilder<Void>
      */
@@ -81,7 +87,7 @@ open class DiagnosesAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Void>.Type = apiConfiguration.requestBuilderFactory.getNonDecodableBuilder()
 
-        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "DELETE", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -97,6 +103,9 @@ open class DiagnosesAPI {
     /**
      Карточка, включая мягко удалённые записи
      - GET /api/v1/diagnoses/{id}
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - returns: RequestBuilder<Diagnosis>
      */
@@ -118,7 +127,7 @@ open class DiagnosesAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Diagnosis>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -134,6 +143,9 @@ open class DiagnosesAPI {
     /**
      Импортировать диагнозы из выбранного JSON-файла одной транзакцией
      - POST /api/v1/diagnoses/import
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter importInput: (body)
      - returns: RequestBuilder<ImportResult>
      */
@@ -152,7 +164,7 @@ open class DiagnosesAPI {
 
         let localVariableRequestBuilder: RequestBuilder<ImportResult>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -171,6 +183,9 @@ open class DiagnosesAPI {
     /**
      Список активных записей
      - GET /api/v1/diagnoses
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter limit: (query)  (optional, default to 50)
      - parameter offset: (query)  (optional, default to 0)
      - parameter search: (query)  (optional)
@@ -199,7 +214,7 @@ open class DiagnosesAPI {
 
         let localVariableRequestBuilder: RequestBuilder<DiagnosisPage>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -216,6 +231,9 @@ open class DiagnosesAPI {
     /**
      Полностью обновить активную запись
      - PUT /api/v1/diagnoses/{id}
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - parameter diagnosisInput: (body)
      - returns: RequestBuilder<Diagnosis>
@@ -238,6 +256,6 @@ open class DiagnosesAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Diagnosis>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "PUT", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 }

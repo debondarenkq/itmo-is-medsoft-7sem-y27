@@ -73,7 +73,7 @@ struct DiagnosesView: View {
 
     do {
       let contents = try Data(contentsOf: file)
-      let result = try await gateway.diagnoses.importDiagnoses(contents: contents)
+      let result = try await gateway.importDiagnoses(contents: contents)
       importResult = "Импортировано записей: \(result.items.count)"
       await load()
     } catch {

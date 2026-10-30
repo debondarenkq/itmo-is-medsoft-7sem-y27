@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/internal/pkg/adapters/security"
 
 	"github.com/google/uuid"
 
@@ -13,6 +14,10 @@ import (
 func (implementation *Implementation) SaveRecord(ctx context.Context, request contract.SaveRecordRequestObject) (contract.SaveRecordResponseObject, error) {
 	if err := validation.RequireID(request.ID); err != nil {
 		return nil, err
+	}
+	actorID := security.StaffID(ctx)
+	if actorID != "" && request.Body.StaffID.String() != actorID {
+		return nil, models.ErrInvalidInput
 	}
 	record, err := implementation.Module.Save(ctx, request.ID.String(), fromChangesInput(*request.Body))
 	if err != nil {

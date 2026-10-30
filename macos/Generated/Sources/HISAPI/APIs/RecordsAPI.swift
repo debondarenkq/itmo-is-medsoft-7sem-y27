@@ -27,6 +27,9 @@ open class RecordsAPI {
     /**
      Создать ЭМК с обязательным автором
      - POST /api/v1/patients/{id}/record
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - parameter createRecordInput: (body)
      - returns: RequestBuilder<Record>
@@ -49,7 +52,7 @@ open class RecordsAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Record>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -65,6 +68,9 @@ open class RecordsAPI {
     /**
      Текущее состояние карты
      - GET /api/v1/records/{id}
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - returns: RequestBuilder<Record>
      */
@@ -86,7 +92,7 @@ open class RecordsAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Record>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -104,6 +110,9 @@ open class RecordsAPI {
     /**
      История по порядку событий
      - GET /api/v1/records/{id}/history
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - parameter limit: (query)  (optional, default to 50)
      - parameter offset: (query)  (optional, default to 0)
@@ -132,7 +141,7 @@ open class RecordsAPI {
 
         let localVariableRequestBuilder: RequestBuilder<EventPage>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -151,6 +160,9 @@ open class RecordsAPI {
      Восстановить карту; требуется ровно один из at или version
      - GET /api/v1/records/{id}/state
      - Требуется ровно один параметр at или version. Несуществующая версия и момент до создания карты возвращают 404.
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - parameter at: (query)  (optional)
      - parameter version: (query)  (optional)
@@ -179,7 +191,7 @@ open class RecordsAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Record>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "GET", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 
     /**
@@ -196,6 +208,9 @@ open class RecordsAPI {
     /**
      Атомарно сохранить команды и историю
      - POST /api/v1/records/{id}/changes
+     - Bearer Token:
+       - type: http
+       - name: BearerAuth
      - parameter id: (path)
      - parameter changesInput: (body)
      - returns: RequestBuilder<Record>
@@ -218,6 +233,6 @@ open class RecordsAPI {
 
         let localVariableRequestBuilder: RequestBuilder<Record>.Type = apiConfiguration.requestBuilderFactory.getBuilder()
 
-        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: false, apiConfiguration: apiConfiguration)
+        return localVariableRequestBuilder.init(method: "POST", URLString: (localVariableUrlComponents?.string ?? localVariableURLString), parameters: localVariableParameters, headers: localVariableHeaderParameters, requiresAuthentication: true, apiConfiguration: apiConfiguration)
     }
 }

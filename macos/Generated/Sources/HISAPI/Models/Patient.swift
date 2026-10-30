@@ -18,9 +18,11 @@ public struct Patient: Sendable, Codable, Hashable {
     public var id: UUID
     public var lastName: String
     public var middleName: String?
+    public var recordId: UUID?
+    public var recordNumber: Int64?
     public var updatedAt: Date
 
-    public init(administrativeSex: AdministrativeSex, birthDate: OpenAPIDateWithoutTime, comment: String, createdAt: Date, firstName: String, hasRecord: Bool, id: UUID, lastName: String, middleName: String?, updatedAt: Date) {
+    public init(administrativeSex: AdministrativeSex, birthDate: OpenAPIDateWithoutTime, comment: String, createdAt: Date, firstName: String, hasRecord: Bool, id: UUID, lastName: String, middleName: String?, recordId: UUID? = nil, recordNumber: Int64? = nil, updatedAt: Date) {
         self.administrativeSex = administrativeSex
         self.birthDate = birthDate
         self.comment = comment
@@ -30,6 +32,8 @@ public struct Patient: Sendable, Codable, Hashable {
         self.id = id
         self.lastName = lastName
         self.middleName = middleName
+        self.recordId = recordId
+        self.recordNumber = recordNumber
         self.updatedAt = updatedAt
     }
 
@@ -43,6 +47,8 @@ public struct Patient: Sendable, Codable, Hashable {
         case id
         case lastName = "last_name"
         case middleName = "middle_name"
+        case recordId = "record_id"
+        case recordNumber = "record_number"
         case updatedAt = "updated_at"
     }
 
@@ -59,6 +65,8 @@ public struct Patient: Sendable, Codable, Hashable {
         try container.encode(id, forKey: .id)
         try container.encode(lastName, forKey: .lastName)
         try container.encode(middleName, forKey: .middleName)
+        try container.encodeIfPresent(recordId, forKey: .recordId)
+        try container.encodeIfPresent(recordNumber, forKey: .recordNumber)
         try container.encode(updatedAt, forKey: .updatedAt)
     }
 }

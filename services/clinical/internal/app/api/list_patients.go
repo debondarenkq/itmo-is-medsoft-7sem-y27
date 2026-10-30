@@ -8,6 +8,7 @@ import (
 
 func (implementation *Implementation) ListPatients(ctx context.Context, request contract.ListPatientsRequestObject) (contract.ListPatientsResponseObject, error) {
 	page := pageFromParams(request.Params.Limit, request.Params.Offset, request.Params.Search)
+	page.HasRecord = request.Params.HasRecord
 	patients, total, err := implementation.Module.ListPatients(ctx, page)
 	if err != nil {
 		return nil, err

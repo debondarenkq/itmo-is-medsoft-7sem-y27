@@ -25,20 +25,27 @@ import (
 
 // Defines values for ErrorCode.
 const (
+	ACCESSDENIED          ErrorCode = "ACCESS_DENIED"
 	CONFLICT              ErrorCode = "CONFLICT"
 	DEPENDENCYUNAVAILABLE ErrorCode = "DEPENDENCY_UNAVAILABLE"
+	FORBIDDEN             ErrorCode = "FORBIDDEN"
 	INTERNAL              ErrorCode = "INTERNAL"
 	INVALIDREQUEST        ErrorCode = "INVALID_REQUEST"
 	NOTFOUND              ErrorCode = "NOT_FOUND"
+	UNAUTHORIZED          ErrorCode = "UNAUTHORIZED"
 	VERSIONCONFLICT       ErrorCode = "VERSION_CONFLICT"
 )
 
 // Valid indicates whether the value is a known member of the ErrorCode enum.
 func (e ErrorCode) Valid() bool {
 	switch e {
+	case ACCESSDENIED:
+		return true
 	case CONFLICT:
 		return true
 	case DEPENDENCYUNAVAILABLE:
+		return true
+	case FORBIDDEN:
 		return true
 	case INTERNAL:
 		return true
@@ -46,7 +53,33 @@ func (e ErrorCode) Valid() bool {
 		return true
 	case NOTFOUND:
 		return true
+	case UNAUTHORIZED:
+		return true
 	case VERSIONCONFLICT:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StaffRole.
+const (
+	Doctor               StaffRole = "doctor"
+	LaboratoryTechnician StaffRole = "laboratory-technician"
+	Nurse                StaffRole = "nurse"
+	Other                StaffRole = "other"
+)
+
+// Valid indicates whether the value is a known member of the StaffRole enum.
+func (e StaffRole) Valid() bool {
+	switch e {
+	case Doctor:
+		return true
+	case LaboratoryTechnician:
+		return true
+	case Nurse:
+		return true
+	case Other:
 		return true
 	default:
 		return false
@@ -76,14 +109,16 @@ type Staff struct {
 	ID        openapi_types.UUID `json:"id"`
 	LastName  string             `json:"last_name"`
 	Position  string             `json:"position"`
+	Role      StaffRole          `json:"role"`
 	UpdatedAt time.Time          `json:"updated_at"`
 }
 
 // StaffInput defines model for StaffInput.
 type StaffInput struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Position  string `json:"position"`
+	FirstName string     `json:"first_name"`
+	LastName  string     `json:"last_name"`
+	Position  string     `json:"position"`
+	Role      *StaffRole `json:"role,omitempty"`
 }
 
 // StaffPage defines model for StaffPage.
@@ -93,6 +128,9 @@ type StaffPage struct {
 	Offset int     `json:"offset"`
 	Total  int     `json:"total"`
 }
+
+// StaffRole defines model for StaffRole.
+type StaffRole string
 
 // ListStaffParams defines parameters for ListStaff.
 type ListStaffParams struct {
@@ -462,6 +500,34 @@ func (response ListStaff400JSONResponse) VisitListStaffResponse(w http.ResponseW
 	return err
 }
 
+type ListStaff401JSONResponse Error
+
+func (response ListStaff401JSONResponse) VisitListStaffResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListStaff403JSONResponse Error
+
+func (response ListStaff403JSONResponse) VisitListStaffResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type ListStaff404JSONResponse Error
 
 func (response ListStaff404JSONResponse) VisitListStaffResponse(w http.ResponseWriter) error {
@@ -568,6 +634,34 @@ func (response CreateStaff400JSONResponse) VisitCreateStaffResponse(w http.Respo
 	return err
 }
 
+type CreateStaff401JSONResponse Error
+
+func (response CreateStaff401JSONResponse) VisitCreateStaffResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateStaff403JSONResponse Error
+
+func (response CreateStaff403JSONResponse) VisitCreateStaffResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreateStaff404JSONResponse Error
 
 func (response CreateStaff404JSONResponse) VisitCreateStaffResponse(w http.ResponseWriter) error {
@@ -664,6 +758,34 @@ func (response DeleteStaff400JSONResponse) VisitDeleteStaffResponse(w http.Respo
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteStaff401JSONResponse Error
+
+func (response DeleteStaff401JSONResponse) VisitDeleteStaffResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteStaff403JSONResponse Error
+
+func (response DeleteStaff403JSONResponse) VisitDeleteStaffResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -774,6 +896,34 @@ func (response GetStaff400JSONResponse) VisitGetStaffResponse(w http.ResponseWri
 	return err
 }
 
+type GetStaff401JSONResponse Error
+
+func (response GetStaff401JSONResponse) VisitGetStaffResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetStaff403JSONResponse Error
+
+func (response GetStaff403JSONResponse) VisitGetStaffResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetStaff404JSONResponse Error
 
 func (response GetStaff404JSONResponse) VisitGetStaffResponse(w http.ResponseWriter) error {
@@ -877,6 +1027,34 @@ func (response UpdateStaff400JSONResponse) VisitUpdateStaffResponse(w http.Respo
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateStaff401JSONResponse Error
+
+func (response UpdateStaff401JSONResponse) VisitUpdateStaffResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateStaff403JSONResponse Error
+
+func (response UpdateStaff403JSONResponse) VisitUpdateStaffResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -1156,27 +1334,30 @@ func (sh *strictHandler) UpdateStaff(w http.ResponseWriter, r *http.Request, id 
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"7FjbahtHGH4VMe3lxlrHDqR750hKEQg5jQ9QghFj7aw0YU+ZnTU1ZsGHhhQSYtqbQmgppS+guBaR7Uh+",
-	"hX/eqMzMytZhHTWtkXOxd7uz85+++eabf3YPNQMvDHzi8whZeyhqtomH1WOFsYDJh5AFIWGcEjVMhsNf",
-	"M+IgC31VvPZQTM2LyrZMOKYuShIDMfIipozYyHqWOtgyEN8NCbJQsP2cNDlKDB2xFNhExfFjT06v1tcr",
-	"T+srNWSgan1zpVYtN55WvtuorK0jA9VX1xuPVzfqZWSg0mr9ca1aksObladr1dV6Y2SoXHlSqZcr9dL3",
-	"jY36yuZKtbbyqFYZSSPijPqtqzTS5KfKb6bpzaxe1ZEYyKHEtZUptm3KaeBj98mYy6kEpoDxSBThFsmY",
-	"PIGtyu56fhbIaxw7TkZdjGBO7Abm8s0JmCefkI05ucepJ71O5WkTl8yw8WPXxdsuQRZnMcnw4VAW8YaP",
-	"PVWdh3+oEb/F28i6v2wgj/rD16UMW2qPxY1jamel6eL/HCEMIrVkn28Zh/Zn4jmxlKqWkVUZczmG22iF",
-	"IymPrc+NTKj6YcxvZqeD3YgYE1z5P2t2B4sxAexs5G4E60m6CcfhoJx44w+fEge9/653OWYM7ypkqEf5",
-	"yBanPictwuSnwHEicsM3HnDsZn2a5JNKbjh/GO7K93TN0gH1nUD5ptzVkGLHuRcRtkObErIdwiK1Imhx",
-	"wVwwVa4h8XFIkYWWFsyFJYkr5m0FSxGHtLizWIyGEtTSRUkwsUS+aiML1WjENUjSlGGPcMIiZD3bQ1RG",
-	"ehETtiulRZHoqg6Nr3RnEwfHLkfWA9OQRKGePEnum6biiX5bNDLwyg6QApQZYdSl+e9dRgSzZnvM5RRn",
-	"sy2p33RjmzTSrZ2dVbppU5fbQeAS7KMk2ZKMiMLAjzRx75umPtJ8TnwtAmHo0qZai+LzSG+16wAzaa32",
-	"hyKOTaImo6Hergj+EgdwCV3xUjJk+RbD6iYlK+Tv0IVzGIh9sS+fxCH0xWs4K8AH6MCl2IeBONDZLM8n",
-	"mwL0oQNncApd6MNAx/5mDrHfwQD64ke4gJ7EQQVefDCnJTiBrthPoS/pcPfWJTETAz2YCxF+gb44EoeK",
-	"Bn3oi2NxXICB+Al68B7OoaMzWZpDJr9CB06gJw6gBx8l/8SheCNp0YXT9PUILiVNlHpHsedhtist/4RL",
-	"ZTeA8wJ0FJt7cCJhFS9TRqvvXTiTEo9bUi/TVm9LH50ZSltS3cVQa+VhQSL+KLB3b1cVdIuRjB9Ish1M",
-	"pvRo8XYj51qUa1GuRbeuRQP4AKfQ0RZX4iPeZEhPYox3fcU9aie6WZENzLQmldX4p/o/2U6ONEQ2mpSV",
-	"0Z5oxuUwoyVa1tnlkpFLRi4ZtyQZv4lj+FvSGboFcSS1Ay5UOT3oZvYrmRfDbwm/Q10w89Yk15lcZ75o",
-	"nXkHHbEvDmEgXsmUjQKcwDlciLfiFXRkPR+HQnQlQ+JnVe1rSbzre1Qv+xYVZ6jShvorO19huvuLWq6G",
-	"uRrmavhlq+EfMIALyRptI94WYADv5YByqNyM/ks6kjNmXOdkBMJ2hvoWMxdZqM15aBWLbtDEbjuIuPXQ",
-	"fGiiZCv5JwAA//8=",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

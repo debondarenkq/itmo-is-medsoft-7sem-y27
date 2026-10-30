@@ -108,7 +108,7 @@ func TestRecordLifecycleAndHistoricalState(t *testing.T) {
 		t.Fatal("failed batch changed record")
 	}
 	_, total, err = r.History(ctx, record.ID, models.Page{Limit: 200})
-	if err != nil || total != 7 {
+	if err != nil || total != len(events) {
 		t.Fatal("failed batch changed history")
 	}
 	// Event snapshots contain complete before/after data, not mutable references.

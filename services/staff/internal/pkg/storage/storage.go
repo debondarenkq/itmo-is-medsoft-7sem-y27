@@ -17,11 +17,11 @@ func New(pool *pgxpool.Pool) *Repository {
 	return &Repository{pool: pool}
 }
 
-const columns = "id, first_name, last_name, position, created_at, updated_at, deleted_at"
+const columns = "id, first_name, last_name, position, role, created_at, updated_at, deleted_at"
 
 func scan(row pgx.Row) (models.Staff, error) {
 	var staff models.Staff
-	err := row.Scan(&staff.ID, &staff.FirstName, &staff.LastName, &staff.Position, &staff.CreatedAt, &staff.UpdatedAt, &staff.DeletedAt)
+	err := row.Scan(&staff.ID, &staff.FirstName, &staff.LastName, &staff.Position, &staff.Role, &staff.CreatedAt, &staff.UpdatedAt, &staff.DeletedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return staff, models.ErrNotFound
 	}
@@ -55,11 +55,11 @@ func (repository *Repository) List(ctx context.Context, page models.Page) ([]mod
 }
 
 func (repository *Repository) Create(ctx context.Context, staff models.Staff) (models.Staff, error) {
-	return scan(repository.pool.QueryRow(ctx, "INSERT INTO staff(id,first_name,last_name,position) VALUES ($1, $2, $3, $4) RETURNING "+columns, uuid.NewString(), staff.FirstName, staff.LastName, staff.Position))
+	return scan(repository.pool.QueryRow(ctx, "INSERT INTO staff(id,first_name,last_name,position,role) VALUES ($1, $2, $3, $4, $5) RETURNING "+columns, uuid.NewString(), staff.FirstName, staff.LastName, staff.Position, staff.Role))
 }
 
 func (repository *Repository) Update(ctx context.Context, id string, staff models.Staff) (models.Staff, error) {
-	return scan(repository.pool.QueryRow(ctx, "UPDATE staff SET first_name=$2, last_name=$3, position=$4, updated_at=clock_timestamp() WHERE id=$1 AND deleted_at IS NULL RETURNING "+columns, id, staff.FirstName, staff.LastName, staff.Position))
+	return scan(repository.pool.QueryRow(ctx, "UPDATE staff SET first_name=$2, last_name=$3, position=$4, role=$5, updated_at=clock_timestamp() WHERE id=$1 AND deleted_at IS NULL RETURNING "+columns, id, staff.FirstName, staff.LastName, staff.Position, staff.Role))
 }
 
 func (repository *Repository) Delete(ctx context.Context, id string) error {

@@ -19,26 +19,35 @@ import (
 
 // Defines values for ErrorCode.
 const (
+	ACCESSDENIED          ErrorCode = "ACCESS_DENIED"
 	CONFLICT              ErrorCode = "CONFLICT"
 	DEPENDENCYUNAVAILABLE ErrorCode = "DEPENDENCY_UNAVAILABLE"
+	FORBIDDEN             ErrorCode = "FORBIDDEN"
 	INTERNAL              ErrorCode = "INTERNAL"
 	INVALIDREQUEST        ErrorCode = "INVALID_REQUEST"
 	NOTFOUND              ErrorCode = "NOT_FOUND"
+	UNAUTHORIZED          ErrorCode = "UNAUTHORIZED"
 	VERSIONCONFLICT       ErrorCode = "VERSION_CONFLICT"
 )
 
 // Valid indicates whether the value is a known member of the ErrorCode enum.
 func (e ErrorCode) Valid() bool {
 	switch e {
+	case ACCESSDENIED:
+		return true
 	case CONFLICT:
 		return true
 	case DEPENDENCYUNAVAILABLE:
+		return true
+	case FORBIDDEN:
 		return true
 	case INTERNAL:
 		return true
 	case INVALIDREQUEST:
 		return true
 	case NOTFOUND:
+		return true
+	case UNAUTHORIZED:
 		return true
 	case VERSIONCONFLICT:
 		return true
@@ -260,6 +269,10 @@ type GetDiagnosisResponse struct {
 	JSON200 *Diagnosis
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *Error
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Error
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON409 the response for an HTTP 409 `application/json` response
@@ -280,6 +293,16 @@ func (r GetDiagnosisResponse) GetJSON200() *Diagnosis {
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
 func (r GetDiagnosisResponse) GetJSON400() *Error {
 	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetDiagnosisResponse) GetJSON401() *Error {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetDiagnosisResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -376,6 +399,20 @@ func ParseGetDiagnosisResponse(rsp *http.Response) (*GetDiagnosisResponse, error
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error

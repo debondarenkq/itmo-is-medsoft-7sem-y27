@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	staffNameMinLength     = 3
+	staffNameMinLength     = 1
 	staffNameMaxLength     = 24
 	staffPositionMinLength = 3
 	staffPositionMaxLength = 24
@@ -33,6 +33,14 @@ func New(deps Deps) *Module {
 }
 
 func Validate(staff models.Staff) (models.Staff, error) {
+	if staff.Role == "" {
+		staff.Role = "other"
+	}
+	switch staff.Role {
+	case "doctor", "laboratory-technician", "nurse", "other":
+	default:
+		return staff, fmt.Errorf("%w: Неизвестная роль", models.ErrInvalidInput)
+	}
 	staff.FirstName = strings.TrimSpace(staff.FirstName)
 	if err := validation.Text("first_name", staff.FirstName, staffNameMinLength, staffNameMaxLength); err != nil {
 		return staff, err

@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8080"
+      "url": "https://localhost:8443"
     }
   ],
   "paths": {
@@ -69,6 +69,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -159,6 +179,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -243,6 +283,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -333,6 +393,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -433,6 +513,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -551,6 +651,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -639,6 +759,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -731,6 +871,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -815,6 +975,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -905,6 +1085,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -1006,6 +1206,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1092,6 +1312,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "has_record",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1114,6 +1341,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -1204,6 +1451,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1288,6 +1555,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -1378,6 +1665,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -1479,6 +1786,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1570,6 +1897,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -1671,6 +2018,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1762,6 +2129,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -1864,6 +2251,26 @@
               }
             },
             "description": "Некорректный запрос"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
           },
           "404": {
             "content": {
@@ -1976,6 +2383,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -2086,6 +2513,26 @@
             },
             "description": "Некорректный запрос"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Требуется вход"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Недостаточно прав"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -2142,6 +2589,1065 @@
           "Records"
         ]
       }
+    },
+    "/api/v1/accounts": {
+      "get": {
+        "operationId": "ListAccounts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "is_active",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountsPage"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          }
+        },
+        "tags": [
+          "Security"
+        ]
+      },
+      "post": {
+        "operationId": "CreateAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPassword"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          }
+        },
+        "tags": [
+          "Security"
+        ]
+      }
+    },
+    "/api/v1/accounts/{id}": {
+      "put": {
+        "operationId": "UpdateAccount",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          }
+        },
+        "tags": [
+          "Security"
+        ]
+      }
+    },
+    "/api/v1/accounts/{id}/password": {
+      "post": {
+        "operationId": "ResetPassword",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPassword"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          }
+        },
+        "tags": [
+          "Security"
+        ]
+      }
+    },
+    "/api/v1/audit": {
+      "get": {
+        "operationId": "ListAudit",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "event_type",
+            "schema": {
+              "$ref": "#/components/schemas/AuditEventKind"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPage"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          }
+        },
+        "tags": [
+          "Security"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "Login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          }
+        },
+        "security": [],
+        "tags": [
+          "Security"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "Logout",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupStatus"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          }
+        },
+        "tags": [
+          "Security"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "RefreshSession",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          }
+        },
+        "security": [],
+        "tags": [
+          "Security"
+        ]
+      }
+    },
+    "/api/v1/auth/setup": {
+      "get": {
+        "operationId": "GetSetup",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupStatus"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          }
+        },
+        "security": [],
+        "tags": [
+          "Security"
+        ]
+      },
+      "post": {
+        "operationId": "SetupAdmin",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Успех"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Ошибка"
+          }
+        },
+        "security": [],
+        "tags": [
+          "Security"
+        ]
+      }
     }
   },
   "components": {
@@ -2164,7 +3670,10 @@
           "NOT_FOUND",
           "CONFLICT",
           "VERSION_CONFLICT",
-          "DEPENDENCY_UNAVAILABLE"
+          "DEPENDENCY_UNAVAILABLE",
+          "UNAUTHORIZED",
+          "FORBIDDEN",
+          "ACCESS_DENIED"
         ],
         "type": "string"
       },
@@ -2202,7 +3711,7 @@
           },
           "first_name": {
             "maxLength": 24,
-            "minLength": 3,
+            "minLength": 1,
             "type": "string"
           },
           "id": {
@@ -2211,13 +3720,16 @@
           },
           "last_name": {
             "maxLength": 24,
-            "minLength": 3,
+            "minLength": 1,
             "type": "string"
           },
           "position": {
             "maxLength": 24,
             "minLength": 3,
             "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/StaffRole"
           },
           "updated_at": {
             "format": "date-time",
@@ -2231,7 +3743,8 @@
           "first_name",
           "last_name",
           "position",
-          "deleted_at"
+          "deleted_at",
+          "role"
         ],
         "type": "object"
       },
@@ -2240,18 +3753,21 @@
         "properties": {
           "first_name": {
             "maxLength": 24,
-            "minLength": 3,
+            "minLength": 1,
             "type": "string"
           },
           "last_name": {
             "maxLength": 24,
-            "minLength": 3,
+            "minLength": 1,
             "type": "string"
           },
           "position": {
             "maxLength": 24,
             "minLength": 3,
             "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/StaffRole"
           }
         },
         "required": [
@@ -2286,6 +3802,16 @@
           "offset"
         ],
         "type": "object"
+      },
+      "StaffRole": {
+        "default": "other",
+        "enum": [
+          "doctor",
+          "laboratory-technician",
+          "nurse",
+          "other"
+        ],
+        "type": "string"
       },
       "Diagnosis": {
         "properties": {
@@ -2656,6 +4182,16 @@
             "nullable": true,
             "type": "string"
           },
+          "record_id": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "record_number": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
           "updated_at": {
             "format": "date-time",
             "type": "string"
@@ -2779,6 +4315,10 @@
             "format": "uuid",
             "type": "string"
           },
+          "number": {
+            "format": "int64",
+            "type": "integer"
+          },
           "patient_id": {
             "format": "uuid",
             "type": "string"
@@ -2802,7 +4342,8 @@
           "updated_at",
           "patient_id",
           "version",
-          "state"
+          "state",
+          "number"
         ],
         "type": "object"
       },
@@ -2855,7 +4396,360 @@
           "prescriptions"
         ],
         "type": "object"
+      },
+      "Account": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "doctor",
+              "laboratory-technician",
+              "nurse",
+              "other"
+            ],
+            "type": "string"
+          },
+          "staff_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "staff_name": {
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "created_at",
+          "updated_at",
+          "is_active",
+          "role",
+          "staff_name"
+        ],
+        "type": "object"
+      },
+      "AccountInput": {
+        "additionalProperties": false,
+        "properties": {
+          "staff_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 16,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "staff_id"
+        ],
+        "type": "object"
+      },
+      "AccountPassword": {
+        "additionalProperties": false,
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/Account"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "account",
+          "password"
+        ],
+        "type": "object"
+      },
+      "AccountUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "is_active": {
+            "type": "boolean"
+          },
+          "role": {
+            "enum": [
+              "doctor",
+              "laboratory-technician",
+              "nurse",
+              "other"
+            ],
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 16,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "is_active"
+        ],
+        "type": "object"
+      },
+      "AccountsPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Account"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object"
+      },
+      "AuditEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "type": "string"
+          },
+          "actor_name": {
+            "type": "string"
+          },
+          "event_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "event_time": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "event_type": {
+            "$ref": "#/components/schemas/AuditEventKind"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "event_time",
+          "actor",
+          "message",
+          "event_type",
+          "actor_name"
+        ],
+        "type": "object"
+      },
+      "AuditEventKind": {
+        "enum": [
+          "admin_setup",
+          "login",
+          "login_failed",
+          "logout",
+          "access_denied",
+          "staff_created",
+          "staff_updated",
+          "staff_deleted",
+          "patient_created",
+          "patient_updated",
+          "patient_deleted",
+          "record_created",
+          "record_updated",
+          "account_created",
+          "account_updated",
+          "token_refreshed",
+          "other"
+        ],
+        "type": "string"
+      },
+      "AuditPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AuditEvent"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object"
+      },
+      "LoginInput": {
+        "additionalProperties": false,
+        "properties": {
+          "password": {
+            "maxLength": 72,
+            "minLength": 1,
+            "type": "string"
+          },
+          "totp": {
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 16,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "type": "object"
+      },
+      "SecurityError": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "Session": {
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "account_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "staff_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token",
+          "refresh_token",
+          "expires_at",
+          "account_id",
+          "role"
+        ],
+        "type": "object"
+      },
+      "SetupInput": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmation": {
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          },
+          "totp": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "password",
+          "confirmation",
+          "secret",
+          "totp"
+        ],
+        "type": "object"
+      },
+      "SetupStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "secret": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "configured"
+        ],
+        "type": "object"
+      },
+      "TokenInput": {
+        "additionalProperties": false,
+        "properties": {
+          "refresh_token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh_token"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
-  }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
 }

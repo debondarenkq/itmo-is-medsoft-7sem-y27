@@ -1,0 +1,6 @@
+package: security
+generate:
+  models: true
+  gorilla-server: true
+  embedded-spec: true
+output: generated.gen.go

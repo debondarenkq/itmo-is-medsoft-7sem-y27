@@ -11,14 +11,16 @@ public struct Record: Sendable, Codable, Hashable {
 
     public var createdAt: Date
     public var id: UUID
+    public var number: Int64
     public var patientId: UUID
     public var state: State
     public var updatedAt: Date
     public var version: Int64
 
-    public init(createdAt: Date, id: UUID, patientId: UUID, state: State, updatedAt: Date, version: Int64) {
+    public init(createdAt: Date, id: UUID, number: Int64, patientId: UUID, state: State, updatedAt: Date, version: Int64) {
         self.createdAt = createdAt
         self.id = id
+        self.number = number
         self.patientId = patientId
         self.state = state
         self.updatedAt = updatedAt
@@ -28,6 +30,7 @@ public struct Record: Sendable, Codable, Hashable {
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case createdAt = "created_at"
         case id
+        case number
         case patientId = "patient_id"
         case state
         case updatedAt = "updated_at"
@@ -40,6 +43,7 @@ public struct Record: Sendable, Codable, Hashable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(id, forKey: .id)
+        try container.encode(number, forKey: .number)
         try container.encode(patientId, forKey: .patientId)
         try container.encode(state, forKey: .state)
         try container.encode(updatedAt, forKey: .updatedAt)

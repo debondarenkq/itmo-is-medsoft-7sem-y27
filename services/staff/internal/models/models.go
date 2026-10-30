@@ -3,6 +3,7 @@ package models
 import "time"
 
 type Staff struct {
+	Role      string     `json:"role"`
 	ID        string     `json:"id"`
 	FirstName string     `json:"first_name"`
 	LastName  string     `json:"last_name"`
