@@ -1,9 +1,11 @@
 -- +goose Up
 CREATE TABLE staff (
  id uuid PRIMARY KEY,
- first_name text NOT NULL CHECK (char_length(first_name) BETWEEN 3 AND 24),
- last_name text NOT NULL CHECK (char_length(last_name) BETWEEN 3 AND 24),
+ first_name text NOT NULL CHECK (char_length(first_name) BETWEEN 1 AND 24),
+ last_name text NOT NULL CHECK (char_length(last_name) BETWEEN 1 AND 24),
  position text NOT NULL CHECK (char_length(position) BETWEEN 3 AND 24),
+ role text NOT NULL DEFAULT 'other' CHECK (role IN ('doctor','laboratory-technician','nurse','other')),
+ role_revision bigint NOT NULL DEFAULT 0,
  created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
  updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
  deleted_at timestamptz

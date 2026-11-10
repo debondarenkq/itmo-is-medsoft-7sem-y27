@@ -44,7 +44,7 @@ make down
 contracts/        исходные OpenAPI-схемы всех сервисов
 services/
   identity/       аккаунты, TOTP, JWT, refresh-токены и аудит
-  staff/          медработники
+  staff/          медработники, должности и роли; прямой HTTP API для identity
   catalog/        справочник диагнозов
   clinical/       пациенты, ЭМК, назначения, история
     cmd/clinical-service/
@@ -139,12 +139,12 @@ python3 scripts/smoke.py
 make demo
 ```
 
-Нужны macOS 14+ и Xcode 16+. Для запуска из Xcode откройте `macos/HIS.xcodeproj`, выберите **HIS → My Mac** и нажмите **⌘R**. Адрес Nginx задаётся в меню HIS → Настройки… (`⌘,`). Workflow [macOS](https://github.com/debondarenkq/itmo-is-medsoft-7sem-y27/actions/workflows/desktop.yml) собирает `.app` и публикует ZIP.
+Нужны macOS 14+ и Xcode 16+. Для запуска из Xcode откройте `macos/HIS.xcodeproj`, выберите **HIS → My Mac** для медработника или **HISAdmin → My Mac** для администратора и нажмите **⌘R**. HIS содержит пациентов и ЭМК, HISAdmin — сотрудников, диагнозы, аккаунты и аудит. `make demo` открывает оба приложения; `make demo-worker` и `make demo-admin` — выбранное. Адрес Nginx задаётся отдельно в меню каждого приложения → Настройки… (`⌘,`). Workflow [macOS](https://github.com/debondarenkq/itmo-is-medsoft-7sem-y27/actions/workflows/desktop.yml) собирает оба `.app` и публикует ZIP.
 
 ## Контракты
 
 HTTP API описывается в корневом каталоге [`contracts/`](contracts/README.md). Локальные схемы в сервисах обновляются генератором и не редактируются вручную. Go DTO, интерфейсы ручек, binding для gorilla/mux и HTTP-клиенты генерируются через `oapi-codegen`. SwiftUI-приложение использует сгенерированный Swift-пакет `macos/Generated` для единственного gateway. Подробности — [docs/contracts.md](docs/contracts.md). После изменения YAML выполните `make generate-contracts`; CI проверяет отсутствие расхождений между схемами и кодом.
 
-После обновления с версии, где аккаунты находились в staff, выполните `make prepare-local`, затем `make up`.
-Первый `make up` автоматически переносит аккаунты, хэши паролей, TOTP, refresh-токены и аудит в отдельную базу identity,
-временно остановив API. Следующие запуски ничего не переносят. Подробности и ограничения — [docs/security.md](docs/security.md).
+Для демонстрации выполните `make reset` (синоним — `make reset-demo`). Команда **удаляет текущие данные** четырёх сервисов и загружает учебный набор: 5 сотрудников, 6 диагнозов, 6 пациентов и 3 ЭМК с историей. Аккаунты не создаются. Настройте администратора в HISAdmin, затем запустите `make demo-accounts`: отдельный скрипт создаст четыре демо-аккаунта через обычный HTTPS API. Он запросит пароль и TOTP администратора; выданные пароли сотрудников сохранит в локальный `build/demo-accounts.json`. Скрипт можно запускать и без reset — недостающих демо-сотрудников он создаст через API. Подробности — [docs/security.md](docs/security.md).
+
+Для полностью пустой учебной установки выполните `./scripts/compose.sh down -v`, затем `make up`. Это удаляет текущие базы; сотрудники и аккаунты создаются заново через приложение. Перенос данных из прежних версий не поддерживается.

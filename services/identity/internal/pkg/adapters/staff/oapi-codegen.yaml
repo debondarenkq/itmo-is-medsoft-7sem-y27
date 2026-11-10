@@ -1,0 +1,11 @@
+package: staff
+output: generated.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  name-normalizer: ToCamelCaseWithInitialisms
+  include-operation-ids:
+    - getStaffIdentity
+    - updateStaffIdentityRole
+    - listStaffIdentities

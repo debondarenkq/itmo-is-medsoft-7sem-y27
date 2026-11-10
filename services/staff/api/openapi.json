@@ -420,7 +420,11 @@
         "summary": "Создать запись",
         "tags": [
           "Staff"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "staff_created",
+          "title": "Создание медработника"
+        }
       }
     },
     "/api/v1/staff/{id}": {
@@ -525,7 +529,11 @@
         "summary": "Мягкое удаление",
         "tags": [
           "Staff"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "staff_deleted",
+          "title": "Удаление медработника"
+        }
       },
       "get": {
         "operationId": "GetStaff",
@@ -755,7 +763,11 @@
         "summary": "Полностью обновить активную запись",
         "tags": [
           "Staff"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "staff_updated",
+          "title": "Изменение медработника"
+        }
       }
     }
   },

@@ -22,6 +22,8 @@ type Storage interface {
 	Create(context.Context, models.Staff) (models.Staff, error)
 	Update(context.Context, string, models.Staff) (models.Staff, error)
 	Delete(context.Context, string) error
+	ListIdentityProfiles(context.Context) ([]models.Staff, error)
+	UpdateRole(context.Context, string, string) (models.Staff, error)
 }
 type Deps struct{ Storage Storage }
 type Module struct {
@@ -36,10 +38,8 @@ func Validate(staff models.Staff) (models.Staff, error) {
 	if staff.Role == "" {
 		staff.Role = "other"
 	}
-	switch staff.Role {
-	case "doctor", "laboratory-technician", "nurse", "other":
-	default:
-		return staff, fmt.Errorf("%w: Неизвестная роль", models.ErrInvalidInput)
+	if err := validateRole(staff.Role); err != nil {
+		return staff, err
 	}
 	staff.FirstName = strings.TrimSpace(staff.FirstName)
 	if err := validation.Text("first_name", staff.FirstName, staffNameMinLength, staffNameMaxLength); err != nil {
@@ -89,4 +89,30 @@ func (module *Module) Update(ctx context.Context, id string, staff models.Staff)
 
 func (module *Module) Delete(ctx context.Context, id string) error {
 	return module.Storage.Delete(ctx, id)
+}
+
+func (m *Module) ListIdentityProfiles(ctx context.Context) ([]models.Staff, error) {
+	return m.Storage.ListIdentityProfiles(ctx)
+}
+func (m *Module) UpdateRole(ctx context.Context, id, role string) (models.Staff, error) {
+	if err := validateRole(role); err != nil {
+		return models.Staff{}, err
+	}
+	s, err := m.Get(ctx, id)
+	if err != nil {
+		return s, err
+	}
+	if s.DeletedAt != nil {
+		return s, models.ErrConflict
+	}
+	return m.Storage.UpdateRole(ctx, id, role)
+}
+
+func validateRole(role string) error {
+	switch role {
+	case "doctor", "nurse", "laboratory-technician", "other":
+		return nil
+	default:
+		return fmt.Errorf("%w: Неизвестная роль", models.ErrInvalidInput)
+	}
 }

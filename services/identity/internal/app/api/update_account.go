@@ -1,27 +1,29 @@
 package api
 
 import (
+	"context"
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/security"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/internal/models"
-	"github.com/google/uuid"
-	"net/http"
 )
 
-func (api *SecurityAPI) UpdateAccount(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
-	var input contract.AccountUpdate
-	if !decodeSecurity(w, r, &input) {
-		return
-	}
+func (implementation *Implementation) UpdateAccount(ctx context.Context, request contract.UpdateAccountRequestObject) (contract.UpdateAccountResponseObject, error) {
+	input := request.Body
 	changes := models.AccountChanges{IsActive: &input.IsActive, Username: input.Username}
 	if input.Role != nil {
 		role := string(*input.Role)
 		changes.Role = &role
 	}
-	claims, _ := api.claims(r)
-	account, err := api.Module.UpdateAccount(r.Context(), id.String(), changes, "account:"+claims.Subject)
+	claims, err := requestClaims(ctx)
 	if err != nil {
-		securityError(w, err)
-		return
+		return nil, err
 	}
-	writeJSON(w, 200, account)
+	account, err := implementation.Module.UpdateAccount(ctx, request.ID.String(), changes, "account:"+claims.Subject)
+	if err != nil {
+		return nil, err
+	}
+	response, err := toAccount(account)
+	if err != nil {
+		return nil, err
+	}
+	return contract.UpdateAccount200JSONResponse(response), nil
 }

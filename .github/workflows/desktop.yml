@@ -16,10 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: swift --version
-      - run: xcodebuild -project macos/HIS.xcodeproj -scheme HIS -configuration Debug -destination platform=macOS -derivedDataPath macos/build/DerivedData build
+      - run: ./macos/build.sh debug
       - run: ./macos/build.sh
       - run: ditto -c -k --sequesterRsrc --keepParent macos/build/HIS.app macos/build/HIS-macos.zip
+      - run: ditto -c -k --sequesterRsrc --keepParent macos/build/HISAdmin.app macos/build/HISAdmin-macos.zip
       - uses: actions/upload-artifact@v4
         with:
           name: HIS-macos
-          path: macos/build/HIS-macos.zip
+          path: |
+            macos/build/HIS-macos.zip
+            macos/build/HISAdmin-macos.zip

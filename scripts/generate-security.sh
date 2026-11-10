@@ -8,10 +8,9 @@ ca_dir="$security_dir/tls/ca"
 server_dir="$security_dir/tls/server"
 jwt_dir="$security_dir/jwt"
 services_dir="$security_dir/services"
-for name in ca.crt ca.key server.crt server.key signing.key service.key \
-    tls/ca/ca.crt tls/ca/ca.key tls/server/server.crt tls/server/server.key jwt/signing.key services/service.key; do
+for name in tls/ca/ca.crt tls/ca/ca.key tls/server/server.crt tls/server/server.key jwt/signing.key services/service.key; do
     if [ -e "$security_dir/$name" ]; then
-        printf '%s\n' 'Security files already exist; refusing to replace them. Run make certs to reuse or migrate the existing files.' >&2
+        printf '%s\n' 'Security files already exist; refusing to replace them. Run make certs to reuse the existing files.' >&2
         exit 1
     fi
 done

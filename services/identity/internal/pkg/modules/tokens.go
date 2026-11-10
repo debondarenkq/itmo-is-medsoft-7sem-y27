@@ -21,6 +21,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const tokenIssuer = "his-identity"
+
 func randomText(length int) (string, error) {
 	const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	result := make([]byte, length)
@@ -51,7 +53,7 @@ func NewTOTPSecret() (string, error) {
 	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b), nil
 }
 
-// RFC 6238: SHA-1, six decimal digits, 30-second steps, one step of clock skew.
+// TOTPStep validates codes.
 func TOTPStep(secret, code string, now time.Time) (int64, bool) {
 	if len(code) != 6 {
 		return 0, false
@@ -83,7 +85,7 @@ func TOTPStep(secret, code string, now time.Time) (int64, bool) {
 func (security *Security) sign(account models.Account) (models.Session, error) {
 	now := time.Now().UTC()
 	expires := now.Add(5 * time.Minute)
-	claims := models.Claims{Subject: account.ID, Role: account.Role, Issuer: "his-staff", Audience: "his-api", Expires: expires.Unix(), Issued: now.Unix(), ID: uuid.NewString()}
+	claims := models.Claims{SessionVersion: account.SessionVersion, StaffRevision: account.StaffRevision, Subject: account.ID, Role: account.Role, Issuer: tokenIssuer, Audience: "his-api", Expires: expires.Unix(), Issued: now.Unix(), ID: uuid.NewString()}
 	if account.StaffID != nil {
 		claims.StaffID = *account.StaffID
 	}
@@ -120,7 +122,7 @@ func (security *Security) Verify(token string) (models.Claims, error) {
 	if err != nil || json.Unmarshal(data, &claims) != nil {
 		return claims, models.ErrUnauthorized
 	}
-	if claims.Expires <= time.Now().Unix() || claims.Issuer != "his-staff" || claims.Audience != "his-api" || claims.Subject == "" {
+	if claims.Expires <= time.Now().Unix() || claims.Issuer != tokenIssuer || claims.Audience != "his-api" || claims.Subject == "" {
 		return claims, models.ErrUnauthorized
 	}
 	return claims, nil

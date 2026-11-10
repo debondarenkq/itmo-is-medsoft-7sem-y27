@@ -1,0 +1,13 @@
+package: models
+output: audit.gen.go
+generate:
+  models: true
+output-options:
+  name-normalizer: ToCamelCaseWithInitialisms
+  exclude-schemas:
+  - Acknowledgement
+  - Error
+  - ErrorCode
+  - ErrorDetail
+compatibility:
+  always-prefix-enum-values: true

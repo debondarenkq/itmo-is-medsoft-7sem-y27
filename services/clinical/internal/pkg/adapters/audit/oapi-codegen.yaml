@@ -1,0 +1,7 @@
+package: audit
+output: generated.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  name-normalizer: ToCamelCaseWithInitialisms

@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -22,9 +23,19 @@ func (w *statusWriter) WriteHeader(status int) {
 	w.ResponseWriter.WriteHeader(status)
 }
 
-func (api *SecurityAPI) protect(next http.Handler) http.Handler {
+func (implementation *Implementation) protect(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), remoteAddressKey, r.RemoteAddr)
+		r = r.WithContext(ctx)
 		path := r.URL.Path
+		if strings.HasPrefix(path, "/internal/") {
+			if !implementation.trustedService(r) {
+				writeError(w, r, models.ErrForbidden)
+				return
+			}
+			next.ServeHTTP(w, r)
+			return
+		}
 		if !strings.HasPrefix(path, "/api/") {
 			next.ServeHTTP(w, r)
 			return
@@ -35,36 +46,64 @@ func (api *SecurityAPI) protect(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		claims, err := api.claims(r)
+		claims, err := implementation.Module.VerifyAccess(r.Context(), strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "))
 		if err != nil {
-			api.failed(w, r, err, "Неавторизованный запрос "+r.Method+" "+path)
+			writeError(w, r, implementation.auditFailure(r.Context(), err, models.AuditEventKindAccessDenied, "Неавторизованный запрос "+r.Method+" "+path))
 			return
 		}
 		if !modules.Allowed(claims, r.Method, path) {
-			if err := api.Module.Audit(r.Context(), "account:"+claims.Subject, "Отказ в доступе "+r.Method+" "+path); err != nil {
-				securityError(w, err)
+			if err := implementation.Module.Audit(r.Context(), "account:"+claims.Subject, "Отказ в доступе "+r.Method+" "+path, models.AuditEventKindAccessDenied); err != nil {
+				writeError(w, r, err)
 				return
 			}
-			securityError(w, models.ErrForbidden)
+			writeError(w, r, models.ErrForbidden)
 			return
 		}
+		r = r.WithContext(context.WithValue(r.Context(), claimsKey, claims))
 		w.Header().Set("Cache-Control", "no-store")
-		if r.Method == "GET" {
+		if r.Method == http.MethodGet {
 			next.ServeHTTP(w, r)
 			return
 		}
-		// Record intent before a write, so an unavailable audit store prevents unaudited mutations.
 		actor := "account:" + claims.Subject
-		if err := api.Module.Audit(r.Context(), actor, "Запрос "+r.Method+" "+path); err != nil {
-			securityError(w, err)
+		event, err := implementation.auditEntry(r, actor)
+		if err != nil {
+			writeError(w, r, err)
 			return
 		}
-		recorder := &statusWriter{ResponseWriter: w, status: 200}
+		if err := implementation.Module.AuditHTTP(r.Context(), event); err != nil {
+			writeError(w, r, err)
+			return
+		}
+		recorder := &statusWriter{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(recorder, r)
 		auditContext, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), 2*time.Second)
 		defer cancel()
-		if err := api.Module.Audit(auditContext, actor, fmt.Sprintf("Результат %s %s: HTTP %d", r.Method, path, recorder.status)); err != nil {
+		event.Status = &recorder.status
+		if err := implementation.Module.AuditHTTP(auditContext, event); err != nil {
 			slog.Error("audit outcome delivery failed", "path", path, "error", err)
 		}
 	})
+}
+
+func (i *Implementation) auditEntry(r *http.Request, actor string) (models.HTTPAudit, error) {
+	route, _, err := i.auditRoutes.FindRoute(r)
+	if err != nil {
+		return models.HTTPAudit{}, err
+	}
+	data, err := json.Marshal(route.Operation.Extensions["x-audit"])
+	if err != nil {
+		return models.HTTPAudit{}, err
+	}
+	var entry models.HTTPAudit
+	if err = json.Unmarshal(data, &entry); err != nil {
+		return entry, err
+	}
+	entry.Actor = actor
+	entry.Method = models.HTTPAuditMethod(r.Method)
+	entry.Path = r.URL.Path
+	if !entry.EventType.Valid() || entry.Title == "" {
+		return entry, fmt.Errorf("invalid OpenAPI audit metadata for %s", route.Operation.OperationID)
+	}
+	return entry, nil
 }

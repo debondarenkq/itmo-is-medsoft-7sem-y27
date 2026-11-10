@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help test integration check certs prepare prepare-local up demo down status doctor cert-info images-save images-load smoke macos-build generate-contracts migrate-identity
+.PHONY: help test integration check certs prepare prepare-local up demo demo-worker demo-admin down status doctor cert-info images-save images-load smoke macos-build generate-contracts reset reset-demo demo-accounts
 
 test:
 	@for service in identity staff catalog clinical; do (cd services/$$service && go test -race ./...) || exit 1; done
@@ -12,8 +12,12 @@ help:
 	@printf '%s\n' \
 	  'make prepare       — первоначальная подготовка с интернетом: ключи, образы и приложение' \
 	  'make prepare-local — пересборка на подготовленном ноутбуке без интернета (нужен Go)' \
-	  'make demo          — запуск готового backend и приложения без сборки и скачиваний' \
+	  'make demo          — запуск backend и обоих приложений без сборки и скачиваний' \
+	  'make demo-worker   — запуск backend и рабочего места медработника' \
+	  'make demo-admin    — запуск backend и приложения администратора' \
 	  'make up / down     — запуск / остановка backend с сохранением данных' \
+	  'make reset         — очистить данные и заполнить демо-набором, без аккаунтов' \
+	  'make demo-accounts — создать демо-аккаунты через API (нужен вход администратора)' \
 	  'make status        — состояние Docker-компонентов' \
 	  'make doctor        — проверка готовности, HTTPS и защиты API' \
 	  'make cert-info     — сведения о публичных сертификатах' \
@@ -32,16 +36,23 @@ prepare-local: certs
 	./scripts/build-local.sh
 	./macos/build.sh
 
-migrate-identity:
-	./scripts/migrate-identity.sh
-
-up: certs migrate-identity
+up: certs
 	./scripts/compose.sh up --no-build --pull never -d --wait
 
 demo:
-	@test -x macos/build/HIS.app/Contents/MacOS/HIS || { echo 'Сначала выполните make prepare или make prepare-local.'; exit 1; }
+	@test -x macos/build/HIS.app/Contents/MacOS/HIS && test -x macos/build/HISAdmin.app/Contents/MacOS/HISAdmin || { echo 'Сначала выполните make prepare или make prepare-local.'; exit 1; }
+	$(MAKE) up
+	open macos/build/HIS.app macos/build/HISAdmin.app
+
+demo-worker:
+	@test -x macos/build/HIS.app/Contents/MacOS/HIS || { echo 'Сначала выполните make macos-build.'; exit 1; }
 	$(MAKE) up
 	open macos/build/HIS.app
+
+demo-admin:
+	@test -x macos/build/HISAdmin.app/Contents/MacOS/HISAdmin || { echo 'Сначала выполните make macos-build.'; exit 1; }
+	$(MAKE) up
+	open macos/build/HISAdmin.app
 
 status:
 	@./scripts/docker.sh context show
@@ -76,3 +87,9 @@ macos-build:
 
 generate-contracts:
 	./scripts/generate-contracts.sh
+
+reset reset-demo:
+	python3 scripts/reset-demo.py
+
+demo-accounts:
+	python3 scripts/create-demo-accounts.py

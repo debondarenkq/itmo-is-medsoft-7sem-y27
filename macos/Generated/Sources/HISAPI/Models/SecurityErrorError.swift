@@ -9,10 +9,10 @@ import Foundation
 
 public struct SecurityErrorError: Sendable, Codable, Hashable {
 
-    public var code: String
+    public var code: SecurityErrorCode
     public var message: String
 
-    public init(code: String, message: String) {
+    public init(code: SecurityErrorCode, message: String) {
         self.code = code
         self.message = message
     }

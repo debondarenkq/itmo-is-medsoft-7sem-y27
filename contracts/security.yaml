@@ -1,9 +1,10 @@
+---
 openapi: 3.0.3
 info:
   title: security
   version: 2.0.0
 paths:
-  /api/v1/auth/setup:
+  "/api/v1/auth/setup":
     get:
       operationId: getSetup
       tags:
@@ -14,52 +15,61 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SetupStatus'
+                "$ref": "#/components/schemas/SetupStatus"
         '400':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '401':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '403':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '409':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '429':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '500':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '503':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
       security: []
     post:
       operationId: setupAdmin
+      x-audit:
+        event_type: admin_setup
+        title: Настройка администратора
       tags:
       - Security
       responses:
@@ -68,59 +78,68 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Session'
+                "$ref": "#/components/schemas/Session"
         '400':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '401':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '403':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '409':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '429':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '500':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '503':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SetupInput'
+              "$ref": "#/components/schemas/SetupInput"
       security: []
-  /api/v1/auth/login:
+  "/api/v1/auth/login":
     post:
       operationId: login
+      x-audit:
+        event_type: login
+        title: Вход пользователя
       tags:
       - Security
       responses:
@@ -129,59 +148,68 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Session'
+                "$ref": "#/components/schemas/Session"
         '400':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '401':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '403':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '409':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '429':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '500':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '503':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginInput'
+              "$ref": "#/components/schemas/LoginInput"
       security: []
-  /api/v1/auth/refresh:
+  "/api/v1/auth/refresh":
     post:
       operationId: refreshSession
+      x-audit:
+        event_type: token_refreshed
+        title: Обновление пары токенов
       tags:
       - Security
       responses:
@@ -190,59 +218,68 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Session'
+                "$ref": "#/components/schemas/Session"
         '400':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '401':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '403':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '409':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '429':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '500':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '503':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenInput'
+              "$ref": "#/components/schemas/TokenInput"
       security: []
-  /api/v1/auth/logout:
+  "/api/v1/auth/logout":
     post:
       operationId: logout
+      x-audit:
+        event_type: logout
+        title: Выход из системы
       tags:
       - Security
       responses:
@@ -251,56 +288,62 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SetupStatus'
+                "$ref": "#/components/schemas/SetupStatus"
         '400':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '401':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '403':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '409':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '429':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '500':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '503':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenInput'
-  /api/v1/accounts:
+              "$ref": "#/components/schemas/TokenInput"
+  "/api/v1/accounts":
     get:
       operationId: listAccounts
       tags:
@@ -311,49 +354,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountsPage'
+                "$ref": "#/components/schemas/AccountsPage"
         '400':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '401':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '403':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '409':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '429':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '500':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '503':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
       parameters:
       - name: limit
         in: query
@@ -377,6 +426,9 @@ paths:
           type: boolean
     post:
       operationId: createAccount
+      x-audit:
+        event_type: account_created
+        title: Создание аккаунта
       tags:
       - Security
       responses:
@@ -385,58 +437,67 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountPassword'
+                "$ref": "#/components/schemas/AccountPassword"
         '400':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '401':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '403':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '409':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '429':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '500':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '503':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountInput'
-  /api/v1/accounts/{id}:
+              "$ref": "#/components/schemas/AccountInput"
+  "/api/v1/accounts/{id}":
     put:
       operationId: updateAccount
+      x-audit:
+        event_type: account_updated
+        title: Изменение аккаунта
       tags:
       - Security
       responses:
@@ -445,55 +506,61 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Account'
+                "$ref": "#/components/schemas/Account"
         '400':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '401':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '403':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '409':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '429':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '500':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '503':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountUpdate'
+              "$ref": "#/components/schemas/AccountUpdate"
       parameters:
       - name: id
         in: path
@@ -501,9 +568,12 @@ paths:
         schema:
           type: string
           format: uuid
-  /api/v1/accounts/{id}/password:
+  "/api/v1/accounts/{id}/password":
     post:
       operationId: resetPassword
+      x-audit:
+        event_type: account_updated
+        title: Изменение аккаунта
       tags:
       - Security
       responses:
@@ -512,49 +582,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountPassword'
+                "$ref": "#/components/schemas/AccountPassword"
         '400':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '401':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '403':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '409':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '429':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '500':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '503':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
       parameters:
       - name: id
         in: path
@@ -562,7 +638,7 @@ paths:
         schema:
           type: string
           format: uuid
-  /api/v1/audit:
+  "/api/v1/audit":
     get:
       operationId: listAudit
       tags:
@@ -573,49 +649,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuditPage'
+                "$ref": "#/components/schemas/AuditPage"
         '400':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '401':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '403':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '409':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '429':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '500':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
         '503':
           description: Ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecurityError'
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
       parameters:
       - name: limit
         in: query
@@ -632,7 +714,7 @@ paths:
       - name: event_type
         in: query
         schema:
-          $ref: '#/components/schemas/AuditEventKind'
+          "$ref": "#/components/schemas/AuditEventKind"
       - name: from
         in: query
         schema:
@@ -690,6 +772,11 @@ components:
           type: boolean
         secret:
           type: string
+        provisioning_uri:
+          type: string
+          format: uri
+          description: Server-generated otpauth URI. The client only renders this
+            value as a QR code. Omitted once setup is complete.
       required:
       - configured
       additionalProperties: false
@@ -801,7 +888,7 @@ components:
       type: object
       properties:
         account:
-          $ref: '#/components/schemas/Account'
+          "$ref": "#/components/schemas/Account"
         password:
           type: string
       required:
@@ -822,7 +909,7 @@ components:
         message:
           type: string
         event_type:
-          $ref: '#/components/schemas/AuditEventKind'
+          "$ref": "#/components/schemas/AuditEventKind"
         actor_name:
           type: string
       required:
@@ -839,7 +926,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/Account'
+            "$ref": "#/components/schemas/Account"
         total:
           type: integer
       required:
@@ -852,7 +939,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/AuditEvent'
+            "$ref": "#/components/schemas/AuditEvent"
         total:
           type: integer
       required:
@@ -866,7 +953,7 @@ components:
           type: object
           properties:
             code:
-              type: string
+              "$ref": "#/components/schemas/SecurityErrorCode"
             message:
               type: string
           required:
@@ -876,25 +963,17 @@ components:
       - error
       additionalProperties: false
     AuditEventKind:
+      "$ref": "audit.yaml#/components/schemas/AuditEventKind"
+    SecurityErrorCode:
       type: string
       enum:
-      - admin_setup
-      - login
-      - login_failed
-      - logout
-      - access_denied
-      - staff_created
-      - staff_updated
-      - staff_deleted
-      - patient_created
-      - patient_updated
-      - patient_deleted
-      - record_created
-      - record_updated
-      - account_created
-      - account_updated
-      - token_refreshed
-      - other
+      - INVALID_REQUEST
+      - UNAUTHORIZED
+      - FORBIDDEN
+      - NOT_FOUND
+      - CONFLICT
+      - INTERNAL
+      - DEPENDENCY_UNAVAILABLE
   securitySchemes:
     BearerAuth:
       type: http

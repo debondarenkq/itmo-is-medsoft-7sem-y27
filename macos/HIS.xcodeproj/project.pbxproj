@@ -8,17 +8,22 @@
 
 /* Begin PBXBuildFile section */
 		A0000000000000000000000D /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000C /* AppIcon.icns */; };
+		B0000000000000000000000D /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000C /* AppIcon.icns */; };
 		A00000000000000000000022 /* HISAPI in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000021 /* HISAPI */; };
+		B00000000000000000000022 /* HISAPI in Frameworks */ = {isa = PBXBuildFile; productRef = B00000000000000000000021 /* HISAPI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A00000000000000000000006 /* HIS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HIS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B00000000000000000000006 /* HISAdmin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HISAdmin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A0000000000000000000000B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A0000000000000000000000C /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A00000000000000000000004 /* Sources/HIS */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources/HIS; sourceTree = "<group>"; };
+		A00000000000000000000004 /* Sources/Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources/Shared; sourceTree = "<group>"; };
+		A00000000000000000000030 /* Sources/HIS */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources/HIS; sourceTree = "<group>"; };
+		B00000000000000000000030 /* Sources/HISAdmin */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources/HISAdmin; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -30,13 +35,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B00000000000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00000000000000000000022 /* HISAPI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		A00000000000000000000003 = {
 			isa = PBXGroup;
 			children = (
-				A00000000000000000000004 /* Sources/HIS */,
+				A00000000000000000000004 /* Sources/Shared */,
+				A00000000000000000000030 /* Sources/HIS */,
+				B00000000000000000000030 /* Sources/HISAdmin */,
 				A0000000000000000000000A /* Resources */,
 				A00000000000000000000005 /* Products */,
 			);
@@ -46,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000006 /* HIS.app */,
+				B00000000000000000000006 /* HISAdmin.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -75,7 +91,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				A00000000000000000000004 /* Sources/HIS */,
+				A00000000000000000000004 /* Sources/Shared */,
+				A00000000000000000000030 /* Sources/HIS */,
 			);
 			name = HIS;
 			packageProductDependencies = (
@@ -83,6 +100,30 @@
 			);
 			productName = HIS;
 			productReference = A00000000000000000000006 /* HIS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B00000000000000000000002 /* HISAdmin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B00000000000000000000011 /* Build configuration list for PBXNativeTarget "HISAdmin" */;
+			buildPhases = (
+				B00000000000000000000007 /* Sources */,
+				B00000000000000000000008 /* Frameworks */,
+				B00000000000000000000009 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A00000000000000000000004 /* Sources/Shared */,
+				B00000000000000000000030 /* Sources/HISAdmin */,
+			);
+			name = HISAdmin;
+			packageProductDependencies = (
+				B00000000000000000000021 /* HISAPI */,
+			);
+			productName = HISAdmin;
+			productReference = B00000000000000000000006 /* HISAdmin.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -118,6 +159,7 @@
 			projectRoot = "";
 			targets = (
 				A00000000000000000000002 /* HIS */,
+				B00000000000000000000002 /* HISAdmin */,
 			);
 		};
 /* End PBXProject section */
@@ -131,10 +173,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B00000000000000000000009 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B0000000000000000000000D /* AppIcon.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A00000000000000000000007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B00000000000000000000007 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -191,6 +248,24 @@
 			};
 			name = Debug;
 		};
+		B00000000000000000000014 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) HIS_ADMIN";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ru.itmo.medsoft.his.admin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
 		A00000000000000000000015 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -204,6 +279,24 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = ru.itmo.medsoft.his;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		B00000000000000000000015 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) HIS_ADMIN";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ru.itmo.medsoft.his.admin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -229,6 +322,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B00000000000000000000011 /* Build configuration list for PBXNativeTarget "HISAdmin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B00000000000000000000014 /* Debug */,
+				B00000000000000000000015 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -240,6 +342,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		A00000000000000000000021 /* HISAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000020 /* XCLocalSwiftPackageReference "Generated" */;
+			productName = HISAPI;
+		};
+		B00000000000000000000021 /* HISAPI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A00000000000000000000020 /* XCLocalSwiftPackageReference "Generated" */;
 			productName = HISAPI;

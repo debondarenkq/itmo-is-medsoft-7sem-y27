@@ -10,15 +10,19 @@ import Foundation
 public struct SetupStatus: Sendable, Codable, Hashable {
 
     public var configured: Bool
+    /** Server-generated otpauth URI. The client only renders this value as a QR code. Omitted once setup is complete. */
+    public var provisioningUri: String?
     public var secret: String?
 
-    public init(configured: Bool, secret: String? = nil) {
+    public init(configured: Bool, provisioningUri: String? = nil, secret: String? = nil) {
         self.configured = configured
+        self.provisioningUri = provisioningUri
         self.secret = secret
     }
 
     public enum CodingKeys: String, CodingKey, CaseIterable {
         case configured
+        case provisioningUri = "provisioning_uri"
         case secret
     }
 
@@ -27,6 +31,7 @@ public struct SetupStatus: Sendable, Codable, Hashable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(configured, forKey: .configured)
+        try container.encodeIfPresent(provisioningUri, forKey: .provisioningUri)
         try container.encodeIfPresent(secret, forKey: .secret)
     }
 }

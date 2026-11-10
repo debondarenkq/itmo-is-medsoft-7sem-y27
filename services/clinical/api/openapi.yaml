@@ -91,6 +91,9 @@ paths:
     post:
       summary: Создать пациента
       operationId: createPatient
+      x-audit:
+        event_type: patient_created
+        title: Создание пациента
       responses:
         '201':
           description: Успех
@@ -225,6 +228,9 @@ paths:
     put:
       summary: Полностью обновить пациента
       operationId: updatePatient
+      x-audit:
+        event_type: patient_updated
+        title: Изменение пациента
       responses:
         '200':
           description: Успех
@@ -298,6 +304,9 @@ paths:
     delete:
       summary: Удалить пациента; при наличии ЭМК возвращает 409
       operationId: deletePatient
+      x-audit:
+        event_type: patient_deleted
+        title: Удаление пациента
       responses:
         '204':
           description: Успех
@@ -429,6 +438,9 @@ paths:
     post:
       summary: Создать ЭМК с обязательным автором
       operationId: createRecord
+      x-audit:
+        event_type: record_created
+        title: Создание ЭМК
       responses:
         '201':
           description: Успех
@@ -571,6 +583,9 @@ paths:
     post:
       summary: Атомарно сохранить команды и историю
       operationId: saveRecord
+      x-audit:
+        event_type: record_updated
+        title: Изменение ЭМК
       responses:
         '200':
           description: Успех

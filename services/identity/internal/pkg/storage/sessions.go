@@ -11,7 +11,13 @@ import (
 )
 
 func (r *Repository) RefreshAccount(ctx context.Context, hash string) (models.Account, error) {
-	return scanAccount(r.pool.QueryRow(ctx, "SELECT "+accountColumns+accountFrom+"JOIN refresh_tokens t ON t.account_id=a.id WHERE t.token_hash=$1 AND t.expires_at>clock_timestamp()", hash))
+	var revision int64
+	a, err := scanAccount(r.pool.QueryRow(ctx, "SELECT "+accountColumns+",t.staff_revision"+accountFrom+"JOIN refresh_tokens t ON t.account_id=a.id WHERE t.token_hash=$1 AND t.expires_at>clock_timestamp()", hash), &revision)
+	if err != nil {
+		return a, err
+	}
+	a.StaffRevision = revision
+	return a, nil
 }
 
 func (r *Repository) SetupSecret(ctx context.Context, candidate string) (bool, string, error) {
@@ -56,11 +62,11 @@ func (r *Repository) Setup(ctx context.Context, a models.Account, secret, refres
 		}
 		return err
 	}
-	_, err = tx.Exec(ctx, "INSERT INTO refresh_tokens VALUES($1,$2,$3)", refreshHash, a.ID, time.Now().Add(24*time.Hour))
+	_, err = tx.Exec(ctx, "INSERT INTO refresh_tokens(token_hash,account_id,expires_at) VALUES($1,$2,$3)", refreshHash, a.ID, time.Now().Add(24*time.Hour))
 	if err != nil {
 		return err
 	}
-	if err = addAudit(ctx, tx, "account:"+a.ID, "Настройка администратора и TOTP; вход администратора", "admin_setup"); err != nil {
+	if err = addAudit(ctx, tx, "account:"+a.ID, "Настройка администратора и TOTP; вход администратора", models.AuditEventKindAdminSetup); err != nil {
 		return err
 	}
 	_, err = tx.Exec(ctx, "DELETE FROM security_settings")
@@ -80,7 +86,7 @@ func (r *Repository) Issue(ctx context.Context, expected models.Account, oldHash
 	if err != nil {
 		return err
 	}
-	if !a.IsActive || !a.UpdatedAt.Equal(expected.UpdatedAt) || a.PasswordHash != expected.PasswordHash || a.Role != expected.Role {
+	if !a.IsActive || !a.UpdatedAt.Equal(expected.UpdatedAt) || a.PasswordHash != expected.PasswordHash || a.SessionVersion != expected.SessionVersion {
 		return models.ErrUnauthorized
 	}
 	if oldHash != "" {
@@ -101,7 +107,7 @@ func (r *Repository) Issue(ctx context.Context, expected models.Account, oldHash
 			return err
 		}
 	}
-	_, err = tx.Exec(ctx, "INSERT INTO refresh_tokens VALUES($1,$2,$3)", newHash, a.ID, time.Now().Add(24*time.Hour))
+	_, err = tx.Exec(ctx, "INSERT INTO refresh_tokens(token_hash,account_id,expires_at,staff_revision) VALUES($1,$2,$3,$4)", newHash, a.ID, time.Now().Add(24*time.Hour), expected.StaffRevision)
 	if err != nil {
 		return err
 	}
@@ -112,9 +118,9 @@ func (r *Repository) Issue(ctx context.Context, expected models.Account, oldHash
 	if oldHash != "" {
 		message = "Обновление пары токенов"
 	}
-	kind := "login"
+	kind := models.AuditEventKindLogin
 	if oldHash != "" {
-		kind = "token_refreshed"
+		kind = models.AuditEventKindTokenRefreshed
 	}
 	if err = addAudit(ctx, tx, "account:"+a.ID, message, kind); err != nil {
 		return err
@@ -132,7 +138,7 @@ func (r *Repository) Logout(ctx context.Context, accountID, hash string) error {
 	if err != nil {
 		return err
 	}
-	if err = addAudit(ctx, tx, "account:"+accountID, "Выход из системы", "logout"); err != nil {
+	if err = addAudit(ctx, tx, "account:"+accountID, "Выход из системы", models.AuditEventKindLogout); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)

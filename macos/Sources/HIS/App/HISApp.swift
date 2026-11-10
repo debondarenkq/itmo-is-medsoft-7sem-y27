@@ -6,7 +6,7 @@ struct HISApp: App {
   private var address = AppConfiguration.defaultGatewayAddress
 
   var body: some Scene {
-    Window("Госпитальная информационная система", id: "main") {
+    Window("HIS — Рабочее место медработника", id: "main") {
       SessionView(address: address).id(address)
         .frame(minWidth: 850, minHeight: 560)
     }

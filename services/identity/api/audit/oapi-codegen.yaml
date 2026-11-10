@@ -1,0 +1,9 @@
+package: audit
+output: generated.gen.go
+generate:
+  models: true
+  gorilla-server: true
+  strict-server: true
+  embedded-spec: true
+output-options:
+  name-normalizer: ToCamelCaseWithInitialisms

@@ -1,21 +1,22 @@
 package api
 
 import (
-	"net/http"
-
+	"context"
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/security"
 )
 
-func (api *SecurityAPI) CreateAccount(w http.ResponseWriter, r *http.Request) {
-	var input contract.AccountInput
-	if !decodeSecurity(w, r, &input) {
-		return
-	}
-	claims, _ := api.claims(r)
-	a, password, err := api.Module.CreateAccount(r.Context(), input.Username, input.StaffId.String(), "account:"+claims.Subject)
+func (implementation *Implementation) CreateAccount(ctx context.Context, request contract.CreateAccountRequestObject) (contract.CreateAccountResponseObject, error) {
+	claims, err := requestClaims(ctx)
 	if err != nil {
-		securityError(w, err)
-		return
+		return nil, err
 	}
-	writeJSON(w, 201, map[string]any{"account": a, "password": password})
+	account, password, err := implementation.Module.CreateAccount(ctx, request.Body.Username, request.Body.StaffID.String(), "account:"+claims.Subject)
+	if err != nil {
+		return nil, err
+	}
+	response, err := toAccount(account)
+	if err != nil {
+		return nil, err
+	}
+	return contract.CreateAccount201JSONResponse{Account: response, Password: password}, nil
 }

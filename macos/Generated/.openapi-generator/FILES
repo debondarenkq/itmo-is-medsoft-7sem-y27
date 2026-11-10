@@ -52,6 +52,7 @@ Sources/HISAPI/Models/PrescriptionStatus.swift
 Sources/HISAPI/Models/Record.swift
 Sources/HISAPI/Models/RecordDiagnosis.swift
 Sources/HISAPI/Models/SecurityError.swift
+Sources/HISAPI/Models/SecurityErrorCode.swift
 Sources/HISAPI/Models/SecurityErrorError.swift
 Sources/HISAPI/Models/Session.swift
 Sources/HISAPI/Models/SetupInput.swift

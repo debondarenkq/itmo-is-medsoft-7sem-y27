@@ -92,6 +92,9 @@ paths:
     post:
       summary: Создать запись
       operationId: createDiagnosis
+      x-audit:
+        event_type: other
+        title: Создание диагноза
       responses:
         '201':
           description: Успех
@@ -226,6 +229,9 @@ paths:
     put:
       summary: Полностью обновить активную запись
       operationId: updateDiagnosis
+      x-audit:
+        event_type: other
+        title: Изменение диагноза
       responses:
         '200':
           description: Успех
@@ -299,6 +305,9 @@ paths:
     delete:
       summary: Мягкое удаление
       operationId: deleteDiagnosis
+      x-audit:
+        event_type: other
+        title: Удаление диагноза
       responses:
         '204':
           description: Успех
@@ -363,6 +372,9 @@ paths:
     post:
       summary: Импортировать диагнозы из выбранного JSON-файла одной транзакцией
       operationId: importDiagnoses
+      x-audit:
+        event_type: other
+        title: Импорт диагнозов
       responses:
         '200':
           description: Успех

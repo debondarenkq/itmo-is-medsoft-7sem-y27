@@ -11,38 +11,43 @@ var (
 )
 
 type Account struct {
-	ID           string    `json:"id"`
-	Username     string    `json:"username"`
-	PasswordHash string    `json:"-"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-	IsActive     bool      `json:"is_active"`
-	StaffID      *string   `json:"staff_id,omitempty"`
-	IsAdmin      bool      `json:"-"`
-	TOTPSecret   string    `json:"-"`
-	LastTOTPStep int64     `json:"-"`
-	Role         string    `json:"role"`
-	StaffName    string    `json:"staff_name"`
+	SessionVersion int64     `json:"-"`
+	StaffRevision  int64     `json:"-"`
+	ID             string    `json:"id"`
+	Username       string    `json:"username"`
+	PasswordHash   string    `json:"-"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	IsActive       bool      `json:"is_active"`
+	StaffID        *string   `json:"staff_id,omitempty"`
+	IsAdmin        bool      `json:"-"`
+	TOTPSecret     string    `json:"-"`
+	LastTOTPStep   int64     `json:"-"`
+	Role           string    `json:"role"`
+	StaffName      string    `json:"staff_name"`
 }
 
 type AuditEvent struct {
-	EventID   string    `json:"event_id"`
-	EventTime time.Time `json:"event_time"`
-	Actor     string    `json:"actor"`
-	Message   string    `json:"message"`
-	EventType string    `json:"event_type"`
-	ActorName string    `json:"actor_name"`
+	ActorStaffID *string        `json:"-"`
+	EventID      string         `json:"event_id"`
+	EventTime    time.Time      `json:"event_time"`
+	Actor        string         `json:"actor"`
+	Message      string         `json:"message"`
+	EventType    AuditEventKind `json:"event_type"`
+	ActorName    string         `json:"actor_name"`
 }
 
 type Claims struct {
-	Subject  string `json:"sub"`
-	StaffID  string `json:"staff_id,omitempty"`
-	Role     string `json:"role"`
-	Issuer   string `json:"iss"`
-	Audience string `json:"aud"`
-	Expires  int64  `json:"exp"`
-	Issued   int64  `json:"iat"`
-	ID       string `json:"jti"`
+	SessionVersion int64  `json:"session_version"`
+	StaffRevision  int64  `json:"staff_revision"`
+	Subject        string `json:"sub"`
+	StaffID        string `json:"staff_id,omitempty"`
+	Role           string `json:"role"`
+	Issuer         string `json:"iss"`
+	Audience       string `json:"aud"`
+	Expires        int64  `json:"exp"`
+	Issued         int64  `json:"iat"`
+	ID             string `json:"jti"`
 }
 
 type Session struct {
@@ -55,23 +60,32 @@ type Session struct {
 }
 
 type AccountChanges struct {
-	Username     *string
-	IsActive     *bool
-	Role         *string
-	PasswordHash string
+	RevokeSessions bool
+	Username       *string
+	IsActive       *bool
+	Role           *string
+	PasswordHash   string
 }
 
 type AccountFilter struct {
-	Limit    int
-	Offset   int
-	Search   string
-	IsActive *bool
+	Limit           int
+	Offset          int
+	Search          string
+	IsActive        *bool
+	StaffIDs        []string
+	DeletedStaffIDs []string
 }
 
 type AuditFilter struct {
 	Limit     int
 	Offset    int
-	EventType string
+	EventType AuditEventKind
 	From      *time.Time
 	To        *time.Time
+}
+
+type AdminSetup struct {
+	Configured      bool
+	Secret          *string
+	ProvisioningURI *string
 }

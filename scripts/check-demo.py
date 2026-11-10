@@ -39,9 +39,10 @@ def main():
         return 'все 6 компонентов готовы'
 
     def app_exists():
-        if not (ROOT / 'macos/build/HIS.app/Contents/MacOS/HIS').is_file():
-            raise RuntimeError('выполните make macos-build')
-        return 'macos/build/HIS.app'
+        for app in ('HIS', 'HISAdmin'):
+            if not (ROOT / f'macos/build/{app}.app/Contents/MacOS/{app}').is_file():
+                raise RuntimeError(f'нет {app}.app; выполните make macos-build')
+        return 'HIS.app и HISAdmin.app'
 
     def tls_connection():
         context = ssl.create_default_context(cafile=str(ROOT / 'deploy/security/tls/ca/ca.crt'))
@@ -62,7 +63,7 @@ def main():
         return 'проверены CA, имя localhost, TLS 1.3 и отказ API без авторизации'
 
     check('Docker Compose', docker_status)
-    check('Нативное приложение', app_exists)
+    check('Нативные приложения', app_exists)
     check('Защищённое подключение', tls_connection)
     print('Доверие к CA именно в macOS проверяется в HIS → Сертификаты сервера → Проверить подключение.')
     if failures:

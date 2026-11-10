@@ -7,12 +7,12 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func addAudit(ctx context.Context, tx pgx.Tx, actor, message, eventType string) error {
+func addAudit(ctx context.Context, tx pgx.Tx, actor, message string, eventType models.AuditEventKind) error {
 	_, err := tx.Exec(ctx, "INSERT INTO audit_events(event_id,actor,message,event_type) VALUES($1,$2,$3,$4)", uuid.NewString(), actor, message, eventType)
 	return err
 }
 
-func (r *Repository) AppendAudit(ctx context.Context, actor, message, eventType string) error {
+func (r *Repository) AppendAudit(ctx context.Context, actor, message string, eventType models.AuditEventKind) error {
 	_, err := r.pool.Exec(ctx, "INSERT INTO audit_events(event_id,actor,message,event_type) VALUES($1,$2,$3,$4)", uuid.NewString(), actor, message, eventType)
 	return err
 }
@@ -28,9 +28,9 @@ func (r *Repository) SearchAuditEvents(ctx context.Context, filter models.AuditF
 		return nil, 0, err
 	}
 	rows, err := r.pool.Query(ctx, `SELECT e.event_id,e.event_time,e.actor,e.message,e.event_type,
- COALESCE((SELECT COALESCE(NULLIF(concat_ws(' ',s.last_name,s.first_name),''),a.username) FROM accounts a LEFT JOIN staff_profiles s ON s.id=a.staff_id WHERE e.actor='account:'||a.id::text),
- (SELECT 'Система: '||concat_ws(' ',s.last_name,s.first_name) FROM staff_profiles s WHERE e.actor='system:staff:'||s.id::text),
- CASE WHEN e.actor LIKE 'anonymous:%' THEN 'Неавторизованный пользователь' ELSE e.actor END)`+where+" ORDER BY e.event_time,e.event_id LIMIT $4 OFFSET $5", filter.EventType, filter.From, filter.To, filter.Limit, filter.Offset)
+ COALESCE((SELECT a.username FROM accounts a WHERE e.actor='account:'||a.id::text),
+ CASE WHEN e.actor LIKE 'anonymous:%' THEN 'Неавторизованный пользователь' ELSE e.actor END),
+ (SELECT a.staff_id FROM accounts a WHERE e.actor='account:'||a.id::text)`+where+" ORDER BY e.event_time,e.event_id LIMIT $4 OFFSET $5", filter.EventType, filter.From, filter.To, filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -38,7 +38,7 @@ func (r *Repository) SearchAuditEvents(ctx context.Context, filter models.AuditF
 	items := []models.AuditEvent{}
 	for rows.Next() {
 		var event models.AuditEvent
-		if err := rows.Scan(&event.EventID, &event.EventTime, &event.Actor, &event.Message, &event.EventType, &event.ActorName); err != nil {
+		if err := rows.Scan(&event.EventID, &event.EventTime, &event.Actor, &event.Message, &event.EventType, &event.ActorName, &event.ActorStaffID); err != nil {
 			return nil, 0, err
 		}
 		items = append(items, event)

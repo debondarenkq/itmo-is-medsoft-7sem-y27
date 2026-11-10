@@ -1,17 +1,22 @@
 package api
 
 import (
-	"net/http"
-
-	"github.com/google/uuid"
+	"context"
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/security"
 )
 
-func (api *SecurityAPI) ResetPassword(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
-	claims, _ := api.claims(r)
-	a, password, err := api.Module.ResetPassword(r.Context(), id.String(), "account:"+claims.Subject)
+func (implementation *Implementation) ResetPassword(ctx context.Context, request contract.ResetPasswordRequestObject) (contract.ResetPasswordResponseObject, error) {
+	claims, err := requestClaims(ctx)
 	if err != nil {
-		securityError(w, err)
-		return
+		return nil, err
 	}
-	writeJSON(w, 200, map[string]any{"account": a, "password": password})
+	account, password, err := implementation.Module.ResetPassword(ctx, request.ID.String(), "account:"+claims.Subject)
+	if err != nil {
+		return nil, err
+	}
+	response, err := toAccount(account)
+	if err != nil {
+		return nil, err
+	}
+	return contract.ResetPassword200JSONResponse{Account: response, Password: password}, nil
 }

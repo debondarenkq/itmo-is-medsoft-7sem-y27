@@ -15,25 +15,22 @@ func TestAccountSearchAndAtomicEditing(t *testing.T) {
 	ctx := context.Background()
 	staff, account := securityAccount(t, repository)
 	active := true
-	items, total, err := repository.SearchAccounts(ctx, models.AccountFilter{Limit: 50, Search: "Б А", IsActive: &active})
-	if err != nil || total != 1 || len(items) != 1 || items[0].StaffName != "Б А" || items[0].Role != "doctor" {
+	items, total, err := repository.SearchAccounts(ctx, models.AccountFilter{Limit: 50, Search: "Б А", IsActive: &active, StaffIDs: []string{staff.ID}})
+	if err != nil || total != 1 || len(items) != 1 {
 		t.Fatalf("search by worker: %+v total=%d err=%v", items, total, err)
 	}
 	if err = repository.Issue(ctx, account, "", "before-edit", -1); err != nil {
 		t.Fatal(err)
 	}
-	username, role := "renamed", "nurse"
-	account, err = repository.UpdateAccount(ctx, account.ID, models.AccountChanges{Username: &username, Role: &role, IsActive: &active}, "account:"+account.ID)
-	if err != nil || account.Username != username || account.Role != role {
+	username := "renamed"
+	account, err = repository.UpdateAccount(ctx, account.ID, models.AccountChanges{Username: &username, RevokeSessions: true, IsActive: &active}, "account:"+account.ID)
+	if err != nil || account.Username != username {
 		t.Fatalf("account edit: %+v %v", account, err)
 	}
 	if _, err = repository.RefreshAccount(ctx, "before-edit"); !errors.Is(err, models.ErrUnauthorized) {
 		t.Fatalf("role edit did not revoke refresh: %v", err)
 	}
-	other, err := repository.Create(ctx, models.Staff{FirstName: "В", LastName: "Г", Position: "Врач", Role: "doctor"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	other := models.Staff{ID: uuid.NewString()}
 	_, err = repository.CreateAccount(ctx, models.Account{ID: uuid.NewString(), Username: "duplicate", StaffID: &other.ID, PasswordHash: "hash"}, "system:test")
 	if err != nil {
 		t.Fatal(err)
@@ -41,14 +38,10 @@ func TestAccountSearchAndAtomicEditing(t *testing.T) {
 	if err = repository.Issue(ctx, account, "", "must-survive-rollback", -1); err != nil {
 		t.Fatal(err)
 	}
-	username, role = "duplicate", "doctor"
-	_, err = repository.UpdateAccount(ctx, account.ID, models.AccountChanges{Username: &username, Role: &role}, "system:test")
+	username = "duplicate"
+	_, err = repository.UpdateAccount(ctx, account.ID, models.AccountChanges{Username: &username, RevokeSessions: true}, "system:test")
 	if !errors.Is(err, models.ErrConflict) {
 		t.Fatalf("duplicate username accepted: %v", err)
-	}
-	worker, err := repository.Get(ctx, staff.ID)
-	if err != nil || worker.Role != "nurse" {
-		t.Fatalf("role was not rolled back: %+v %v", worker, err)
 	}
 	if _, err = repository.RefreshAccount(ctx, "must-survive-rollback"); err != nil {
 		t.Fatalf("failed edit revoked a session: %v", err)
@@ -65,14 +58,14 @@ func TestAuditFiltersAndActorNames(t *testing.T) {
 	ctx := context.Background()
 	_, account := securityAccount(t, repository)
 	before := time.Now().Add(-time.Minute)
-	if err := repository.AppendAudit(ctx, "account:"+account.ID, "Вход пользователя", "login"); err != nil {
+	if err := repository.AppendAudit(ctx, "account:"+account.ID, "Вход пользователя", models.AuditEventKindLogin); err != nil {
 		t.Fatal(err)
 	}
-	if err := repository.AppendAudit(ctx, "anonymous:test", "Неуспешная попытка входа", "login_failed"); err != nil {
+	if err := repository.AppendAudit(ctx, "anonymous:test", "Неуспешная попытка входа", models.AuditEventKindLoginFailed); err != nil {
 		t.Fatal(err)
 	}
 	events, total, err := repository.SearchAuditEvents(ctx, models.AuditFilter{Limit: 1, EventType: "login", From: &before})
-	if err != nil || total != 1 || len(events) != 1 || events[0].ActorName != "Б А" {
+	if err != nil || total != 1 || len(events) != 1 || events[0].ActorName != "doctor" || events[0].ActorStaffID == nil {
 		t.Fatalf("filtered audit: %+v total=%d err=%v", events, total, err)
 	}
 	future := time.Now().Add(time.Hour)

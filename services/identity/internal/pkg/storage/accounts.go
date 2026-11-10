@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -12,15 +11,19 @@ import (
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/internal/models"
 )
 
-const accountColumns = `a.id,a.username,a.password_hash,a.created_at,a.updated_at,a.is_active,a.staff_id,a.is_admin,COALESCE(a.totp_secret,''),a.last_totp_step,CASE WHEN a.is_admin THEN 'admin' ELSE COALESCE(s.role,'other') END,concat_ws(' ',s.last_name,s.first_name)`
+const accountColumns = `a.id,a.username,a.password_hash,a.created_at,a.updated_at,a.is_active,a.staff_id,a.is_admin,COALESCE(a.totp_secret,''),a.last_totp_step,a.session_version`
 
-const accountFrom = ` FROM accounts a LEFT JOIN staff_profiles s ON s.id=a.staff_id `
+const accountFrom = ` FROM accounts a `
 
-func scanAccount(row pgx.Row) (models.Account, error) {
+func scanAccount(row pgx.Row, extra ...any) (models.Account, error) {
 	var a models.Account
-	err := row.Scan(&a.ID, &a.Username, &a.PasswordHash, &a.CreatedAt, &a.UpdatedAt, &a.IsActive, &a.StaffID, &a.IsAdmin, &a.TOTPSecret, &a.LastTOTPStep, &a.Role, &a.StaffName)
+	fields := []any{&a.ID, &a.Username, &a.PasswordHash, &a.CreatedAt, &a.UpdatedAt, &a.IsActive, &a.StaffID, &a.IsAdmin, &a.TOTPSecret, &a.LastTOTPStep, &a.SessionVersion}
+	err := row.Scan(append(fields, extra...)...)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return a, models.ErrUnauthorized
+	}
+	if a.IsAdmin {
+		a.Role = "admin"
 	}
 	return a, err
 }
@@ -35,14 +38,6 @@ func (r *Repository) CreateAccount(ctx context.Context, a models.Account, actor 
 		return a, err
 	}
 	defer tx.Rollback(ctx)
-	var deleted *time.Time
-	err = tx.QueryRow(ctx, "SELECT deleted_at FROM staff_profiles WHERE id=$1 FOR UPDATE", a.StaffID).Scan(&deleted)
-	if errors.Is(err, pgx.ErrNoRows) || deleted != nil {
-		return a, models.ErrNotFound
-	}
-	if err != nil {
-		return a, err
-	}
 	_, err = tx.Exec(ctx, "INSERT INTO accounts(id,username,password_hash,staff_id) VALUES($1,$2,$3,$4)", a.ID, a.Username, a.PasswordHash, a.StaffID)
 	if err != nil {
 		var pe *pgconn.PgError
@@ -55,7 +50,7 @@ func (r *Repository) CreateAccount(ctx context.Context, a models.Account, actor 
 	if err != nil {
 		return a, err
 	}
-	if err = addAudit(ctx, tx, actor, "Создание аккаунта "+a.ID, "account_created"); err != nil {
+	if err = addAudit(ctx, tx, actor, "Создание аккаунта "+a.ID, models.AuditEventKindAccountCreated); err != nil {
 		return a, err
 	}
 	return a, tx.Commit(ctx)
@@ -72,11 +67,6 @@ func (r *Repository) UpdateAccount(ctx context.Context, id string, changes model
 		return models.Account{}, err
 	}
 	defer tx.Rollback(ctx)
-	// Lock the local projection before its account, matching profile synchronization.
-	_, err = tx.Exec(ctx, "SELECT id FROM staff_profiles WHERE id=(SELECT staff_id FROM accounts WHERE id=$1) FOR UPDATE", id)
-	if err != nil {
-		return models.Account{}, err
-	}
 	a, err := scanAccount(tx.QueryRow(ctx, "SELECT "+accountColumns+accountFrom+"WHERE a.id=$1 FOR UPDATE OF a", id))
 	if err != nil {
 		return a, models.ErrNotFound
@@ -84,44 +74,8 @@ func (r *Repository) UpdateAccount(ctx context.Context, id string, changes model
 	if a.IsAdmin {
 		return a, models.ErrForbidden
 	}
-	if active != nil && *active {
-		var deleted *time.Time
-		err = tx.QueryRow(ctx, "SELECT deleted_at FROM staff_profiles WHERE id=$1", a.StaffID).Scan(&deleted)
-		if err != nil {
-			return a, err
-		}
-		if deleted != nil {
-			return a, models.ErrConflict
-		}
-	}
 	if changes.Username != nil {
 		a.Username = *changes.Username
-	}
-	if changes.Username != nil {
-		if _, err := tx.Exec(ctx, "UPDATE accounts SET username=$2 WHERE id=$1", a.ID, a.Username); err != nil {
-			var pe *pgconn.PgError
-			if errors.As(err, &pe) && pe.Code == "23505" {
-				return a, models.ErrConflict
-			}
-			return a, err
-		}
-	}
-	if changes.Role != nil {
-		if a.StaffID == nil {
-			return a, models.ErrConflict
-		}
-		if r.UpdateRole == nil {
-			return a, models.ErrUnavailable
-		}
-		profile, err := r.UpdateRole(ctx, *a.StaffID, *changes.Role)
-		if err != nil {
-			return a, err
-		}
-		_, err = tx.Exec(ctx, `UPDATE staff_profiles SET role=$2,first_name=$3,last_name=$4,
-   deleted_at=$5,revision=$6,security_revision=$7 WHERE id=$1 AND revision<$6`, profile.ID, profile.Role, profile.FirstName, profile.LastName, profile.DeletedAt, profile.Revision, profile.SecurityRevision)
-		if err != nil {
-			return a, err
-		}
 	}
 
 	if active != nil {
@@ -130,7 +84,7 @@ func (r *Repository) UpdateAccount(ctx context.Context, id string, changes model
 	if passwordHash != "" {
 		a.PasswordHash = passwordHash
 	}
-	_, err = tx.Exec(ctx, "UPDATE accounts SET is_active=$2,password_hash=$3,username=$4,updated_at=clock_timestamp() WHERE id=$1", a.ID, a.IsActive, a.PasswordHash, a.Username)
+	_, err = tx.Exec(ctx, "UPDATE accounts SET is_active=$2,password_hash=$3,username=$4,updated_at=clock_timestamp(),session_version=session_version+1 WHERE id=$1", a.ID, a.IsActive, a.PasswordHash, a.Username)
 	if err != nil {
 		var pgError *pgconn.PgError
 		if errors.As(err, &pgError) && pgError.Code == "23505" {
@@ -139,14 +93,14 @@ func (r *Repository) UpdateAccount(ctx context.Context, id string, changes model
 		return a, err
 	}
 	revoked := int64(0)
-	if !a.IsActive || passwordHash != "" {
+	if !a.IsActive || passwordHash != "" || changes.RevokeSessions {
 		tag, err := tx.Exec(ctx, "DELETE FROM refresh_tokens WHERE account_id=$1", a.ID)
 		if err != nil {
 			return a, err
 		}
 		revoked = tag.RowsAffected()
 	}
-	if err = addAudit(ctx, tx, actor, fmt.Sprintf("Изменение аккаунта %s; отозвано refresh токенов: %d", a.ID, revoked), "account_updated"); err != nil {
+	if err = addAudit(ctx, tx, actor, fmt.Sprintf("Изменение аккаунта %s; отозвано refresh токенов: %d", a.ID, revoked), models.AuditEventKindAccountUpdated); err != nil {
 		return a, err
 	}
 	a, err = scanAccount(tx.QueryRow(ctx, "SELECT "+accountColumns+accountFrom+"WHERE a.id=$1", id))
@@ -161,12 +115,12 @@ func (r *Repository) Accounts(ctx context.Context, limit, offset int) ([]models.
 }
 
 func (r *Repository) SearchAccounts(ctx context.Context, filter models.AccountFilter) ([]models.Account, int, error) {
-	where := accountFrom + "WHERE ($1='' OR a.username ILIKE '%'||$1||'%' OR concat_ws(' ',s.last_name,s.first_name) ILIKE '%'||$1||'%') AND ($2::boolean IS NULL OR a.is_active=$2)"
+	where := accountFrom + "WHERE ($1='' OR a.username ILIKE '%'||$1||'%' OR a.staff_id=ANY($3::uuid[])) AND ($2::boolean IS NULL OR (a.is_active AND NOT COALESCE(a.staff_id=ANY($4::uuid[]),false))=$2)"
 	var total int
-	if err := r.pool.QueryRow(ctx, "SELECT count(*)"+where, filter.Search, filter.IsActive).Scan(&total); err != nil {
+	if err := r.pool.QueryRow(ctx, "SELECT count(*)"+where, filter.Search, filter.IsActive, filter.StaffIDs, filter.DeletedStaffIDs).Scan(&total); err != nil {
 		return nil, 0, err
 	}
-	rows, err := r.pool.Query(ctx, "SELECT "+accountColumns+where+" ORDER BY a.created_at,a.id LIMIT $3 OFFSET $4", filter.Search, filter.IsActive, filter.Limit, filter.Offset)
+	rows, err := r.pool.Query(ctx, "SELECT "+accountColumns+where+" ORDER BY a.created_at,a.id LIMIT $5 OFFSET $6", filter.Search, filter.IsActive, filter.StaffIDs, filter.DeletedStaffIDs, filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, 0, err
 	}

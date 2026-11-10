@@ -17,11 +17,11 @@ func New(pool *pgxpool.Pool) *Repository {
 	return &Repository{pool: pool}
 }
 
-const columns = "id, first_name, last_name, position, role, created_at, updated_at, deleted_at, identity_revision, security_revision"
+const columns = "id, first_name, last_name, position, role, created_at, updated_at, deleted_at, role_revision"
 
 func scan(row pgx.Row) (models.Staff, error) {
 	var staff models.Staff
-	err := row.Scan(&staff.ID, &staff.FirstName, &staff.LastName, &staff.Position, &staff.Role, &staff.CreatedAt, &staff.UpdatedAt, &staff.DeletedAt, &staff.Revision, &staff.SecurityRevision)
+	err := row.Scan(&staff.ID, &staff.FirstName, &staff.LastName, &staff.Position, &staff.Role, &staff.CreatedAt, &staff.UpdatedAt, &staff.DeletedAt, &staff.RoleRevision)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return staff, models.ErrNotFound
 	}
@@ -59,7 +59,7 @@ func (repository *Repository) Create(ctx context.Context, staff models.Staff) (m
 }
 
 func (repository *Repository) Update(ctx context.Context, id string, staff models.Staff) (models.Staff, error) {
-	return scan(repository.pool.QueryRow(ctx, "UPDATE staff SET first_name=$2, last_name=$3, position=$4, role=$5, updated_at=clock_timestamp() WHERE id=$1 AND deleted_at IS NULL RETURNING "+columns, id, staff.FirstName, staff.LastName, staff.Position, staff.Role))
+	return scan(repository.pool.QueryRow(ctx, "UPDATE staff SET first_name=$2, last_name=$3, position=$4, role_revision=role_revision+CASE WHEN role IS DISTINCT FROM $5 THEN 1 ELSE 0 END, role=$5, updated_at=clock_timestamp() WHERE id=$1 AND deleted_at IS NULL RETURNING "+columns, id, staff.FirstName, staff.LastName, staff.Position, staff.Role))
 }
 
 func (repository *Repository) Delete(ctx context.Context, id string) error {
@@ -71,4 +71,25 @@ func (repository *Repository) Delete(ctx context.Context, id string) error {
 		return models.ErrNotFound
 	}
 	return nil
+}
+
+// ListIdentityProfiles lists staff.
+func (r *Repository) ListIdentityProfiles(ctx context.Context) ([]models.Staff, error) {
+	rows, err := r.pool.Query(ctx, "SELECT "+columns+" FROM staff ORDER BY id")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []models.Staff{}
+	for rows.Next() {
+		s, err := scan(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, s)
+	}
+	return items, rows.Err()
+}
+func (r *Repository) UpdateRole(ctx context.Context, id, role string) (models.Staff, error) {
+	return scan(r.pool.QueryRow(ctx, "UPDATE staff SET role_revision=role_revision+CASE WHEN role IS DISTINCT FROM $2 THEN 1 ELSE 0 END,role=$2,updated_at=clock_timestamp() WHERE id=$1 AND deleted_at IS NULL RETURNING "+columns, id, role))
 }

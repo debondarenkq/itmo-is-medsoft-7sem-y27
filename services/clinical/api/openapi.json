@@ -771,7 +771,11 @@
         "summary": "Создать пациента",
         "tags": [
           "Patients"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "patient_created",
+          "title": "Создание пациента"
+        }
       }
     },
     "/api/v1/patients/{id}": {
@@ -876,7 +880,11 @@
         "summary": "Удалить пациента; при наличии ЭМК возвращает 409",
         "tags": [
           "Patients"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "patient_deleted",
+          "title": "Удаление пациента"
+        }
       },
       "get": {
         "operationId": "GetPatient",
@@ -1106,7 +1114,11 @@
         "summary": "Полностью обновить пациента",
         "tags": [
           "Patients"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "patient_updated",
+          "title": "Изменение пациента"
+        }
       }
     },
     "/api/v1/patients/{id}/record": {
@@ -1338,7 +1350,11 @@
         "summary": "Создать ЭМК с обязательным автором",
         "tags": [
           "Records"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "record_created",
+          "title": "Создание ЭМК"
+        }
       }
     },
     "/api/v1/records/{id}": {
@@ -1572,7 +1588,11 @@
         "summary": "Атомарно сохранить команды и историю",
         "tags": [
           "Records"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "record_updated",
+          "title": "Изменение ЭМК"
+        }
       }
     },
     "/api/v1/records/{id}/history": {

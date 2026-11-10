@@ -1,24 +1,18 @@
 package api
 
 import (
-	"net/http"
-
+	"context"
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/security"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/internal/pkg/modules"
 )
 
-func (api *SecurityAPI) Logout(w http.ResponseWriter, r *http.Request) {
-	var input contract.TokenInput
-	if !decodeSecurity(w, r, &input) {
-		return
-	}
-	claims, err := api.claims(r)
-	if err == nil {
-		err = api.Module.Store.Logout(r.Context(), claims.Subject, modules.TokenHash(input.RefreshToken))
-	}
+func (implementation *Implementation) Logout(ctx context.Context, request contract.LogoutRequestObject) (contract.LogoutResponseObject, error) {
+	claims, err := requestClaims(ctx)
 	if err != nil {
-		securityError(w, err)
-		return
+		return nil, err
 	}
-	writeJSON(w, 200, map[string]bool{"configured": true})
+	if err = implementation.Module.Store.Logout(ctx, claims.Subject, modules.TokenHash(request.Body.RefreshToken)); err != nil {
+		return nil, err
+	}
+	return contract.Logout200JSONResponse{Configured: true}, nil
 }

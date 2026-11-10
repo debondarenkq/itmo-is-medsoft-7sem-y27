@@ -1,5 +1,4 @@
 #!/bin/sh
-# Fallback for a prepared laptop when Docker Hub is unavailable.
 set -eu
 cd "$(dirname "$0")/.."
 
@@ -11,7 +10,6 @@ case "$architecture" in
     *) printf 'Неподдерживаемая архитектура Docker: %s\n' "$architecture" >&2; exit 1 ;;
 esac
 
-# One shared, stable runtime base for all services. Reuse local layers without registry access.
 runtime_image=his-runtime:local
 if ! ./scripts/docker.sh image inspect "$runtime_image" >/dev/null 2>&1; then
     if ./scripts/docker.sh image inspect his-staff-runtime:local >/dev/null 2>&1; then

@@ -92,6 +92,9 @@ paths:
     post:
       summary: Создать запись
       operationId: createStaff
+      x-audit:
+        event_type: staff_created
+        title: Создание медработника
       responses:
         '201':
           description: Успех
@@ -226,6 +229,9 @@ paths:
     put:
       summary: Полностью обновить активную запись
       operationId: updateStaff
+      x-audit:
+        event_type: staff_updated
+        title: Изменение медработника
       responses:
         '200':
           description: Успех
@@ -299,6 +305,9 @@ paths:
     delete:
       summary: Мягкое удаление
       operationId: deleteStaff
+      x-audit:
+        event_type: staff_deleted
+        title: Удаление медработника
       responses:
         '204':
           description: Успех

@@ -1,0 +1,41 @@
+[
+  {
+    "first_name": "Иван",
+    "last_name": "Соколов",
+    "position": "Терапевт",
+    "role": "doctor",
+    "deleted": false,
+    "username": "demo_doctor"
+  },
+  {
+    "first_name": "Анна",
+    "last_name": "Морозова",
+    "position": "Медсестра",
+    "role": "nurse",
+    "deleted": false,
+    "username": "demo_nurse"
+  },
+  {
+    "first_name": "Ольга",
+    "last_name": "Лебедева",
+    "position": "Лаборант",
+    "role": "laboratory-technician",
+    "deleted": false,
+    "username": "demo_lab"
+  },
+  {
+    "first_name": "Павел",
+    "last_name": "Орлов",
+    "position": "Регистратор",
+    "role": "other",
+    "deleted": false,
+    "username": "demo_other"
+  },
+  {
+    "first_name": "Николай",
+    "last_name": "Белов",
+    "position": "Хирург",
+    "role": "doctor",
+    "deleted": true
+  }
+]

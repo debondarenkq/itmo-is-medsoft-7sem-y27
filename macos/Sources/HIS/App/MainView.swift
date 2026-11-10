@@ -1,7 +1,7 @@
 import HISAPI
 import SwiftUI
 
-private enum SidebarSection { case patients, records, staff, diagnoses, accounts, audit }
+private enum SidebarSection { case patients, records }
 
 struct MainView: View {
   let gateway: Gateway
@@ -9,28 +9,18 @@ struct MainView: View {
   let logout: () -> Void
   @State private var editingRecord = false
   @State private var confirmingLogout = false
-  @State private var selectedSection: SidebarSection? = .staff
+  @State private var selectedSection: SidebarSection? = .patients
 
   var body: some View {
     NavigationSplitView {
       List(selection: $selectedSection) {
-        switch profile {
-        case .administrator:
-          Section("Администрирование") {
-            Label("Медработники", systemImage: "person.badge.key").tag(SidebarSection.staff)
-            Label("Диагнозы", systemImage: "list.clipboard").tag(SidebarSection.diagnoses)
-            Label("Аккаунты", systemImage: "person.crop.circle").tag(SidebarSection.accounts)
-            Label("Аудит", systemImage: "list.bullet.rectangle").tag(SidebarSection.audit)
-          }
-        case .worker:
-          Section("Рабочее место") {
-            Label("Пациенты", systemImage: "person.2").tag(SidebarSection.patients)
-            Label("ЭМК", systemImage: "heart.text.clipboard").tag(SidebarSection.records)
-          }
+        Section("Рабочее место") {
+          Label("Пациенты", systemImage: "person.2").tag(SidebarSection.patients)
+          Label("ЭМК", systemImage: "heart.text.clipboard").tag(SidebarSection.records)
         }
       }
       .disabled(editingRecord)
-      .navigationTitle("HIS")
+      .navigationTitle("HIS — Медработник")
       .safeAreaInset(edge: .bottom) {
         VStack(alignment: .leading) {
           Divider()
@@ -40,16 +30,9 @@ struct MainView: View {
         }.padding()
       }
     } detail: {
-      switch profile {
-      case .administrator:
-        switch selectedSection {
-        case .diagnoses: DiagnosesView(gateway: gateway)
-        case .accounts: AccountsView(gateway: gateway)
-        case .audit: AuditView(gateway: gateway)
-        default: StaffView(gateway: gateway)
-        }
-      case .worker(let worker):
-        PatientsView(gateway: gateway, worker: worker, recordsOnly: selectedSection == .records, editingChanged: { editingRecord = $0 }).id(selectedSection)
+      if case .worker(let worker) = profile {
+        PatientsView(gateway: gateway, worker: worker, recordsOnly: selectedSection == .records,
+          editingChanged: { editingRecord = $0 }).id(selectedSection)
       }
     }
     .confirmationDialog("Закрыть редактирование и выйти?", isPresented: $confirmingLogout) {

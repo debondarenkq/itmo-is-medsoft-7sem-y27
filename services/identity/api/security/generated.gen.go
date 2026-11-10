@@ -6,7 +6,9 @@ package security
 import (
 	"bytes"
 	"compress/flate"
+	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -15,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	externalRef0 "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/audit"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gorilla/mux"
 	"github.com/oapi-codegen/runtime"
@@ -72,63 +75,33 @@ func (e AccountUpdateRole) Valid() bool {
 	}
 }
 
-// Defines values for AuditEventKind.
+// Defines values for SecurityErrorCode.
 const (
-	AuditEventKindAccessDenied   AuditEventKind = "access_denied"
-	AuditEventKindAccountCreated AuditEventKind = "account_created"
-	AuditEventKindAccountUpdated AuditEventKind = "account_updated"
-	AuditEventKindAdminSetup     AuditEventKind = "admin_setup"
-	AuditEventKindLogin          AuditEventKind = "login"
-	AuditEventKindLoginFailed    AuditEventKind = "login_failed"
-	AuditEventKindLogout         AuditEventKind = "logout"
-	AuditEventKindOther          AuditEventKind = "other"
-	AuditEventKindPatientCreated AuditEventKind = "patient_created"
-	AuditEventKindPatientDeleted AuditEventKind = "patient_deleted"
-	AuditEventKindPatientUpdated AuditEventKind = "patient_updated"
-	AuditEventKindRecordCreated  AuditEventKind = "record_created"
-	AuditEventKindRecordUpdated  AuditEventKind = "record_updated"
-	AuditEventKindStaffCreated   AuditEventKind = "staff_created"
-	AuditEventKindStaffDeleted   AuditEventKind = "staff_deleted"
-	AuditEventKindStaffUpdated   AuditEventKind = "staff_updated"
-	AuditEventKindTokenRefreshed AuditEventKind = "token_refreshed"
+	CONFLICT              SecurityErrorCode = "CONFLICT"
+	DEPENDENCYUNAVAILABLE SecurityErrorCode = "DEPENDENCY_UNAVAILABLE"
+	FORBIDDEN             SecurityErrorCode = "FORBIDDEN"
+	INTERNAL              SecurityErrorCode = "INTERNAL"
+	INVALIDREQUEST        SecurityErrorCode = "INVALID_REQUEST"
+	NOTFOUND              SecurityErrorCode = "NOT_FOUND"
+	UNAUTHORIZED          SecurityErrorCode = "UNAUTHORIZED"
 )
 
-// Valid indicates whether the value is a known member of the AuditEventKind enum.
-func (e AuditEventKind) Valid() bool {
+// Valid indicates whether the value is a known member of the SecurityErrorCode enum.
+func (e SecurityErrorCode) Valid() bool {
 	switch e {
-	case AuditEventKindAccessDenied:
+	case CONFLICT:
 		return true
-	case AuditEventKindAccountCreated:
+	case DEPENDENCYUNAVAILABLE:
 		return true
-	case AuditEventKindAccountUpdated:
+	case FORBIDDEN:
 		return true
-	case AuditEventKindAdminSetup:
+	case INTERNAL:
 		return true
-	case AuditEventKindLogin:
+	case INVALIDREQUEST:
 		return true
-	case AuditEventKindLoginFailed:
+	case NOTFOUND:
 		return true
-	case AuditEventKindLogout:
-		return true
-	case AuditEventKindOther:
-		return true
-	case AuditEventKindPatientCreated:
-		return true
-	case AuditEventKindPatientDeleted:
-		return true
-	case AuditEventKindPatientUpdated:
-		return true
-	case AuditEventKindRecordCreated:
-		return true
-	case AuditEventKindRecordUpdated:
-		return true
-	case AuditEventKindStaffCreated:
-		return true
-	case AuditEventKindStaffDeleted:
-		return true
-	case AuditEventKindStaffUpdated:
-		return true
-	case AuditEventKindTokenRefreshed:
+	case UNAUTHORIZED:
 		return true
 	default:
 		return false
@@ -138,10 +111,10 @@ func (e AuditEventKind) Valid() bool {
 // Account defines model for Account.
 type Account struct {
 	CreatedAt time.Time           `json:"created_at"`
-	Id        openapi_types.UUID  `json:"id"`
+	ID        openapi_types.UUID  `json:"id"`
 	IsActive  bool                `json:"is_active"`
 	Role      AccountRole         `json:"role"`
-	StaffId   *openapi_types.UUID `json:"staff_id,omitempty"`
+	StaffID   *openapi_types.UUID `json:"staff_id,omitempty"`
 	StaffName string              `json:"staff_name"`
 	UpdatedAt time.Time           `json:"updated_at"`
 	Username  string              `json:"username"`
@@ -152,7 +125,7 @@ type AccountRole string
 
 // AccountInput defines model for AccountInput.
 type AccountInput struct {
-	StaffId  openapi_types.UUID `json:"staff_id"`
+	StaffID  openapi_types.UUID `json:"staff_id"`
 	Username string             `json:"username"`
 }
 
@@ -182,14 +155,14 @@ type AccountsPage struct {
 type AuditEvent struct {
 	Actor     string             `json:"actor"`
 	ActorName string             `json:"actor_name"`
-	EventId   openapi_types.UUID `json:"event_id"`
+	EventID   openapi_types.UUID `json:"event_id"`
 	EventTime time.Time          `json:"event_time"`
 	EventType AuditEventKind     `json:"event_type"`
 	Message   string             `json:"message"`
 }
 
 // AuditEventKind defines model for AuditEventKind.
-type AuditEventKind string
+type AuditEventKind = externalRef0.AuditEventKind
 
 // AuditPage defines model for AuditPage.
 type AuditPage struct {
@@ -207,19 +180,22 @@ type LoginInput struct {
 // SecurityError defines model for SecurityError.
 type SecurityError struct {
 	Error struct {
-		Code    string `json:"code"`
-		Message string `json:"message"`
+		Code    SecurityErrorCode `json:"code"`
+		Message string            `json:"message"`
 	} `json:"error"`
 }
+
+// SecurityErrorCode defines model for SecurityErrorCode.
+type SecurityErrorCode string
 
 // Session defines model for Session.
 type Session struct {
 	AccessToken  string              `json:"access_token"`
-	AccountId    openapi_types.UUID  `json:"account_id"`
+	AccountID    openapi_types.UUID  `json:"account_id"`
 	ExpiresAt    time.Time           `json:"expires_at"`
 	RefreshToken string              `json:"refresh_token"`
 	Role         string              `json:"role"`
-	StaffId      *openapi_types.UUID `json:"staff_id,omitempty"`
+	StaffID      *openapi_types.UUID `json:"staff_id,omitempty"`
 }
 
 // SetupInput defines model for SetupInput.
@@ -232,8 +208,11 @@ type SetupInput struct {
 
 // SetupStatus defines model for SetupStatus.
 type SetupStatus struct {
-	Configured bool    `json:"configured"`
-	Secret     *string `json:"secret,omitempty"`
+	Configured bool `json:"configured"`
+
+	// ProvisioningURI Server-generated otpauth URI. The client only renders this value as a QR code. Omitted once setup is complete.
+	ProvisioningURI *string `json:"provisioning_uri,omitempty"`
+	Secret          *string `json:"secret,omitempty"`
 }
 
 // TokenInput defines model for TokenInput.
@@ -748,35 +727,1746 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 	return r
 }
 
+type ListAccountsRequestObject struct {
+	Params ListAccountsParams
+}
+
+type ListAccountsResponseObject interface {
+	VisitListAccountsResponse(w http.ResponseWriter) error
+}
+
+type ListAccounts200JSONResponse AccountsPage
+
+func (response ListAccounts200JSONResponse) VisitListAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAccounts400JSONResponse SecurityError
+
+func (response ListAccounts400JSONResponse) VisitListAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAccounts401JSONResponse SecurityError
+
+func (response ListAccounts401JSONResponse) VisitListAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAccounts403JSONResponse SecurityError
+
+func (response ListAccounts403JSONResponse) VisitListAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAccounts404JSONResponse SecurityError
+
+func (response ListAccounts404JSONResponse) VisitListAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAccounts409JSONResponse SecurityError
+
+func (response ListAccounts409JSONResponse) VisitListAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAccounts429JSONResponse SecurityError
+
+func (response ListAccounts429JSONResponse) VisitListAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAccounts500JSONResponse SecurityError
+
+func (response ListAccounts500JSONResponse) VisitListAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAccounts503JSONResponse SecurityError
+
+func (response ListAccounts503JSONResponse) VisitListAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateAccountRequestObject struct {
+	Body *CreateAccountJSONRequestBody
+}
+
+type CreateAccountResponseObject interface {
+	VisitCreateAccountResponse(w http.ResponseWriter) error
+}
+
+type CreateAccount201JSONResponse AccountPassword
+
+func (response CreateAccount201JSONResponse) VisitCreateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateAccount400JSONResponse SecurityError
+
+func (response CreateAccount400JSONResponse) VisitCreateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateAccount401JSONResponse SecurityError
+
+func (response CreateAccount401JSONResponse) VisitCreateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateAccount403JSONResponse SecurityError
+
+func (response CreateAccount403JSONResponse) VisitCreateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateAccount404JSONResponse SecurityError
+
+func (response CreateAccount404JSONResponse) VisitCreateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateAccount409JSONResponse SecurityError
+
+func (response CreateAccount409JSONResponse) VisitCreateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateAccount429JSONResponse SecurityError
+
+func (response CreateAccount429JSONResponse) VisitCreateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateAccount500JSONResponse SecurityError
+
+func (response CreateAccount500JSONResponse) VisitCreateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateAccount503JSONResponse SecurityError
+
+func (response CreateAccount503JSONResponse) VisitCreateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateAccountRequestObject struct {
+	ID   openapi_types.UUID `json:"id"`
+	Body *UpdateAccountJSONRequestBody
+}
+
+type UpdateAccountResponseObject interface {
+	VisitUpdateAccountResponse(w http.ResponseWriter) error
+}
+
+type UpdateAccount200JSONResponse Account
+
+func (response UpdateAccount200JSONResponse) VisitUpdateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateAccount400JSONResponse SecurityError
+
+func (response UpdateAccount400JSONResponse) VisitUpdateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateAccount401JSONResponse SecurityError
+
+func (response UpdateAccount401JSONResponse) VisitUpdateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateAccount403JSONResponse SecurityError
+
+func (response UpdateAccount403JSONResponse) VisitUpdateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateAccount404JSONResponse SecurityError
+
+func (response UpdateAccount404JSONResponse) VisitUpdateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateAccount409JSONResponse SecurityError
+
+func (response UpdateAccount409JSONResponse) VisitUpdateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateAccount429JSONResponse SecurityError
+
+func (response UpdateAccount429JSONResponse) VisitUpdateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateAccount500JSONResponse SecurityError
+
+func (response UpdateAccount500JSONResponse) VisitUpdateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateAccount503JSONResponse SecurityError
+
+func (response UpdateAccount503JSONResponse) VisitUpdateAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ResetPasswordRequestObject struct {
+	ID openapi_types.UUID `json:"id"`
+}
+
+type ResetPasswordResponseObject interface {
+	VisitResetPasswordResponse(w http.ResponseWriter) error
+}
+
+type ResetPassword200JSONResponse AccountPassword
+
+func (response ResetPassword200JSONResponse) VisitResetPasswordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ResetPassword400JSONResponse SecurityError
+
+func (response ResetPassword400JSONResponse) VisitResetPasswordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ResetPassword401JSONResponse SecurityError
+
+func (response ResetPassword401JSONResponse) VisitResetPasswordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ResetPassword403JSONResponse SecurityError
+
+func (response ResetPassword403JSONResponse) VisitResetPasswordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ResetPassword404JSONResponse SecurityError
+
+func (response ResetPassword404JSONResponse) VisitResetPasswordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ResetPassword409JSONResponse SecurityError
+
+func (response ResetPassword409JSONResponse) VisitResetPasswordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ResetPassword429JSONResponse SecurityError
+
+func (response ResetPassword429JSONResponse) VisitResetPasswordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ResetPassword500JSONResponse SecurityError
+
+func (response ResetPassword500JSONResponse) VisitResetPasswordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ResetPassword503JSONResponse SecurityError
+
+func (response ResetPassword503JSONResponse) VisitResetPasswordResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAuditRequestObject struct {
+	Params ListAuditParams
+}
+
+type ListAuditResponseObject interface {
+	VisitListAuditResponse(w http.ResponseWriter) error
+}
+
+type ListAudit200JSONResponse AuditPage
+
+func (response ListAudit200JSONResponse) VisitListAuditResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAudit400JSONResponse SecurityError
+
+func (response ListAudit400JSONResponse) VisitListAuditResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAudit401JSONResponse SecurityError
+
+func (response ListAudit401JSONResponse) VisitListAuditResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAudit403JSONResponse SecurityError
+
+func (response ListAudit403JSONResponse) VisitListAuditResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAudit404JSONResponse SecurityError
+
+func (response ListAudit404JSONResponse) VisitListAuditResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAudit409JSONResponse SecurityError
+
+func (response ListAudit409JSONResponse) VisitListAuditResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAudit429JSONResponse SecurityError
+
+func (response ListAudit429JSONResponse) VisitListAuditResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAudit500JSONResponse SecurityError
+
+func (response ListAudit500JSONResponse) VisitListAuditResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListAudit503JSONResponse SecurityError
+
+func (response ListAudit503JSONResponse) VisitListAuditResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type LoginRequestObject struct {
+	Body *LoginJSONRequestBody
+}
+
+type LoginResponseObject interface {
+	VisitLoginResponse(w http.ResponseWriter) error
+}
+
+type Login200JSONResponse Session
+
+func (response Login200JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Login400JSONResponse SecurityError
+
+func (response Login400JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Login401JSONResponse SecurityError
+
+func (response Login401JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Login403JSONResponse SecurityError
+
+func (response Login403JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Login404JSONResponse SecurityError
+
+func (response Login404JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Login409JSONResponse SecurityError
+
+func (response Login409JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Login429JSONResponse SecurityError
+
+func (response Login429JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Login500JSONResponse SecurityError
+
+func (response Login500JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Login503JSONResponse SecurityError
+
+func (response Login503JSONResponse) VisitLoginResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type LogoutRequestObject struct {
+	Body *LogoutJSONRequestBody
+}
+
+type LogoutResponseObject interface {
+	VisitLogoutResponse(w http.ResponseWriter) error
+}
+
+type Logout200JSONResponse SetupStatus
+
+func (response Logout200JSONResponse) VisitLogoutResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Logout400JSONResponse SecurityError
+
+func (response Logout400JSONResponse) VisitLogoutResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Logout401JSONResponse SecurityError
+
+func (response Logout401JSONResponse) VisitLogoutResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Logout403JSONResponse SecurityError
+
+func (response Logout403JSONResponse) VisitLogoutResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Logout404JSONResponse SecurityError
+
+func (response Logout404JSONResponse) VisitLogoutResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Logout409JSONResponse SecurityError
+
+func (response Logout409JSONResponse) VisitLogoutResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Logout429JSONResponse SecurityError
+
+func (response Logout429JSONResponse) VisitLogoutResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Logout500JSONResponse SecurityError
+
+func (response Logout500JSONResponse) VisitLogoutResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type Logout503JSONResponse SecurityError
+
+func (response Logout503JSONResponse) VisitLogoutResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RefreshSessionRequestObject struct {
+	Body *RefreshSessionJSONRequestBody
+}
+
+type RefreshSessionResponseObject interface {
+	VisitRefreshSessionResponse(w http.ResponseWriter) error
+}
+
+type RefreshSession200JSONResponse Session
+
+func (response RefreshSession200JSONResponse) VisitRefreshSessionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RefreshSession400JSONResponse SecurityError
+
+func (response RefreshSession400JSONResponse) VisitRefreshSessionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RefreshSession401JSONResponse SecurityError
+
+func (response RefreshSession401JSONResponse) VisitRefreshSessionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RefreshSession403JSONResponse SecurityError
+
+func (response RefreshSession403JSONResponse) VisitRefreshSessionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RefreshSession404JSONResponse SecurityError
+
+func (response RefreshSession404JSONResponse) VisitRefreshSessionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RefreshSession409JSONResponse SecurityError
+
+func (response RefreshSession409JSONResponse) VisitRefreshSessionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RefreshSession429JSONResponse SecurityError
+
+func (response RefreshSession429JSONResponse) VisitRefreshSessionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RefreshSession500JSONResponse SecurityError
+
+func (response RefreshSession500JSONResponse) VisitRefreshSessionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RefreshSession503JSONResponse SecurityError
+
+func (response RefreshSession503JSONResponse) VisitRefreshSessionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetSetupRequestObject struct {
+}
+
+type GetSetupResponseObject interface {
+	VisitGetSetupResponse(w http.ResponseWriter) error
+}
+
+type GetSetup200JSONResponse SetupStatus
+
+func (response GetSetup200JSONResponse) VisitGetSetupResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetSetup400JSONResponse SecurityError
+
+func (response GetSetup400JSONResponse) VisitGetSetupResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetSetup401JSONResponse SecurityError
+
+func (response GetSetup401JSONResponse) VisitGetSetupResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetSetup403JSONResponse SecurityError
+
+func (response GetSetup403JSONResponse) VisitGetSetupResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetSetup404JSONResponse SecurityError
+
+func (response GetSetup404JSONResponse) VisitGetSetupResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetSetup409JSONResponse SecurityError
+
+func (response GetSetup409JSONResponse) VisitGetSetupResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetSetup429JSONResponse SecurityError
+
+func (response GetSetup429JSONResponse) VisitGetSetupResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetSetup500JSONResponse SecurityError
+
+func (response GetSetup500JSONResponse) VisitGetSetupResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetSetup503JSONResponse SecurityError
+
+func (response GetSetup503JSONResponse) VisitGetSetupResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SetupAdminRequestObject struct {
+	Body *SetupAdminJSONRequestBody
+}
+
+type SetupAdminResponseObject interface {
+	VisitSetupAdminResponse(w http.ResponseWriter) error
+}
+
+type SetupAdmin200JSONResponse Session
+
+func (response SetupAdmin200JSONResponse) VisitSetupAdminResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SetupAdmin400JSONResponse SecurityError
+
+func (response SetupAdmin400JSONResponse) VisitSetupAdminResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SetupAdmin401JSONResponse SecurityError
+
+func (response SetupAdmin401JSONResponse) VisitSetupAdminResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SetupAdmin403JSONResponse SecurityError
+
+func (response SetupAdmin403JSONResponse) VisitSetupAdminResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SetupAdmin404JSONResponse SecurityError
+
+func (response SetupAdmin404JSONResponse) VisitSetupAdminResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SetupAdmin409JSONResponse SecurityError
+
+func (response SetupAdmin409JSONResponse) VisitSetupAdminResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SetupAdmin429JSONResponse SecurityError
+
+func (response SetupAdmin429JSONResponse) VisitSetupAdminResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SetupAdmin500JSONResponse SecurityError
+
+func (response SetupAdmin500JSONResponse) VisitSetupAdminResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type SetupAdmin503JSONResponse SecurityError
+
+func (response SetupAdmin503JSONResponse) VisitSetupAdminResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+// StrictServerInterface represents all server handlers.
+type StrictServerInterface interface {
+
+	// (GET /api/v1/accounts)
+	ListAccounts(ctx context.Context, request ListAccountsRequestObject) (ListAccountsResponseObject, error)
+
+	// (POST /api/v1/accounts)
+	CreateAccount(ctx context.Context, request CreateAccountRequestObject) (CreateAccountResponseObject, error)
+
+	// (PUT /api/v1/accounts/{id})
+	UpdateAccount(ctx context.Context, request UpdateAccountRequestObject) (UpdateAccountResponseObject, error)
+
+	// (POST /api/v1/accounts/{id}/password)
+	ResetPassword(ctx context.Context, request ResetPasswordRequestObject) (ResetPasswordResponseObject, error)
+
+	// (GET /api/v1/audit)
+	ListAudit(ctx context.Context, request ListAuditRequestObject) (ListAuditResponseObject, error)
+
+	// (POST /api/v1/auth/login)
+	Login(ctx context.Context, request LoginRequestObject) (LoginResponseObject, error)
+
+	// (POST /api/v1/auth/logout)
+	Logout(ctx context.Context, request LogoutRequestObject) (LogoutResponseObject, error)
+
+	// (POST /api/v1/auth/refresh)
+	RefreshSession(ctx context.Context, request RefreshSessionRequestObject) (RefreshSessionResponseObject, error)
+
+	// (GET /api/v1/auth/setup)
+	GetSetup(ctx context.Context, request GetSetupRequestObject) (GetSetupResponseObject, error)
+
+	// (POST /api/v1/auth/setup)
+	SetupAdmin(ctx context.Context, request SetupAdminRequestObject) (SetupAdminResponseObject, error)
+}
+
+type StrictHandlerFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request, request any) (any, error)
+type StrictMiddlewareFunc func(f StrictHandlerFunc, operationID string) StrictHandlerFunc
+
+type StrictHTTPServerOptions struct {
+	RequestErrorHandlerFunc  func(w http.ResponseWriter, r *http.Request, err error)
+	ResponseErrorHandlerFunc func(w http.ResponseWriter, r *http.Request, err error)
+}
+
+func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
+	return &strictHandler{ssi: ssi, middlewares: middlewares, options: StrictHTTPServerOptions{
+		RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		},
+		ResponseErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		},
+	}}
+}
+
+func NewStrictHandlerWithOptions(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc, options StrictHTTPServerOptions) ServerInterface {
+	if options.RequestErrorHandlerFunc == nil {
+		options.RequestErrorHandlerFunc = func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+	}
+	if options.ResponseErrorHandlerFunc == nil {
+		options.ResponseErrorHandlerFunc = func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+	return &strictHandler{ssi: ssi, middlewares: middlewares, options: options}
+}
+
+type strictHandler struct {
+	ssi         StrictServerInterface
+	middlewares []StrictMiddlewareFunc
+	options     StrictHTTPServerOptions
+}
+
+// ListAccounts operation middleware
+func (sh *strictHandler) ListAccounts(w http.ResponseWriter, r *http.Request, params ListAccountsParams) {
+	var request ListAccountsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListAccounts(ctx, request.(ListAccountsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListAccounts")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListAccountsResponseObject); ok {
+		if err := validResponse.VisitListAccountsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateAccount operation middleware
+func (sh *strictHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
+	var request CreateAccountRequestObject
+
+	var body CreateAccountJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateAccount(ctx, request.(CreateAccountRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateAccount")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateAccountResponseObject); ok {
+		if err := validResponse.VisitCreateAccountResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateAccount operation middleware
+func (sh *strictHandler) UpdateAccount(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	var request UpdateAccountRequestObject
+
+	request.ID = id
+
+	var body UpdateAccountJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateAccount(ctx, request.(UpdateAccountRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateAccount")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(UpdateAccountResponseObject); ok {
+		if err := validResponse.VisitUpdateAccountResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ResetPassword operation middleware
+func (sh *strictHandler) ResetPassword(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	var request ResetPasswordRequestObject
+
+	request.ID = id
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ResetPassword(ctx, request.(ResetPasswordRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ResetPassword")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ResetPasswordResponseObject); ok {
+		if err := validResponse.VisitResetPasswordResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ListAudit operation middleware
+func (sh *strictHandler) ListAudit(w http.ResponseWriter, r *http.Request, params ListAuditParams) {
+	var request ListAuditRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListAudit(ctx, request.(ListAuditRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListAudit")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListAuditResponseObject); ok {
+		if err := validResponse.VisitListAuditResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// Login operation middleware
+func (sh *strictHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var request LoginRequestObject
+
+	var body LoginJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.Login(ctx, request.(LoginRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "Login")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(LoginResponseObject); ok {
+		if err := validResponse.VisitLoginResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// Logout operation middleware
+func (sh *strictHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	var request LogoutRequestObject
+
+	var body LogoutJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.Logout(ctx, request.(LogoutRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "Logout")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(LogoutResponseObject); ok {
+		if err := validResponse.VisitLogoutResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// RefreshSession operation middleware
+func (sh *strictHandler) RefreshSession(w http.ResponseWriter, r *http.Request) {
+	var request RefreshSessionRequestObject
+
+	var body RefreshSessionJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.RefreshSession(ctx, request.(RefreshSessionRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RefreshSession")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(RefreshSessionResponseObject); ok {
+		if err := validResponse.VisitRefreshSessionResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetSetup operation middleware
+func (sh *strictHandler) GetSetup(w http.ResponseWriter, r *http.Request) {
+	var request GetSetupRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetSetup(ctx, request.(GetSetupRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetSetup")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetSetupResponseObject); ok {
+		if err := validResponse.VisitGetSetupResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// SetupAdmin operation middleware
+func (sh *strictHandler) SetupAdmin(w http.ResponseWriter, r *http.Request) {
+	var request SetupAdminRequestObject
+
+	var body SetupAdminJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.SetupAdmin(ctx, request.(SetupAdminRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "SetupAdmin")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(SetupAdminResponseObject); ok {
+		if err := validResponse.VisitSetupAdminResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, compressed with deflate, json marshaled OpenAPI spec.
 // Stored as a slice of fixed-width chunks rather than one concatenated
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,
@@ -816,6 +2506,12 @@ func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
 		res[pathToFile] = rawSpec
 	}
 
+	for rawPath, rawFunc := range externalRef0.PathToRawSpec(path.Join(path.Dir(pathToFile), "audit.yaml")) {
+		if _, ok := res[rawPath]; ok {
+			// it is not possible to compare functions in golang, so always overwrite the old value
+		}
+		res[rawPath] = rawFunc
+	}
 	return res
 }
 

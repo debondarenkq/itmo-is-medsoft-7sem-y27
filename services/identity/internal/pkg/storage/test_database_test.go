@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/internal/models"
 	"os"
 	"testing"
 
@@ -60,16 +59,5 @@ func testRepository(t *testing.T) *Repository {
 	if _, err = provider.Up(ctx); err != nil {
 		t.Fatalf("repeat migration: %v", err)
 	}
-	repository := New(pool)
-	repository.UpdateRole = func(ctx context.Context, id, role string) (models.Staff, error) {
-		s, err := repository.Get(ctx, id)
-		if err != nil {
-			return s, err
-		}
-		s.Role = role
-		s.Revision++
-		s.SecurityRevision = s.Revision
-		return s, nil
-	}
-	return repository
+	return New(pool)
 }

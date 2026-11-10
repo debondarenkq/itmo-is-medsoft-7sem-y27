@@ -253,7 +253,11 @@
         "summary": "Создать запись",
         "tags": [
           "Staff"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "staff_created",
+          "title": "Создание медработника"
+        }
       }
     },
     "/api/v1/staff/{id}": {
@@ -358,7 +362,11 @@
         "summary": "Мягкое удаление",
         "tags": [
           "Staff"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "staff_deleted",
+          "title": "Удаление медработника"
+        }
       },
       "get": {
         "operationId": "GetStaff",
@@ -588,7 +596,11 @@
         "summary": "Полностью обновить активную запись",
         "tags": [
           "Staff"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "staff_updated",
+          "title": "Изменение медработника"
+        }
       }
     },
     "/api/v1/diagnoses": {
@@ -834,7 +846,11 @@
         "summary": "Создать запись",
         "tags": [
           "Diagnoses"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "Создание диагноза"
+        }
       }
     },
     "/api/v1/diagnoses/import": {
@@ -945,7 +961,11 @@
         "summary": "Импортировать диагнозы из выбранного JSON-файла одной транзакцией",
         "tags": [
           "Diagnoses"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "Импорт диагнозов"
+        }
       }
     },
     "/api/v1/diagnoses/{id}": {
@@ -1050,7 +1070,11 @@
         "summary": "Мягкое удаление",
         "tags": [
           "Diagnoses"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "Удаление диагноза"
+        }
       },
       "get": {
         "operationId": "GetDiagnosis",
@@ -1280,7 +1304,11 @@
         "summary": "Полностью обновить активную запись",
         "tags": [
           "Diagnoses"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "Изменение диагноза"
+        }
       }
     },
     "/api/v1/patients": {
@@ -1525,7 +1553,11 @@
         "summary": "Создать пациента",
         "tags": [
           "Patients"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "patient_created",
+          "title": "Создание пациента"
+        }
       }
     },
     "/api/v1/patients/{id}": {
@@ -1630,7 +1662,11 @@
         "summary": "Удалить пациента; при наличии ЭМК возвращает 409",
         "tags": [
           "Patients"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "patient_deleted",
+          "title": "Удаление пациента"
+        }
       },
       "get": {
         "operationId": "GetPatient",
@@ -1860,7 +1896,11 @@
         "summary": "Полностью обновить пациента",
         "tags": [
           "Patients"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "patient_updated",
+          "title": "Изменение пациента"
+        }
       }
     },
     "/api/v1/patients/{id}/record": {
@@ -2092,7 +2132,11 @@
         "summary": "Создать ЭМК с обязательным автором",
         "tags": [
           "Records"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "record_created",
+          "title": "Создание ЭМК"
+        }
       }
     },
     "/api/v1/records/{id}": {
@@ -2326,7 +2370,11 @@
         "summary": "Атомарно сохранить команды и историю",
         "tags": [
           "Records"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "record_updated",
+          "title": "Изменение ЭМК"
+        }
       }
     },
     "/api/v1/records/{id}/history": {
@@ -2668,6 +2716,16 @@
             },
             "description": "Ошибка"
           },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Not found"
+          },
           "409": {
             "content": {
               "application/json": {
@@ -2766,6 +2824,16 @@
             },
             "description": "Ошибка"
           },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Not found"
+          },
           "409": {
             "content": {
               "application/json": {
@@ -2809,7 +2877,11 @@
         },
         "tags": [
           "Security"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "account_created",
+          "title": "Создание аккаунта"
+        }
       }
     },
     "/api/v1/accounts/{id}": {
@@ -2877,6 +2949,16 @@
             },
             "description": "Ошибка"
           },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Not found"
+          },
           "409": {
             "content": {
               "application/json": {
@@ -2920,7 +3002,11 @@
         },
         "tags": [
           "Security"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "account_updated",
+          "title": "Изменение аккаунта"
+        }
       }
     },
     "/api/v1/accounts/{id}/password": {
@@ -2978,6 +3064,16 @@
             },
             "description": "Ошибка"
           },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Not found"
+          },
           "409": {
             "content": {
               "application/json": {
@@ -3021,7 +3117,11 @@
         },
         "tags": [
           "Security"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "account_updated",
+          "title": "Изменение аккаунта"
+        }
       }
     },
     "/api/v1/audit": {
@@ -3110,6 +3210,16 @@
               }
             },
             "description": "Ошибка"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Not found"
           },
           "409": {
             "content": {
@@ -3211,6 +3321,16 @@
             },
             "description": "Ошибка"
           },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Not found"
+          },
           "409": {
             "content": {
               "application/json": {
@@ -3255,7 +3375,11 @@
         "security": [],
         "tags": [
           "Security"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "login",
+          "title": "Вход пользователя"
+        }
       }
     },
     "/api/v1/auth/logout": {
@@ -3312,6 +3436,16 @@
             },
             "description": "Ошибка"
           },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Not found"
+          },
           "409": {
             "content": {
               "application/json": {
@@ -3355,7 +3489,11 @@
         },
         "tags": [
           "Security"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "logout",
+          "title": "Выход из системы"
+        }
       }
     },
     "/api/v1/auth/refresh": {
@@ -3412,6 +3550,16 @@
             },
             "description": "Ошибка"
           },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Not found"
+          },
           "409": {
             "content": {
               "application/json": {
@@ -3456,7 +3604,11 @@
         "security": [],
         "tags": [
           "Security"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "token_refreshed",
+          "title": "Обновление пары токенов"
+        }
       }
     },
     "/api/v1/auth/setup": {
@@ -3502,6 +3654,16 @@
               }
             },
             "description": "Ошибка"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Not found"
           },
           "409": {
             "content": {
@@ -3602,6 +3764,16 @@
             },
             "description": "Ошибка"
           },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityError"
+                }
+              }
+            },
+            "description": "Not found"
+          },
           "409": {
             "content": {
               "application/json": {
@@ -3646,7 +3818,11 @@
         "security": [],
         "tags": [
           "Security"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "admin_setup",
+          "title": "Настройка администратора"
+        }
       }
     }
   },
@@ -4631,7 +4807,7 @@
           "error": {
             "properties": {
               "code": {
-                "type": "string"
+                "$ref": "#/components/schemas/SecurityErrorCode"
               },
               "message": {
                 "type": "string"
@@ -4648,6 +4824,18 @@
           "error"
         ],
         "type": "object"
+      },
+      "SecurityErrorCode": {
+        "enum": [
+          "INVALID_REQUEST",
+          "UNAUTHORIZED",
+          "FORBIDDEN",
+          "NOT_FOUND",
+          "CONFLICT",
+          "INTERNAL",
+          "DEPENDENCY_UNAVAILABLE"
+        ],
+        "type": "string"
       },
       "Session": {
         "additionalProperties": false,
@@ -4716,6 +4904,11 @@
         "properties": {
           "configured": {
             "type": "boolean"
+          },
+          "provisioning_uri": {
+            "description": "Server-generated otpauth URI. The client only renders this value as a QR code. Omitted once setup is complete.",
+            "format": "uri",
+            "type": "string"
           },
           "secret": {
             "type": "string"

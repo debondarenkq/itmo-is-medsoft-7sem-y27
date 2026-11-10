@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ed25519"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 	"unicode"
@@ -16,10 +17,11 @@ import (
 
 type StaffDirectory interface {
 	Get(context.Context, string) (models.Staff, error)
+	All(context.Context) ([]models.Staff, error)
+	UpdateRole(context.Context, string, string) (models.Staff, error)
 }
 
 type SecurityStorage interface {
-	ApplyStaff(context.Context, models.Staff) error
 	AccountByID(context.Context, string) (models.Account, error)
 	Account(context.Context, string) (models.Account, error)
 	RefreshAccount(context.Context, string) (models.Account, error)
@@ -29,12 +31,10 @@ type SecurityStorage interface {
 	CreateAccount(context.Context, models.Account, string) (models.Account, error)
 	ChangeAccount(context.Context, string, *bool, string, string) (models.Account, error)
 	Logout(context.Context, string, string) error
-	AppendAudit(context.Context, string, string, string) error
+	AppendAudit(context.Context, string, string, models.AuditEventKind) error
 	SearchAccounts(context.Context, models.AccountFilter) ([]models.Account, int, error)
 	SearchAuditEvents(context.Context, models.AuditFilter) ([]models.AuditEvent, int, error)
 	UpdateAccount(context.Context, string, models.AccountChanges, string) (models.Account, error)
-	Accounts(context.Context, int, int) ([]models.Account, int, error)
-	AuditEvents(context.Context, int, int) ([]models.AuditEvent, int, error)
 }
 type Security struct {
 	Directory StaffDirectory
@@ -47,13 +47,23 @@ func NewSecurity(store SecurityStorage, key ed25519.PrivateKey) *Security {
 	dummy, _ := bcrypt.GenerateFromPassword([]byte("invalid-login-password"), 12)
 	return &Security{Store: store, key: key, dummyHash: dummy}
 }
-func (s *Security) SetupStatus(ctx context.Context) (bool, string, error) {
-	secret, err := NewTOTPSecret()
+func (s *Security) SetupStatus(ctx context.Context) (models.AdminSetup, error) {
+	candidate, err := NewTOTPSecret()
 	if err != nil {
-		return false, "", err
+		return models.AdminSetup{}, err
 	}
-	return s.Store.SetupSecret(ctx, secret)
+	configured, secret, err := s.Store.SetupSecret(ctx, candidate)
+	if err != nil {
+		return models.AdminSetup{}, err
+	}
+	if configured {
+		return models.AdminSetup{Configured: true}, nil
+	}
+	query := url.Values{"secret": {secret}, "issuer": {"HIS"}, "algorithm": {"SHA1"}, "digits": {"6"}, "period": {"30"}}
+	uri := (&url.URL{Scheme: "otpauth", Host: "totp", Path: "/HIS:admin", RawQuery: query.Encode()}).String()
+	return models.AdminSetup{Secret: &secret, ProvisioningURI: &uri}, nil
 }
+
 func (s *Security) Setup(ctx context.Context, password, confirmation, secret, code string) (models.Session, error) {
 	if err := ValidateAdminPassword(password, confirmation); err != nil {
 		return models.Session{}, err
@@ -83,18 +93,8 @@ func (s *Security) Login(ctx context.Context, username, password, code string) (
 	if bcrypt.CompareHashAndPassword([]byte(a.PasswordHash), []byte(password)) != nil || !a.IsActive {
 		return models.Session{}, models.ErrUnauthorized
 	}
-	if !a.IsAdmin {
-		checkedPasswordHash := a.PasswordHash
-		if err := s.syncStaff(ctx, a.StaffID); err != nil {
-			if err == models.ErrConflict || err == models.ErrNotFound {
-				return models.Session{}, models.ErrUnauthorized
-			}
-			return models.Session{}, err
-		}
-		a, err = s.Store.Account(ctx, username)
-		if err != nil || !a.IsActive || a.PasswordHash != checkedPasswordHash {
-			return models.Session{}, models.ErrUnauthorized
-		}
+	if err := s.staffAccount(ctx, &a); err != nil {
+		return models.Session{}, loginStaffError(err)
 	}
 	step := int64(-1)
 	if a.IsAdmin {
@@ -119,17 +119,12 @@ func (s *Security) Refresh(ctx context.Context, token string) (models.Session, e
 	if err != nil {
 		return models.Session{}, err
 	}
-	if !a.IsAdmin {
-		if err := s.syncStaff(ctx, a.StaffID); err != nil {
-			if err == models.ErrConflict || err == models.ErrNotFound {
-				return models.Session{}, models.ErrUnauthorized
-			}
-			return models.Session{}, err
-		}
-		a, err = s.Store.RefreshAccount(ctx, TokenHash(token))
-		if err != nil {
-			return models.Session{}, err
-		}
+	revision := a.StaffRevision
+	if err := s.staffAccount(ctx, &a); err != nil {
+		return models.Session{}, loginStaffError(err)
+	}
+	if a.StaffRevision != revision {
+		return models.Session{}, models.ErrUnauthorized
 	}
 	if !a.IsActive {
 		return models.Session{}, models.ErrUnauthorized
@@ -149,7 +144,8 @@ func (s *Security) CreateAccount(ctx context.Context, username, staffID, actor s
 	if _, err := uuid.Parse(staffID); err != nil {
 		return models.Account{}, "", models.ErrInvalidInput
 	}
-	if err := s.syncStaff(ctx, &staffID); err != nil {
+	a := models.Account{ID: uuid.NewString(), Username: username, StaffID: &staffID, IsActive: true}
+	if err := s.staffAccount(ctx, &a); err != nil {
 		return models.Account{}, "", err
 	}
 	password, err := randomText(12)
@@ -160,8 +156,10 @@ func (s *Security) CreateAccount(ctx context.Context, username, staffID, actor s
 	if err != nil {
 		return models.Account{}, "", err
 	}
-	a, err := s.Store.CreateAccount(ctx, models.Account{ID: uuid.NewString(), Username: username, StaffID: &staffID, PasswordHash: string(hash)}, actor)
-	return a, password, err
+	a.PasswordHash = string(hash)
+	stored, err := s.Store.CreateAccount(ctx, a, actor)
+	stored.Role, stored.StaffName, stored.StaffRevision = a.Role, a.StaffName, a.StaffRevision
+	return stored, password, err
 }
 func (s *Security) ResetPassword(ctx context.Context, id, actor string) (models.Account, string, error) {
 	password, err := randomText(12)
@@ -172,8 +170,16 @@ func (s *Security) ResetPassword(ctx context.Context, id, actor string) (models.
 	if err != nil {
 		return models.Account{}, "", err
 	}
-	a, err := s.Store.ChangeAccount(ctx, id, nil, string(hash), actor)
-	return a, password, err
+	a, err := s.Store.AccountByID(ctx, id)
+	if err != nil {
+		return a, "", err
+	}
+	if err = s.staffAccount(ctx, &a); err != nil {
+		return a, "", err
+	}
+	stored, err := s.Store.ChangeAccount(ctx, id, nil, string(hash), actor)
+	stored.Role, stored.StaffName, stored.StaffRevision = a.Role, a.StaffName, a.StaffRevision
+	return stored, password, err
 }
 
 func ValidateAdminPassword(password, confirmation string) error {
@@ -200,13 +206,6 @@ func (s *Security) UpdateAccount(ctx context.Context, id string, changes models.
 		}
 		changes.Username = &username
 	}
-	if changes.Role != nil {
-		switch *changes.Role {
-		case "doctor", "nurse", "laboratory-technician", "other":
-		default:
-			return models.Account{}, models.ErrInvalidInput
-		}
-	}
 	a, err := s.Store.AccountByID(ctx, id)
 	if err != nil {
 		return a, err
@@ -214,28 +213,126 @@ func (s *Security) UpdateAccount(ctx context.Context, id string, changes models.
 	if a.IsAdmin {
 		return a, models.ErrForbidden
 	}
-	if err := s.syncStaff(ctx, a.StaffID); err != nil {
+	if err := s.staffAccount(ctx, &a); err != nil {
 		return a, err
 	}
-	return s.Store.UpdateAccount(ctx, id, changes, actor)
+	if changes.Username != nil {
+		other, err := s.Store.Account(ctx, *changes.Username)
+		if err == nil && other.ID != id {
+			return a, models.ErrConflict
+		}
+		if err != nil && err != models.ErrUnauthorized {
+			return a, err
+		}
+	}
+	if changes.Role != nil && *changes.Role != a.Role {
+		profile, err := s.Directory.UpdateRole(ctx, *a.StaffID, *changes.Role)
+		if err != nil {
+			return a, err
+		}
+		a.Role = profile.Role
+		a.StaffRevision = profile.RoleRevision
+	}
+	changes.RevokeSessions = changes.Role != nil
+	changes.Role = nil
+	stored, err := s.Store.UpdateAccount(ctx, id, changes, actor)
+	stored.Role, stored.StaffName, stored.StaffRevision = a.Role, a.StaffName, a.StaffRevision
+	return stored, err
 }
 
-func (s *Security) syncStaff(ctx context.Context, id *string) error {
-	if id == nil {
+func loginStaffError(err error) error {
+	if err == models.ErrConflict || err == models.ErrNotFound {
+		return models.ErrUnauthorized
+	}
+	return err
+}
+
+func (s *Security) staffAccount(ctx context.Context, a *models.Account) error {
+	if a.IsAdmin {
+		a.Role = "admin"
+		return nil
+	}
+	if a.StaffID == nil {
 		return models.ErrUnauthorized
 	}
 	if s.Directory == nil {
 		return models.ErrUnavailable
 	}
-	profile, err := s.Directory.Get(ctx, *id)
+	profile, err := s.Directory.Get(ctx, *a.StaffID)
 	if err != nil {
-		return err
-	}
-	if err = s.Store.ApplyStaff(ctx, profile); err != nil {
 		return err
 	}
 	if profile.DeletedAt != nil {
 		return models.ErrConflict
 	}
+	a.Role = profile.Role
+	a.StaffName = staffName(profile)
+	a.StaffRevision = profile.RoleRevision
 	return nil
+}
+
+func staffName(s models.Staff) string { return strings.TrimSpace(s.LastName + " " + s.FirstName) }
+
+// VerifyAccess validates sessions.
+func (s *Security) VerifyAccess(ctx context.Context, token string) (models.Claims, error) {
+	claims, err := s.Verify(token)
+	if err != nil {
+		return claims, err
+	}
+	a, err := s.Store.AccountByID(ctx, claims.Subject)
+	if err != nil {
+		return claims, err
+	}
+	if !a.IsActive || a.SessionVersion != claims.SessionVersion {
+		return claims, models.ErrUnauthorized
+	}
+	if err = s.staffAccount(ctx, &a); err != nil {
+		return claims, loginStaffError(err)
+	}
+	staffID := ""
+	if a.StaffID != nil {
+		staffID = *a.StaffID
+	}
+	if staffID != claims.StaffID || a.Role != claims.Role || a.StaffRevision != claims.StaffRevision {
+		return claims, models.ErrUnauthorized
+	}
+	return claims, nil
+}
+
+func (s *Security) SearchAccounts(ctx context.Context, filter models.AccountFilter) ([]models.Account, int, error) {
+	profiles, err := s.Directory.All(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+	byID := make(map[string]models.Staff, len(profiles))
+	filter.StaffIDs = []string{}
+	filter.DeletedStaffIDs = []string{}
+	for _, p := range profiles {
+		byID[p.ID] = p
+		if strings.Contains(strings.ToLower(staffName(p)), strings.ToLower(filter.Search)) {
+			filter.StaffIDs = append(filter.StaffIDs, p.ID)
+		}
+		if p.DeletedAt != nil {
+			filter.DeletedStaffIDs = append(filter.DeletedStaffIDs, p.ID)
+		}
+	}
+	accounts, total, err := s.Store.SearchAccounts(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	for i := range accounts {
+		a := &accounts[i]
+		if a.IsAdmin {
+			continue
+		}
+		if a.StaffID != nil {
+			p, ok := byID[*a.StaffID]
+			if ok {
+				a.StaffName = staffName(p)
+				a.Role = p.Role
+				a.IsActive = a.IsActive && p.DeletedAt == nil
+			}
+		}
+	}
+	return accounts, total, nil
 }

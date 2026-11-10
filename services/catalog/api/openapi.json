@@ -422,7 +422,11 @@
         "summary": "Создать запись",
         "tags": [
           "Diagnoses"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "Создание диагноза"
+        }
       }
     },
     "/api/v1/diagnoses/import": {
@@ -533,7 +537,11 @@
         "summary": "Импортировать диагнозы из выбранного JSON-файла одной транзакцией",
         "tags": [
           "Diagnoses"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "Импорт диагнозов"
+        }
       }
     },
     "/api/v1/diagnoses/{id}": {
@@ -638,7 +646,11 @@
         "summary": "Мягкое удаление",
         "tags": [
           "Diagnoses"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "Удаление диагноза"
+        }
       },
       "get": {
         "operationId": "GetDiagnosis",
@@ -868,7 +880,11 @@
         "summary": "Полностью обновить активную запись",
         "tags": [
           "Diagnoses"
-        ]
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "Изменение диагноза"
+        }
       }
     }
   },

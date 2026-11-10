@@ -1,34 +1,30 @@
 package api
 
 import (
-	"net/http"
-
+	"context"
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/security"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/internal/models"
 )
 
-func (api *SecurityAPI) GetSetup(w http.ResponseWriter, r *http.Request) {
-	configured, secret, err := api.Module.SetupStatus(r.Context())
+func (implementation *Implementation) GetSetup(ctx context.Context, request contract.GetSetupRequestObject) (contract.GetSetupResponseObject, error) {
+	setup, err := implementation.Module.SetupStatus(ctx)
 	if err != nil {
-		securityError(w, err)
-		return
+		return nil, err
 	}
-	writeJSON(w, 200, map[string]any{"configured": configured, "secret": secret})
+	return contract.GetSetup200JSONResponse{Configured: setup.Configured, Secret: setup.Secret, ProvisioningURI: setup.ProvisioningURI}, nil
 }
-
-func (api *SecurityAPI) SetupAdmin(w http.ResponseWriter, r *http.Request) {
-	if api.limited(r) {
-		api.failed(w, r, models.ErrUnauthorized, "Превышен лимит настройки администратора")
-		return
+func (implementation *Implementation) SetupAdmin(ctx context.Context, request contract.SetupAdminRequestObject) (contract.SetupAdminResponseObject, error) {
+	if implementation.limited(ctx) {
+		return nil, implementation.auditFailure(ctx, models.ErrUnauthorized, models.AuditEventKindLoginFailed, "Превышен лимит настройки администратора")
 	}
-	var input contract.SetupInput
-	if !decodeSecurity(w, r, &input) {
-		return
-	}
-	session, err := api.Module.Setup(r.Context(), input.Password, input.Confirmation, input.Secret, input.Totp)
+	input := request.Body
+	session, err := implementation.Module.Setup(ctx, input.Password, input.Confirmation, input.Secret, input.Totp)
 	if err != nil {
-		api.failed(w, r, err, "Неуспешная настройка администратора")
-		return
+		return nil, implementation.auditFailure(ctx, err, models.AuditEventKindLoginFailed, "Неуспешная настройка администратора")
 	}
-	writeJSON(w, 200, session)
+	response, err := toSession(session)
+	if err != nil {
+		return nil, err
+	}
+	return contract.SetupAdmin200JSONResponse(response), nil
 }

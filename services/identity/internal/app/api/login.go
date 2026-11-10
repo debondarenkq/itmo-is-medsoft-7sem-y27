@@ -1,61 +1,57 @@
 package api
 
 import (
+	"context"
 	"net"
-	"net/http"
 	"time"
-
-	"github.com/google/uuid"
 
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/security"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/internal/models"
+	"github.com/google/uuid"
 )
 
-func (api *SecurityAPI) limited(r *http.Request) bool {
-	api.mu.Lock()
-	defer api.mu.Unlock()
+func (implementation *Implementation) limited(ctx context.Context) bool {
+	implementation.mu.Lock()
+	defer implementation.mu.Unlock()
 	now := time.Now()
-	for key, window := range api.attempts {
+	for key, window := range implementation.attempts {
 		if now.Sub(window.start) > time.Minute {
-			delete(api.attempts, key)
+			delete(implementation.attempts, key)
 		}
 	}
-	host, _, _ := net.SplitHostPort(r.RemoteAddr)
-	// Global cap also covers repeated requests behind the gateway.
-	window := api.attempts[host]
+	address, _ := ctx.Value(remoteAddressKey).(string)
+	host, _, _ := net.SplitHostPort(address)
+	window := implementation.attempts[host]
 	if window.start.IsZero() {
 		window.start = now
 	}
 	window.count++
-	api.attempts[host] = window
+	implementation.attempts[host] = window
 	return window.count > 20
 }
-
-func (api *SecurityAPI) failed(w http.ResponseWriter, r *http.Request, err error, message string) {
-	if auditErr := api.Module.Audit(r.Context(), "anonymous:"+r.RemoteAddr+":request:"+uuid.NewString(), message); auditErr != nil {
-		securityError(w, auditErr)
-		return
+func (implementation *Implementation) auditFailure(ctx context.Context, err error, kind models.AuditEventKind, message string) error {
+	address, _ := ctx.Value(remoteAddressKey).(string)
+	if auditErr := implementation.Module.Audit(ctx, "anonymous:"+address+":request:"+uuid.NewString(), message, kind); auditErr != nil {
+		return auditErr
 	}
-	securityError(w, err)
+	return err
 }
-
-func (api *SecurityAPI) Login(w http.ResponseWriter, r *http.Request) {
-	if api.limited(r) {
-		api.failed(w, r, models.ErrUnauthorized, "Превышен лимит попыток входа")
-		return
+func (implementation *Implementation) Login(ctx context.Context, request contract.LoginRequestObject) (contract.LoginResponseObject, error) {
+	if implementation.limited(ctx) {
+		return nil, implementation.auditFailure(ctx, models.ErrUnauthorized, models.AuditEventKindLoginFailed, "Превышен лимит попыток входа")
 	}
-	var input contract.LoginInput
-	if !decodeSecurity(w, r, &input) {
-		return
-	}
+	input := request.Body
 	code := ""
 	if input.Totp != nil {
 		code = *input.Totp
 	}
-	session, err := api.Module.Login(r.Context(), input.Username, input.Password, code)
+	session, err := implementation.Module.Login(ctx, input.Username, input.Password, code)
 	if err != nil {
-		api.failed(w, r, err, "Неуспешная попытка входа: "+input.Username)
-		return
+		return nil, implementation.auditFailure(ctx, err, models.AuditEventKindLoginFailed, "Неуспешная попытка входа: "+input.Username)
 	}
-	writeJSON(w, 200, session)
+	response, err := toSession(session)
+	if err != nil {
+		return nil, err
+	}
+	return contract.Login200JSONResponse(response), nil
 }

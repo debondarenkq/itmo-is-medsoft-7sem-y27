@@ -18,6 +18,7 @@ import (
 	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
 
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/api"
+	internalapi "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/api/internalapi"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/models"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/modules"
 )
@@ -44,8 +45,7 @@ func (implementation *Implementation) Register(router *mux.Router) {
 	}
 	validator := nethttpmiddleware.OapiRequestValidatorWithOptions(spec, &nethttpmiddleware.Options{
 		DoNotValidateServers: true,
-		// Authentication and role checks run before OpenAPI request validation.
-		Options: openapi3filter.Options{AuthenticationFunc: func(context.Context, *openapi3filter.AuthenticationInput) error { return nil }},
+		Options:              openapi3filter.Options{AuthenticationFunc: func(context.Context, *openapi3filter.AuthenticationInput) error { return nil }},
 		ErrorHandlerWithOpts: func(_ context.Context, err error, w http.ResponseWriter, request *http.Request, options nethttpmiddleware.ErrorHandlerOpts) {
 			writeValidationError(w, options.StatusCode, err)
 		},
@@ -64,6 +64,8 @@ func (implementation *Implementation) Register(router *mux.Router) {
 func writeError(w http.ResponseWriter, request *http.Request, err error) {
 	status, code := http.StatusInternalServerError, contract.INTERNAL
 	switch {
+	case errors.Is(err, models.ErrForbidden):
+		status, code = http.StatusForbidden, contract.FORBIDDEN
 	case errors.Is(err, models.ErrInvalidInput):
 		status, code = http.StatusBadRequest, contract.INVALIDREQUEST
 	case errors.Is(err, models.ErrNotFound):
@@ -76,6 +78,10 @@ func writeError(w http.ResponseWriter, request *http.Request, err error) {
 		slog.Error("request failed", "method", request.Method, "path", request.URL.Path, "error", err)
 		message = "Внутренняя ошибка сервиса"
 	}
+	if strings.HasPrefix(request.URL.Path, "/internal/") {
+		writeJSON(w, status, internalapi.Error{Error: internalapi.ErrorDetail{Code: internalapi.ErrorCode(code), Message: message}})
+		return
+	}
 	writeJSON(w, status, contract.Error{Error: contract.ErrorDetail{Code: code, Message: message}})
 }
 
@@ -87,7 +93,11 @@ func writeJSON(w http.ResponseWriter, status int, value any) {
 	}
 }
 
-func writeRequestError(w http.ResponseWriter, _ *http.Request, _ error) {
+func writeRequestError(w http.ResponseWriter, r *http.Request, _ error) {
+	if strings.HasPrefix(r.URL.Path, "/internal/") {
+		writeError(w, r, models.ErrInvalidInput)
+		return
+	}
 	writeJSON(w, http.StatusBadRequest, contract.Error{Error: contract.ErrorDetail{
 		Code: contract.INVALIDREQUEST, Message: "Некорректный формат запроса",
 	}})
@@ -145,41 +155,70 @@ func roleValue(role *contract.StaffRole) string {
 	return string(*role)
 }
 
+var _ internalapi.StrictServerInterface = (*Implementation)(nil)
+
 func (i *Implementation) RegisterInternal(router *mux.Router, key string) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		if key == "" || subtle.ConstantTimeCompare([]byte(r.Header.Get("X-Service-Key")), []byte(key)) != 1 {
-			writeJSON(w, 403, map[string]string{"error": "forbidden"})
-			return
-		}
-		id := mux.Vars(r)["id"]
-		if _, err := uuid.Parse(id); err != nil {
-			writeRequestError(w, r, err)
-			return
-		}
-		staff, err := i.Module.Get(r.Context(), id)
-		if err != nil {
-			writeError(w, r, err)
-			return
-		}
-		if r.Method == "PUT" {
-			var input struct {
-				Role string `json:"role"`
-			}
-			decoder := json.NewDecoder(r.Body)
-			decoder.DisallowUnknownFields()
-			if decoder.Decode(&input) != nil {
-				writeRequestError(w, r, nil)
-				return
-			}
-			staff.Role = input.Role
-			staff, err = i.Module.Update(r.Context(), id, staff)
-			if err != nil {
-				writeError(w, r, err)
-				return
-			}
-		}
-		writeJSON(w, 200, staff)
+	spec, err := internalapi.GetSwagger()
+	if err != nil {
+		panic(err)
 	}
-	router.HandleFunc("/internal/staff/{id}", handler).Methods("GET")
-	router.HandleFunc("/internal/staff/{id}/role", handler).Methods("PUT")
+	validator := nethttpmiddleware.OapiRequestValidatorWithOptions(spec, &nethttpmiddleware.Options{DoNotValidateServers: true, Options: openapi3filter.Options{AuthenticationFunc: func(context.Context, *openapi3filter.AuthenticationInput) error { return nil }}, ErrorHandlerWithOpts: func(_ context.Context, _ error, w http.ResponseWriter, r *http.Request, _ nethttpmiddleware.ErrorHandlerOpts) {
+		writeRequestError(w, r, nil)
+	}})
+	strict := internalapi.NewStrictHandlerWithOptions(i, nil, internalapi.StrictHTTPServerOptions{RequestErrorHandlerFunc: writeRequestError, ResponseErrorHandlerFunc: writeError})
+	internalapi.HandlerWithOptions(strict, internalapi.GorillaServerOptions{BaseRouter: router, Middlewares: []internalapi.MiddlewareFunc{validator}, ErrorHandlerFunc: writeRequestError})
+	router.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, "/internal/") && (key == "" || subtle.ConstantTimeCompare([]byte(r.Header.Get("X-Service-Key")), []byte(key)) != 1) {
+				writeError(w, r, models.ErrForbidden)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	})
+}
+func toStaffProfile(s models.Staff) (internalapi.ProfileJSONResponse, error) {
+	id, err := uuid.Parse(s.ID)
+	if err != nil {
+		return internalapi.ProfileJSONResponse{}, err
+	}
+	return internalapi.ProfileJSONResponse{ID: id, FirstName: s.FirstName, LastName: s.LastName, Position: &s.Position, Role: internalapi.Role(s.Role), CreatedAt: &s.CreatedAt, UpdatedAt: &s.UpdatedAt, DeletedAt: s.DeletedAt, RoleRevision: s.RoleRevision}, nil
+}
+func (i *Implementation) GetStaffIdentity(ctx context.Context, request internalapi.GetStaffIdentityRequestObject) (internalapi.GetStaffIdentityResponseObject, error) {
+	s, err := i.Module.Get(ctx, request.ID.String())
+	if err != nil {
+		return nil, err
+	}
+	response, err := toStaffProfile(s)
+	if err != nil {
+		return nil, err
+	}
+	return internalapi.GetStaffIdentity200JSONResponse{ProfileJSONResponse: response}, nil
+}
+func (i *Implementation) UpdateStaffIdentityRole(ctx context.Context, request internalapi.UpdateStaffIdentityRoleRequestObject) (internalapi.UpdateStaffIdentityRoleResponseObject, error) {
+	s, err := i.Module.UpdateRole(ctx, request.ID.String(), string(request.Body.Role))
+	if err != nil {
+		return nil, err
+	}
+	response, err := toStaffProfile(s)
+	if err != nil {
+		return nil, err
+	}
+	return internalapi.UpdateStaffIdentityRole200JSONResponse{ProfileJSONResponse: response}, nil
+}
+
+func (i *Implementation) ListStaffIdentities(ctx context.Context, _ internalapi.ListStaffIdentitiesRequestObject) (internalapi.ListStaffIdentitiesResponseObject, error) {
+	items, err := i.Module.ListIdentityProfiles(ctx)
+	if err != nil {
+		return nil, err
+	}
+	response := make(internalapi.ListStaffIdentities200JSONResponse, 0, len(items))
+	for _, item := range items {
+		profile, err := toStaffProfile(item)
+		if err != nil {
+			return nil, err
+		}
+		response = append(response, internalapi.StaffProfile(profile))
+	}
+	return response, nil
 }

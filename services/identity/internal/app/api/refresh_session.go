@@ -1,20 +1,19 @@
 package api
 
 import (
-	"net/http"
-
+	"context"
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/security"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/internal/models"
 )
 
-func (api *SecurityAPI) RefreshSession(w http.ResponseWriter, r *http.Request) {
-	var input contract.TokenInput
-	if !decodeSecurity(w, r, &input) {
-		return
-	}
-	session, err := api.Module.Refresh(r.Context(), input.RefreshToken)
+func (implementation *Implementation) RefreshSession(ctx context.Context, request contract.RefreshSessionRequestObject) (contract.RefreshSessionResponseObject, error) {
+	session, err := implementation.Module.Refresh(ctx, request.Body.RefreshToken)
 	if err != nil {
-		api.failed(w, r, err, "Отклонено обновление пары токенов")
-		return
+		return nil, implementation.auditFailure(ctx, err, models.AuditEventKindAccessDenied, "Отклонено обновление пары токенов")
 	}
-	writeJSON(w, 200, session)
+	response, err := toSession(session)
+	if err != nil {
+		return nil, err
+	}
+	return contract.RefreshSession200JSONResponse(response), nil
 }

@@ -13,10 +13,7 @@ import (
 func securityAccount(t *testing.T, r *Repository) (models.Staff, models.Account) {
 	t.Helper()
 	ctx := context.Background()
-	staff, err := r.Create(ctx, models.Staff{FirstName: "А", LastName: "Б", Position: "Врач", Role: "doctor"})
-	if err != nil {
-		t.Fatal(err)
-	}
+	staff := models.Staff{ID: uuid.NewString(), FirstName: "А", LastName: "Б", Position: "Врач", Role: "doctor"}
 	a, err := r.CreateAccount(ctx, models.Account{ID: uuid.NewString(), Username: "doctor", StaffID: &staff.ID, PasswordHash: "test-hash"}, "system:test")
 	if err != nil {
 		t.Fatal(err)
@@ -26,7 +23,7 @@ func securityAccount(t *testing.T, r *Repository) (models.Staff, models.Account)
 func TestRefreshRotationAndRevocation(t *testing.T) {
 	r := testRepository(t)
 	ctx := context.Background()
-	staff, a := securityAccount(t, r)
+	_, a := securityAccount(t, r)
 	if err := r.Issue(ctx, a, "", "first", -1); err != nil {
 		t.Fatal(err)
 	}
@@ -51,39 +48,25 @@ func TestRefreshRotationAndRevocation(t *testing.T) {
 	if _, err := r.RefreshAccount(ctx, "first"); !errors.Is(err, models.ErrUnauthorized) {
 		t.Fatalf("old refresh accepted: %v", err)
 	}
-	staff.Role = "nurse"
-	if _, err := r.Update(ctx, staff.ID, staff); err != nil {
-		t.Fatal(err)
-	}
-	var count int
-	if err := r.pool.QueryRow(ctx, "SELECT count(*) FROM refresh_tokens WHERE account_id=$1", a.ID).Scan(&count); err != nil || count != 0 {
-		t.Fatalf("role revocation: %d %v", count, err)
-	}
-	updated, err := r.Account(ctx, a.Username)
+	updated, err := r.UpdateAccount(ctx, a.ID, models.AccountChanges{RevokeSessions: true}, "system:test")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := r.Issue(ctx, updated, "", "after-role-change", -1); err != nil {
-		t.Fatal(err)
+	if updated.SessionVersion != a.SessionVersion+1 {
+		t.Fatal("account session version did not change")
 	}
-	if err := r.Delete(ctx, staff.ID); err != nil {
-		t.Fatal(err)
+	if err = r.Issue(ctx, a, "", "stale-account", -1); !errors.Is(err, models.ErrUnauthorized) {
+		t.Fatalf("stale account issued a token: %v", err)
 	}
-	updated, err = r.Account(ctx, a.Username)
-	if err != nil || updated.IsActive {
-		t.Fatalf("deleted staff account active: %+v %v", updated, err)
-	}
-	if _, err = r.RefreshAccount(ctx, "after-role-change"); !errors.Is(err, models.ErrUnauthorized) {
-		t.Fatalf("deleted staff refresh: %v", err)
-	}
-	if _, err = r.ChangeAccount(ctx, a.ID, new(true), "", "system:test"); !errors.Is(err, models.ErrConflict) {
-		t.Fatalf("reactivated deleted staff account: %v", err)
+	var count int
+	if err := r.pool.QueryRow(ctx, "SELECT count(*) FROM refresh_tokens WHERE account_id=$1", a.ID).Scan(&count); err != nil || count != 0 {
+		t.Fatalf("revocation: %d %v", count, err)
 	}
 	events, _, err := r.AuditEvents(ctx, 200, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(events) < 5 {
+	if len(events) < 4 {
 		t.Fatalf("missing audit events: %d", len(events))
 	}
 }

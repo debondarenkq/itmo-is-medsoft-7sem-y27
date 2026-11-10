@@ -1,6 +1,11 @@
 package: security
+output: generated.gen.go
 generate:
   models: true
   gorilla-server: true
+  strict-server: true
   embedded-spec: true
-output: generated.gen.go
+output-options:
+  name-normalizer: ToCamelCaseWithInitialisms
+import-mapping:
+  audit.yaml: github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/audit

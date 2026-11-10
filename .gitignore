@@ -15,3 +15,5 @@ services/*/*-service
 
 # Optional per-machine Docker context; never changes the global context
 /deploy/docker-context
+
+__pycache__/
