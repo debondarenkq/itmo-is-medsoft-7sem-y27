@@ -1,0 +1,60 @@
+services:
+  postgres:
+    ports: !override
+      - '127.0.0.1:55434:5432'
+  nginx:
+    ports: !override
+      - '127.0.0.1:58443:443'
+  lis-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: lis_user
+      POSTGRES_PASSWORD_FILE: /security/database.password
+      POSTGRES_DB: lis
+    volumes:
+      - ./deploy/security/services/database-lis.password:/security/database.password:ro
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U lis_user -d lis']
+      interval: 2s
+      timeout: 2s
+      retries: 20
+  lis-service:
+    image: his-lis:local
+    environment:
+      DATABASE_URL: postgres://lis_user@lis-postgres:5432/lis?sslmode=disable
+      DATABASE_PASSWORD_FILE: /security/database.password
+      GATEWAY_URL: http://his-gateway
+    networks:
+      - default
+      - gateway
+    volumes:
+      - ./deploy/security/services/database-lis.password:/security/database.password:ro
+    depends_on:
+      lis-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/ready]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+  lis-gateway:
+    image: nginx:1.28-alpine
+    ports:
+      - '127.0.0.1:58444:443'
+    volumes:
+      - ./deploy/lis-nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/security/tls/server/server.crt:/etc/nginx/tls/server.crt:ro
+      - ./deploy/security/tls/server/server.key:/etc/nginx/tls/server.key:ro
+    depends_on:
+      lis-service:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1/live]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+
+networks:
+  gateway:
+    external: false
+    name: his-lis-tests_gateway

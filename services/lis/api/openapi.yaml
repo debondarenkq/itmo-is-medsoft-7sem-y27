@@ -1,0 +1,502 @@
+---
+openapi: 3.0.3
+info:
+  title: LIS local application API
+  version: 1.0.0
+paths:
+  "/lis/v1/connection":
+    get:
+      operationId: getLISConnection
+      tags:
+      - LIS
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LISConnectionStatus"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '502':
+          description: HIS connection or response failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      security: []
+    put:
+      operationId: configureLISConnection
+      tags:
+      - LIS
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LISConnectionStatus"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '502':
+          description: HIS connection or response failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LISConnectionInput"
+      x-audit:
+        event_type: other
+        title: configureLISConnection
+      security: []
+  "/lis/v1/requests":
+    get:
+      operationId: listLISRequests
+      tags:
+      - LIS
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIRBundle"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '502':
+          description: HIS connection or response failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      security: []
+  "/lis/v1/requests/{id}":
+    get:
+      operationId: getLISRequest
+      tags:
+      - LIS
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LISRequestDetails"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '502':
+          description: HIS connection or response failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      security: []
+  "/lis/v1/results":
+    post:
+      operationId: recordLISResult
+      tags:
+      - LIS
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LISHistory"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '502':
+          description: HIS connection or response failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LISResultInput"
+      x-audit:
+        event_type: other
+        title: recordLISResult
+      security: []
+  "/lis/v1/history":
+    get:
+      operationId: listLISHistory
+      tags:
+      - LIS
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LISHistoryList"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '502':
+          description: HIS connection or response failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      parameters:
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+      security: []
+components:
+  schemas:
+    LabError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+          required:
+          - code
+          - message
+          additionalProperties: false
+      required:
+      - error
+      additionalProperties: false
+    LISConnectionInput:
+      type: object
+      properties:
+        api_key:
+          type: string
+          minLength: 32
+          maxLength: 256
+      required:
+      - api_key
+      additionalProperties: false
+    LISConnectionStatus:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        message:
+          type: string
+      required:
+      - configured
+      - message
+      additionalProperties: false
+    LISResultInput:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        value:
+          type: string
+          minLength: 1
+          maxLength: 512
+      required:
+      - request_id
+      - value
+      additionalProperties: false
+    LISHistory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        request:
+          "$ref": "./fhir.yaml#/components/schemas/FHIRServiceRequest"
+        result:
+          "$ref": "./fhir.yaml#/components/schemas/FHIRObservation"
+        patient:
+          "$ref": "./fhir.yaml#/components/schemas/FHIRResource"
+        practitioner:
+          "$ref": "./fhir.yaml#/components/schemas/FHIRResource"
+        delivered:
+          type: boolean
+      required:
+      - id
+      - request
+      - result
+      - patient
+      - practitioner
+      - delivered
+      additionalProperties: false
+    LISHistoryList:
+      type: array
+      items:
+        "$ref": "#/components/schemas/LISHistory"
+    LISRequestDetails:
+      type: object
+      properties:
+        request:
+          "$ref": "./fhir.yaml#/components/schemas/FHIRServiceRequest"
+        patient:
+          "$ref": "./fhir.yaml#/components/schemas/FHIRResource"
+        practitioner:
+          "$ref": "./fhir.yaml#/components/schemas/FHIRResource"
+        history:
+          "$ref": "#/components/schemas/LISHistory"
+        result:
+          "$ref": "./fhir.yaml#/components/schemas/FHIRObservation"
+      required:
+      - request
+      - patient
+      - practitioner
+      additionalProperties: false

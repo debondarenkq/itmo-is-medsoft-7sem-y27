@@ -108,6 +108,21 @@ func (e SecurityErrorCode) Valid() bool {
 	}
 }
 
+// Defines values for ServiceAccountRole.
+const (
+	Lis ServiceAccountRole = "lis"
+)
+
+// Valid indicates whether the value is a known member of the ServiceAccountRole enum.
+func (e ServiceAccountRole) Valid() bool {
+	switch e {
+	case Lis:
+		return true
+	default:
+		return false
+	}
+}
+
 // Account defines model for Account.
 type Account struct {
 	CreatedAt time.Time           `json:"created_at"`
@@ -188,6 +203,40 @@ type SecurityError struct {
 // SecurityErrorCode defines model for SecurityErrorCode.
 type SecurityErrorCode string
 
+// ServiceAccount defines model for ServiceAccount.
+type ServiceAccount struct {
+	CreatedAt time.Time          `json:"created_at"`
+	ID        openapi_types.UUID `json:"id"`
+	IsActive  bool               `json:"is_active"`
+	Name      string             `json:"name"`
+	Role      ServiceAccountRole `json:"role"`
+}
+
+// ServiceAccountRole defines model for ServiceAccount.Role.
+type ServiceAccountRole string
+
+// ServiceAccountInput defines model for ServiceAccountInput.
+type ServiceAccountInput struct {
+	Name string `json:"name"`
+}
+
+// ServiceAccountKey defines model for ServiceAccountKey.
+type ServiceAccountKey struct {
+	Account ServiceAccount `json:"account"`
+	APIKey  string         `json:"api_key"`
+}
+
+// ServiceAccountUpdate defines model for ServiceAccountUpdate.
+type ServiceAccountUpdate struct {
+	IsActive bool   `json:"is_active"`
+	Name     string `json:"name"`
+}
+
+// ServiceLoginInput defines model for ServiceLoginInput.
+type ServiceLoginInput struct {
+	APIKey string `json:"api_key"`
+}
+
 // Session defines model for Session.
 type Session struct {
 	AccessToken  string              `json:"access_token"`
@@ -252,8 +301,17 @@ type LogoutJSONRequestBody = TokenInput
 // RefreshSessionJSONRequestBody defines body for RefreshSession for application/json ContentType.
 type RefreshSessionJSONRequestBody = TokenInput
 
+// LoginServiceAccountJSONRequestBody defines body for LoginServiceAccount for application/json ContentType.
+type LoginServiceAccountJSONRequestBody = ServiceLoginInput
+
 // SetupAdminJSONRequestBody defines body for SetupAdmin for application/json ContentType.
 type SetupAdminJSONRequestBody = SetupInput
+
+// CreateServiceAccountJSONRequestBody defines body for CreateServiceAccount for application/json ContentType.
+type CreateServiceAccountJSONRequestBody = ServiceAccountInput
+
+// UpdateServiceAccountJSONRequestBody defines body for UpdateServiceAccount for application/json ContentType.
+type UpdateServiceAccountJSONRequestBody = ServiceAccountUpdate
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -282,11 +340,26 @@ type ServerInterface interface {
 	// (POST /api/v1/auth/refresh)
 	RefreshSession(w http.ResponseWriter, r *http.Request)
 
+	// (POST /api/v1/auth/service)
+	LoginServiceAccount(w http.ResponseWriter, r *http.Request)
+
 	// (GET /api/v1/auth/setup)
 	GetSetup(w http.ResponseWriter, r *http.Request)
 
 	// (POST /api/v1/auth/setup)
 	SetupAdmin(w http.ResponseWriter, r *http.Request)
+
+	// (GET /api/v1/service-accounts)
+	ListServiceAccounts(w http.ResponseWriter, r *http.Request)
+
+	// (POST /api/v1/service-accounts)
+	CreateServiceAccount(w http.ResponseWriter, r *http.Request)
+
+	// (PUT /api/v1/service-accounts/{id})
+	UpdateServiceAccount(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+
+	// (POST /api/v1/service-accounts/{id}/key)
+	RotateServiceAccountKey(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -563,6 +636,20 @@ func (siw *ServerInterfaceWrapper) RefreshSession(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
+// LoginServiceAccount operation middleware
+func (siw *ServerInterfaceWrapper) LoginServiceAccount(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.LoginServiceAccount(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetSetup operation middleware
 func (siw *ServerInterfaceWrapper) GetSetup(w http.ResponseWriter, r *http.Request) {
 
@@ -582,6 +669,86 @@ func (siw *ServerInterfaceWrapper) SetupAdmin(w http.ResponseWriter, r *http.Req
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.SetupAdmin(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListServiceAccounts operation middleware
+func (siw *ServerInterfaceWrapper) ListServiceAccounts(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListServiceAccounts(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateServiceAccount operation middleware
+func (siw *ServerInterfaceWrapper) CreateServiceAccount(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateServiceAccount(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateServiceAccount operation middleware
+func (siw *ServerInterfaceWrapper) UpdateServiceAccount(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", mux.Vars(r)["id"], &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateServiceAccount(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RotateServiceAccountKey operation middleware
+func (siw *ServerInterfaceWrapper) RotateServiceAccountKey(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", mux.Vars(r)["id"], &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RotateServiceAccountKey(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -723,6 +890,16 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 	r.HandleFunc(options.BaseURL+"/api/v1/accounts/{id}/password", wrapper.ResetPassword).Methods(http.MethodPost)
 
 	r.HandleFunc(options.BaseURL+"/api/v1/audit", wrapper.ListAudit).Methods(http.MethodGet)
+
+	r.HandleFunc(options.BaseURL+"/api/v1/service-accounts", wrapper.ListServiceAccounts).Methods(http.MethodGet)
+
+	r.HandleFunc(options.BaseURL+"/api/v1/service-accounts", wrapper.CreateServiceAccount).Methods(http.MethodPost)
+
+	r.HandleFunc(options.BaseURL+"/api/v1/service-accounts/{id}", wrapper.UpdateServiceAccount).Methods(http.MethodPut)
+
+	r.HandleFunc(options.BaseURL+"/api/v1/service-accounts/{id}/key", wrapper.RotateServiceAccountKey).Methods(http.MethodPost)
+
+	r.HandleFunc(options.BaseURL+"/api/v1/auth/service", wrapper.LoginServiceAccount).Methods(http.MethodPost)
 
 	return r
 }
@@ -1800,6 +1977,126 @@ func (response RefreshSession503JSONResponse) VisitRefreshSessionResponse(w http
 	return err
 }
 
+type LoginServiceAccountRequestObject struct {
+	Body *LoginServiceAccountJSONRequestBody
+}
+
+type LoginServiceAccountResponseObject interface {
+	VisitLoginServiceAccountResponse(w http.ResponseWriter) error
+}
+
+type LoginServiceAccount200JSONResponse Session
+
+func (response LoginServiceAccount200JSONResponse) VisitLoginServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type LoginServiceAccount400JSONResponse SecurityError
+
+func (response LoginServiceAccount400JSONResponse) VisitLoginServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type LoginServiceAccount401JSONResponse SecurityError
+
+func (response LoginServiceAccount401JSONResponse) VisitLoginServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type LoginServiceAccount403JSONResponse SecurityError
+
+func (response LoginServiceAccount403JSONResponse) VisitLoginServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type LoginServiceAccount404JSONResponse SecurityError
+
+func (response LoginServiceAccount404JSONResponse) VisitLoginServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type LoginServiceAccount409JSONResponse SecurityError
+
+func (response LoginServiceAccount409JSONResponse) VisitLoginServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type LoginServiceAccount500JSONResponse SecurityError
+
+func (response LoginServiceAccount500JSONResponse) VisitLoginServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type LoginServiceAccount503JSONResponse SecurityError
+
+func (response LoginServiceAccount503JSONResponse) VisitLoginServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetSetupRequestObject struct {
 }
 
@@ -2067,6 +2364,486 @@ func (response SetupAdmin503JSONResponse) VisitSetupAdminResponse(w http.Respons
 	return err
 }
 
+type ListServiceAccountsRequestObject struct {
+}
+
+type ListServiceAccountsResponseObject interface {
+	VisitListServiceAccountsResponse(w http.ResponseWriter) error
+}
+
+type ListServiceAccounts200JSONResponse []ServiceAccount
+
+func (response ListServiceAccounts200JSONResponse) VisitListServiceAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListServiceAccounts400JSONResponse SecurityError
+
+func (response ListServiceAccounts400JSONResponse) VisitListServiceAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListServiceAccounts401JSONResponse SecurityError
+
+func (response ListServiceAccounts401JSONResponse) VisitListServiceAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListServiceAccounts403JSONResponse SecurityError
+
+func (response ListServiceAccounts403JSONResponse) VisitListServiceAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListServiceAccounts404JSONResponse SecurityError
+
+func (response ListServiceAccounts404JSONResponse) VisitListServiceAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListServiceAccounts409JSONResponse SecurityError
+
+func (response ListServiceAccounts409JSONResponse) VisitListServiceAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListServiceAccounts500JSONResponse SecurityError
+
+func (response ListServiceAccounts500JSONResponse) VisitListServiceAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListServiceAccounts503JSONResponse SecurityError
+
+func (response ListServiceAccounts503JSONResponse) VisitListServiceAccountsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateServiceAccountRequestObject struct {
+	Body *CreateServiceAccountJSONRequestBody
+}
+
+type CreateServiceAccountResponseObject interface {
+	VisitCreateServiceAccountResponse(w http.ResponseWriter) error
+}
+
+type CreateServiceAccount201JSONResponse ServiceAccountKey
+
+func (response CreateServiceAccount201JSONResponse) VisitCreateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateServiceAccount400JSONResponse SecurityError
+
+func (response CreateServiceAccount400JSONResponse) VisitCreateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateServiceAccount401JSONResponse SecurityError
+
+func (response CreateServiceAccount401JSONResponse) VisitCreateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateServiceAccount403JSONResponse SecurityError
+
+func (response CreateServiceAccount403JSONResponse) VisitCreateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateServiceAccount404JSONResponse SecurityError
+
+func (response CreateServiceAccount404JSONResponse) VisitCreateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateServiceAccount409JSONResponse SecurityError
+
+func (response CreateServiceAccount409JSONResponse) VisitCreateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateServiceAccount500JSONResponse SecurityError
+
+func (response CreateServiceAccount500JSONResponse) VisitCreateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateServiceAccount503JSONResponse SecurityError
+
+func (response CreateServiceAccount503JSONResponse) VisitCreateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateServiceAccountRequestObject struct {
+	ID   openapi_types.UUID `json:"id"`
+	Body *UpdateServiceAccountJSONRequestBody
+}
+
+type UpdateServiceAccountResponseObject interface {
+	VisitUpdateServiceAccountResponse(w http.ResponseWriter) error
+}
+
+type UpdateServiceAccount200JSONResponse ServiceAccount
+
+func (response UpdateServiceAccount200JSONResponse) VisitUpdateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateServiceAccount400JSONResponse SecurityError
+
+func (response UpdateServiceAccount400JSONResponse) VisitUpdateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateServiceAccount401JSONResponse SecurityError
+
+func (response UpdateServiceAccount401JSONResponse) VisitUpdateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateServiceAccount403JSONResponse SecurityError
+
+func (response UpdateServiceAccount403JSONResponse) VisitUpdateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateServiceAccount404JSONResponse SecurityError
+
+func (response UpdateServiceAccount404JSONResponse) VisitUpdateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateServiceAccount409JSONResponse SecurityError
+
+func (response UpdateServiceAccount409JSONResponse) VisitUpdateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateServiceAccount500JSONResponse SecurityError
+
+func (response UpdateServiceAccount500JSONResponse) VisitUpdateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type UpdateServiceAccount503JSONResponse SecurityError
+
+func (response UpdateServiceAccount503JSONResponse) VisitUpdateServiceAccountResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RotateServiceAccountKeyRequestObject struct {
+	ID openapi_types.UUID `json:"id"`
+}
+
+type RotateServiceAccountKeyResponseObject interface {
+	VisitRotateServiceAccountKeyResponse(w http.ResponseWriter) error
+}
+
+type RotateServiceAccountKey200JSONResponse ServiceAccountKey
+
+func (response RotateServiceAccountKey200JSONResponse) VisitRotateServiceAccountKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RotateServiceAccountKey400JSONResponse SecurityError
+
+func (response RotateServiceAccountKey400JSONResponse) VisitRotateServiceAccountKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RotateServiceAccountKey401JSONResponse SecurityError
+
+func (response RotateServiceAccountKey401JSONResponse) VisitRotateServiceAccountKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RotateServiceAccountKey403JSONResponse SecurityError
+
+func (response RotateServiceAccountKey403JSONResponse) VisitRotateServiceAccountKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RotateServiceAccountKey404JSONResponse SecurityError
+
+func (response RotateServiceAccountKey404JSONResponse) VisitRotateServiceAccountKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RotateServiceAccountKey409JSONResponse SecurityError
+
+func (response RotateServiceAccountKey409JSONResponse) VisitRotateServiceAccountKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RotateServiceAccountKey500JSONResponse SecurityError
+
+func (response RotateServiceAccountKey500JSONResponse) VisitRotateServiceAccountKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RotateServiceAccountKey503JSONResponse SecurityError
+
+func (response RotateServiceAccountKey503JSONResponse) VisitRotateServiceAccountKeyResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
@@ -2094,11 +2871,26 @@ type StrictServerInterface interface {
 	// (POST /api/v1/auth/refresh)
 	RefreshSession(ctx context.Context, request RefreshSessionRequestObject) (RefreshSessionResponseObject, error)
 
+	// (POST /api/v1/auth/service)
+	LoginServiceAccount(ctx context.Context, request LoginServiceAccountRequestObject) (LoginServiceAccountResponseObject, error)
+
 	// (GET /api/v1/auth/setup)
 	GetSetup(ctx context.Context, request GetSetupRequestObject) (GetSetupResponseObject, error)
 
 	// (POST /api/v1/auth/setup)
 	SetupAdmin(ctx context.Context, request SetupAdminRequestObject) (SetupAdminResponseObject, error)
+
+	// (GET /api/v1/service-accounts)
+	ListServiceAccounts(ctx context.Context, request ListServiceAccountsRequestObject) (ListServiceAccountsResponseObject, error)
+
+	// (POST /api/v1/service-accounts)
+	CreateServiceAccount(ctx context.Context, request CreateServiceAccountRequestObject) (CreateServiceAccountResponseObject, error)
+
+	// (PUT /api/v1/service-accounts/{id})
+	UpdateServiceAccount(ctx context.Context, request UpdateServiceAccountRequestObject) (UpdateServiceAccountResponseObject, error)
+
+	// (POST /api/v1/service-accounts/{id}/key)
+	RotateServiceAccountKey(ctx context.Context, request RotateServiceAccountKeyRequestObject) (RotateServiceAccountKeyResponseObject, error)
 }
 
 type StrictHandlerFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request, request any) (any, error)
@@ -2375,6 +3167,37 @@ func (sh *strictHandler) RefreshSession(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+// LoginServiceAccount operation middleware
+func (sh *strictHandler) LoginServiceAccount(w http.ResponseWriter, r *http.Request) {
+	var request LoginServiceAccountRequestObject
+
+	var body LoginServiceAccountJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.LoginServiceAccount(ctx, request.(LoginServiceAccountRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "LoginServiceAccount")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(LoginServiceAccountResponseObject); ok {
+		if err := validResponse.VisitLoginServiceAccountResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetSetup operation middleware
 func (sh *strictHandler) GetSetup(w http.ResponseWriter, r *http.Request) {
 	var request GetSetupRequestObject
@@ -2430,43 +3253,163 @@ func (sh *strictHandler) SetupAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ListServiceAccounts operation middleware
+func (sh *strictHandler) ListServiceAccounts(w http.ResponseWriter, r *http.Request) {
+	var request ListServiceAccountsRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListServiceAccounts(ctx, request.(ListServiceAccountsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListServiceAccounts")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListServiceAccountsResponseObject); ok {
+		if err := validResponse.VisitListServiceAccountsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateServiceAccount operation middleware
+func (sh *strictHandler) CreateServiceAccount(w http.ResponseWriter, r *http.Request) {
+	var request CreateServiceAccountRequestObject
+
+	var body CreateServiceAccountJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateServiceAccount(ctx, request.(CreateServiceAccountRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateServiceAccount")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateServiceAccountResponseObject); ok {
+		if err := validResponse.VisitCreateServiceAccountResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateServiceAccount operation middleware
+func (sh *strictHandler) UpdateServiceAccount(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	var request UpdateServiceAccountRequestObject
+
+	request.ID = id
+
+	var body UpdateServiceAccountJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateServiceAccount(ctx, request.(UpdateServiceAccountRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateServiceAccount")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(UpdateServiceAccountResponseObject); ok {
+		if err := validResponse.VisitUpdateServiceAccountResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// RotateServiceAccountKey operation middleware
+func (sh *strictHandler) RotateServiceAccountKey(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	var request RotateServiceAccountKeyRequestObject
+
+	request.ID = id
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.RotateServiceAccountKey(ctx, request.(RotateServiceAccountKeyRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RotateServiceAccountKey")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(RotateServiceAccountKeyResponseObject); ok {
+		if err := validResponse.VisitRotateServiceAccountKeyResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, compressed with deflate, json marshaled OpenAPI spec.
 // Stored as a slice of fixed-width chunks rather than one concatenated
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
+	"nY5Px/8PAAD//w==",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

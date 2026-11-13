@@ -2,9 +2,11 @@ package api
 
 import (
 	"context"
+	"strings"
+
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/security"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/internal/models"
-	"strings"
+	"github.com/google/uuid"
 )
 
 func (implementation *Implementation) ListAccounts(ctx context.Context, request contract.ListAccountsRequestObject) (contract.ListAccountsResponseObject, error) {
@@ -27,4 +29,36 @@ func (implementation *Implementation) ListAccounts(ctx context.Context, request 
 		response = append(response, account)
 	}
 	return contract.ListAccounts200JSONResponse{Items: response, Total: total}, nil
+}
+
+func pagination(limit, offset *int) (int, int) {
+	l, o := 50, 0
+	if limit != nil {
+		l = *limit
+	}
+	if offset != nil {
+		o = *offset
+	}
+	if l < 1 {
+		l = 1
+	}
+	if l > 200 {
+		l = 200
+	}
+	if o < 0 {
+		o = 0
+	}
+	return l, o
+}
+
+func toAccount(a models.Account) (contract.Account, error) {
+	id, err := uuid.Parse(a.ID)
+	if err != nil {
+		return contract.Account{}, err
+	}
+	staffID, err := toStaffID(a.StaffID)
+	if err != nil {
+		return contract.Account{}, err
+	}
+	return contract.Account{ID: id, Username: a.Username, CreatedAt: a.CreatedAt, UpdatedAt: a.UpdatedAt, IsActive: a.IsActive, StaffID: staffID, Role: contract.AccountRole(a.Role), StaffName: a.StaffName}, nil
 }

@@ -1,0 +1,11 @@
+package: identityapi
+output: generated.gen.go
+generate:
+  models: true
+  client: true
+  embedded-spec: true
+output-options:
+  name-normalizer: ToCamelCaseWithInitialisms
+  include-operation-ids:
+    - loginServiceAccount
+    - refreshSession

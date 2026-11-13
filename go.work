@@ -1,0 +1,10 @@
+go 1.26.0
+
+use (
+	./services/catalog
+	./services/clinical
+	./services/identity
+	./services/laboratory
+	./services/lis
+	./services/staff
+)

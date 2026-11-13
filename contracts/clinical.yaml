@@ -1,3 +1,4 @@
+---
 openapi: 3.0.3
 info:
   title: clinical-service
@@ -5,7 +6,7 @@ info:
 servers:
 - url: http://localhost:8080
 paths:
-  /api/v1/patients:
+  "/api/v1/patients":
     get:
       summary: Список пациентов
       operationId: listPatients
@@ -15,55 +16,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PatientPage'
+                "$ref": "#/components/schemas/PatientPage"
         '400':
           description: Некорректный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       parameters:
       - name: limit
         in: query
@@ -100,64 +101,64 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Patient'
+                "$ref": "#/components/schemas/Patient"
         '400':
           description: Некорректный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatientInput'
+              "$ref": "#/components/schemas/PatientInput"
       tags:
       - Patients
-  /api/v1/patients/{id}:
+  "/api/v1/patients/{id}":
     get:
       summary: Карточка пациента
       operationId: getPatient
@@ -167,55 +168,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Patient'
+                "$ref": "#/components/schemas/Patient"
         '400':
           description: Некорректный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       parameters:
       - name: id
         in: path
@@ -237,55 +238,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Patient'
+                "$ref": "#/components/schemas/Patient"
         '400':
           description: Некорректный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       parameters:
       - name: id
         in: path
@@ -298,7 +299,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatientInput'
+              "$ref": "#/components/schemas/PatientInput"
       tags:
       - Patients
     delete:
@@ -315,49 +316,49 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       parameters:
       - name: id
         in: path
@@ -367,7 +368,7 @@ paths:
           format: uuid
       tags:
       - Patients
-  /api/v1/patients/{id}/record:
+  "/api/v1/patients/{id}/record":
     get:
       summary: Получить единственную ЭМК пациента
       operationId: getPatientRecord
@@ -377,55 +378,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Record'
+                "$ref": "#/components/schemas/Record"
         '400':
           description: Некорректный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       parameters:
       - name: id
         in: path
@@ -447,55 +448,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Record'
+                "$ref": "#/components/schemas/Record"
         '400':
           description: Некорректный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       parameters:
       - name: id
         in: path
@@ -508,10 +509,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRecordInput'
+              "$ref": "#/components/schemas/CreateRecordInput"
       tags:
       - Records
-  /api/v1/records/{id}:
+  "/api/v1/records/{id}":
     get:
       summary: Текущее состояние карты
       operationId: getRecord
@@ -521,55 +522,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Record'
+                "$ref": "#/components/schemas/Record"
         '400':
           description: Некорректный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       parameters:
       - name: id
         in: path
@@ -579,7 +580,7 @@ paths:
           format: uuid
       tags:
       - Records
-  /api/v1/records/{id}/changes:
+  "/api/v1/records/{id}/changes":
     post:
       summary: Атомарно сохранить команды и историю
       operationId: saveRecord
@@ -592,55 +593,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Record'
+                "$ref": "#/components/schemas/Record"
         '400':
           description: Некорректный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       parameters:
       - name: id
         in: path
@@ -653,10 +654,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChangesInput'
+              "$ref": "#/components/schemas/ChangesInput"
       tags:
       - Records
-  /api/v1/records/{id}/history:
+  "/api/v1/records/{id}/history":
     get:
       summary: История по порядку событий
       operationId: getRecordHistory
@@ -666,55 +667,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EventPage'
+                "$ref": "#/components/schemas/EventPage"
         '400':
           description: Некорректный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       parameters:
       - name: id
         in: path
@@ -737,7 +738,7 @@ paths:
           default: 0
       tags:
       - Records
-  /api/v1/records/{id}/state:
+  "/api/v1/records/{id}/state":
     get:
       summary: Восстановить карту; требуется ровно один из at или version
       operationId: getRecordState
@@ -747,55 +748,55 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Record'
+                "$ref": "#/components/schemas/Record"
         '400':
           description: Некорректный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '404':
           description: Не найдено
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '409':
           description: Конфликт
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '415':
           description: Неверный Content-Type
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '500':
           description: Внутренняя ошибка
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '503':
           description: Зависимость недоступна
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '401':
           description: Требуется вход
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
         '403':
           description: Недостаточно прав
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                "$ref": "#/components/schemas/Error"
       parameters:
       - name: id
         in: path
@@ -818,6 +819,76 @@ paths:
       - Records
       description: Требуется ровно один параметр at или version. Несуществующая версия
         и момент до создания карты возвращают 404.
+  "/internal/patients/{id}":
+    get:
+      summary: Карточка пациента
+      operationId: getPatientIdentity
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Patient"
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '409':
+          description: Конфликт
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '415':
+          description: Неверный Content-Type
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '500':
+          description: Внутренняя ошибка
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '503':
+          description: Зависимость недоступна
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '401':
+          description: Требуется вход
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Patients
+      security:
+      - ServiceKey: []
 components:
   schemas:
     Error:
@@ -826,7 +897,7 @@ components:
       - error
       properties:
         error:
-          $ref: '#/components/schemas/ErrorDetail'
+          "$ref": "#/components/schemas/ErrorDetail"
     PatientInput:
       type: object
       properties:
@@ -847,7 +918,7 @@ components:
           type: string
           format: date
         administrative_sex:
-          $ref: '#/components/schemas/AdministrativeSex'
+          "$ref": "#/components/schemas/AdministrativeSex"
         comment:
           type: string
           minLength: 0
@@ -887,7 +958,7 @@ components:
           type: string
           format: date
         administrative_sex:
-          $ref: '#/components/schemas/AdministrativeSex'
+          "$ref": "#/components/schemas/AdministrativeSex"
         comment:
           type: string
           minLength: 0
@@ -919,7 +990,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/Patient'
+            "$ref": "#/components/schemas/Patient"
         total:
           type: integer
         limit:
@@ -981,7 +1052,7 @@ components:
           minLength: 3
           maxLength: 128
         status:
-          $ref: '#/components/schemas/PrescriptionStatus'
+          "$ref": "#/components/schemas/PrescriptionStatus"
       required:
       - id
       - text
@@ -992,11 +1063,11 @@ components:
         diagnoses:
           type: array
           items:
-            $ref: '#/components/schemas/RecordDiagnosis'
+            "$ref": "#/components/schemas/RecordDiagnosis"
         prescriptions:
           type: array
           items:
-            $ref: '#/components/schemas/Prescription'
+            "$ref": "#/components/schemas/Prescription"
       required:
       - diagnoses
       - prescriptions
@@ -1020,7 +1091,7 @@ components:
           format: int64
           minimum: 1
         state:
-          $ref: '#/components/schemas/State'
+          "$ref": "#/components/schemas/State"
         number:
           type: integer
           format: int64
@@ -1050,7 +1121,7 @@ components:
         до сохранения всей группы.
       properties:
         type:
-          $ref: '#/components/schemas/CommandType'
+          "$ref": "#/components/schemas/CommandType"
         diagnosis_id:
           type: string
           format: uuid
@@ -1080,7 +1151,7 @@ components:
           minItems: 1
           maxItems: 100
           items:
-            $ref: '#/components/schemas/Command'
+            "$ref": "#/components/schemas/Command"
       required:
       - staff_id
       - expected_version
@@ -1105,9 +1176,9 @@ components:
           type: string
           format: date-time
         actor:
-          $ref: '#/components/schemas/Actor'
+          "$ref": "#/components/schemas/Actor"
         type:
-          $ref: '#/components/schemas/EventType'
+          "$ref": "#/components/schemas/EventType"
         entity_id:
           type: string
           format: uuid
@@ -1138,7 +1209,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/Event'
+            "$ref": "#/components/schemas/Event"
         total:
           type: integer
         limit:
@@ -1166,7 +1237,7 @@ components:
       type: object
       properties:
         code:
-          $ref: '#/components/schemas/ErrorCode'
+          "$ref": "#/components/schemas/ErrorCode"
         message:
           type: string
         fields:
@@ -1213,5 +1284,9 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    ServiceKey:
+      type: apiKey
+      in: header
+      name: X-Service-Key
 security:
 - BearerAuth: []

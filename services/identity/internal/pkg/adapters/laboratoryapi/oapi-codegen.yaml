@@ -1,0 +1,10 @@
+package: laboratoryapi
+output: generated.gen.go
+generate:
+  models: true
+  embedded-spec: true
+output-options:
+  skip-prune: true
+  name-normalizer: ToCamelCaseWithInitialisms
+import-mapping:
+  ./fhir.yaml: "-"

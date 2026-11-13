@@ -4,12 +4,12 @@ cd "$(dirname "$0")"
 case "${1:-release}" in
     debug|Debug) configuration=Debug ;;
     release|Release) configuration=Release ;;
-    *) printf '%s\n' 'Usage: ./build.sh [debug|release] [all|HIS|HISAdmin]' >&2; exit 1 ;;
+    *) printf '%s\n' 'Usage: ./build.sh [debug|release] [all|HIS|HISAdmin|LIS]' >&2; exit 1 ;;
 esac
 case "${2:-all}" in
-    all) applications='HIS HISAdmin' ;;
-    HIS|HISAdmin) applications="$2" ;;
-    *) printf '%s\n' 'Usage: ./build.sh [debug|release] [all|HIS|HISAdmin]' >&2; exit 1 ;;
+    all) applications='HIS HISAdmin LIS' ;;
+    HIS|HISAdmin|LIS) applications="$2" ;;
+    *) printf '%s\n' 'Usage: ./build.sh [debug|release] [all|HIS|HISAdmin|LIS]' >&2; exit 1 ;;
 esac
 for application in $applications; do
     xcodebuild -project HIS.xcodeproj -scheme "$application" -configuration "$configuration" \

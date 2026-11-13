@@ -1,0 +1,382 @@
+---
+openapi: 3.0.3
+info:
+  title: HIS internal authorization and staff directory
+  version: 1.0.0
+security:
+- ServiceKey: []
+paths:
+  "/internal/staff/{id}":
+    get:
+      operationId: getStaffIdentity
+      description: Staff-service returns authoritative staff state, including logically
+        deleted records.
+      parameters:
+      - "$ref": "#/components/parameters/StaffID"
+      responses:
+        '200':
+          "$ref": "#/components/responses/Profile"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/internal/staff/{id}/role":
+    put:
+      operationId: updateStaffIdentityRole
+      description: Change the role owned by staff-service. Called synchronously by
+        the account editor.
+      parameters:
+      - "$ref": "#/components/parameters/StaffID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - role
+              properties:
+                role:
+                  "$ref": "#/components/schemas/Role"
+      responses:
+        '200':
+          "$ref": "#/components/responses/Profile"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/internal/staff":
+    get:
+      operationId: listStaffIdentities
+      description: Read current staff profiles, including deleted staff, for account
+        display and search. No replication or delivery acknowledgement.
+      responses:
+        '200':
+          description: Current staff profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/StaffProfile"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/internal/authorize":
+    post:
+      operationId: authorize
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AuthorizationRequest"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Claims"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Original Bearer header; missing or invalid tokens are rejected
+          with 401.
+components:
+  securitySchemes:
+    ServiceKey:
+      type: apiKey
+      in: header
+      name: X-Service-Key
+  parameters:
+    StaffID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Profile:
+      description: Authoritative staff state
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/StaffProfile"
+  schemas:
+    Role:
+      type: string
+      enum:
+      - doctor
+      - nurse
+      - laboratory-technician
+      - other
+    StaffProfile:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - first_name
+      - last_name
+      - role
+      - role_revision
+      properties:
+        id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        position:
+          type: string
+        role:
+          "$ref": "#/components/schemas/Role"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        role_revision:
+          description: Incremented on role changes to reject sessions issued for an
+            earlier role, including a role changed back.
+          type: integer
+          format: int64
+          minimum: 0
+    ErrorCode:
+      type: string
+      enum:
+      - INVALID_REQUEST
+      - UNAUTHORIZED
+      - FORBIDDEN
+      - NOT_FOUND
+      - CONFLICT
+      - INTERNAL
+      - DEPENDENCY_UNAVAILABLE
+    ErrorDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          "$ref": "#/components/schemas/ErrorCode"
+        message:
+          type: string
+    Error:
+      type: object
+      additionalProperties: false
+      required:
+      - error
+      properties:
+        error:
+          "$ref": "#/components/schemas/ErrorDetail"
+    Acknowledgement:
+      type: object
+      additionalProperties: false
+      required:
+      - ok
+      properties:
+        ok:
+          type: boolean
+    Claims:
+      type: object
+      additionalProperties: false
+      required:
+      - sub
+      - role
+      - iss
+      - aud
+      - exp
+      - iat
+      - jti
+      properties:
+        sub:
+          type: string
+          format: uuid
+        staff_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum:
+          - admin
+          - doctor
+          - nurse
+          - laboratory-technician
+          - other
+          - lis
+        iss:
+          type: string
+        aud:
+          type: string
+        exp:
+          type: integer
+          format: int64
+        iat:
+          type: integer
+          format: int64
+        jti:
+          type: string
+          format: uuid
+    HTTPMethod:
+      type: string
+      enum:
+      - GET
+      - HEAD
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - OPTIONS
+    AuthorizationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - method
+      - path
+      properties:
+        method:
+          "$ref": "#/components/schemas/HTTPMethod"
+        path:
+          type: string
+          pattern: "^/api/v1/"
+          maxLength: 2048

@@ -2,17 +2,11 @@ package api
 
 import (
 	"context"
+
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/security"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/internal/models"
 )
 
-func (implementation *Implementation) GetSetup(ctx context.Context, request contract.GetSetupRequestObject) (contract.GetSetupResponseObject, error) {
-	setup, err := implementation.Module.SetupStatus(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return contract.GetSetup200JSONResponse{Configured: setup.Configured, Secret: setup.Secret, ProvisioningURI: setup.ProvisioningURI}, nil
-}
 func (implementation *Implementation) SetupAdmin(ctx context.Context, request contract.SetupAdminRequestObject) (contract.SetupAdminResponseObject, error) {
 	if implementation.limited(ctx) {
 		return nil, implementation.auditFailure(ctx, models.ErrUnauthorized, models.AuditEventKindLoginFailed, "Превышен лимит настройки администратора")

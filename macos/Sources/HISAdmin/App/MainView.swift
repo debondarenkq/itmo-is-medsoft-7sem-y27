@@ -1,6 +1,6 @@
 import SwiftUI
 
-private enum SidebarSection { case staff, diagnoses, accounts, audit }
+private enum SidebarSection { case staff, diagnoses, labTests, accounts, audit }
 
 struct MainView: View {
   let gateway: Gateway
@@ -14,6 +14,7 @@ struct MainView: View {
         Section("Администрирование") {
           Label("Медработники", systemImage: "person.badge.key").tag(SidebarSection.staff)
           Label("Диагнозы", systemImage: "list.clipboard").tag(SidebarSection.diagnoses)
+          Label("Лабораторные анализы", systemImage: "testtube.2").tag(SidebarSection.labTests)
           Label("Аккаунты", systemImage: "person.crop.circle").tag(SidebarSection.accounts)
           Label("Аудит", systemImage: "list.bullet.rectangle").tag(SidebarSection.audit)
         }
@@ -29,7 +30,8 @@ struct MainView: View {
     } detail: {
       switch selectedSection {
       case .diagnoses: DiagnosesView(gateway: gateway)
-      case .accounts: AccountsView(gateway: gateway)
+      case .labTests: LabTestsView(gateway: gateway)
+      case .accounts: AccountDirectoryView(gateway: gateway)
       case .audit: AuditView(gateway: gateway)
       default: StaffView(gateway: gateway)
       }

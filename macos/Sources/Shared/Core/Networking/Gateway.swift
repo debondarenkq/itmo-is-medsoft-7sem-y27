@@ -19,6 +19,11 @@ struct Gateway: Sendable {
     return configuration
   }
 
+  var laboratory: LaboratoryAPI { LaboratoryAPI(apiConfiguration: configuration) }
+  var fhir: FHIRAPI { FHIRAPI(apiConfiguration: configuration) }
+  var serviceAccounts: ServiceAccountsAPI { ServiceAccountsAPI(apiConfiguration: configuration) }
+  var lis: LISAPI { LISAPI(apiConfiguration: configuration) }
+
   var security: SecurityAPI { SecurityAPI(apiConfiguration: configuration) }
 
   var staff: StaffAPI { StaffAPI(apiConfiguration: configuration) }

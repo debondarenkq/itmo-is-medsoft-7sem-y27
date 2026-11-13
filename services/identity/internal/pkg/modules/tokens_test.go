@@ -79,3 +79,39 @@ func TestRolePermissions(t *testing.T) {
 		t.Fatal("administrator entered clinical UI")
 	}
 }
+
+func TestLISRolePermissions(t *testing.T) {
+	id := "30000000-0000-4000-8000-000000000001"
+	for _, test := range []struct {
+		name, role, method, path string
+		allowed                  bool
+	}{
+		{"patient", "lis", "GET", "/api/v1/fhir/Patient/" + id, true},
+		{"practitioner", "lis", "GET", "/api/v1/fhir/Practitioner/" + id, true},
+		{"requests", "lis", "GET", "/api/v1/fhir/ServiceRequest", true},
+		{"results", "lis", "GET", "/api/v1/fhir/Observation", true},
+		{"write result", "lis", "POST", "/api/v1/fhir/Observation", true},
+		{"deny request creation", "lis", "POST", "/api/v1/lab/orders", false},
+		{"deny result editing", "lis", "PUT", "/api/v1/fhir/Observation/" + id, false},
+		{"deny patient editing", "lis", "PUT", "/api/v1/fhir/Patient/" + id, false},
+		{"deny raw clinical", "lis", "GET", "/api/v1/patients", false},
+		{"deny account administration", "lis", "GET", "/api/v1/service-accounts", false},
+		{"admin service accounts", "admin", "GET", "/api/v1/service-accounts", true},
+		{"admin directory", "admin", "POST", "/api/v1/lab/tests", true},
+		{"deny admin medical access", "admin", "GET", "/api/v1/fhir/ServiceRequest", false},
+		{"doctor orders", "doctor", "POST", "/api/v1/lab/orders", true},
+		{"nurse cannot order", "nurse", "POST", "/api/v1/lab/orders", false},
+		{"worker reads results", "other", "GET", "/api/v1/fhir/Observation", true},
+		{"doctor cannot submit results", "doctor", "POST", "/api/v1/fhir/Observation", false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			c := models.Claims{Role: test.role}
+			if test.role != "lis" && test.role != "admin" {
+				c.StaffID = id
+			}
+			if got := Allowed(c, test.method, test.path); got != test.allowed {
+				t.Fatalf("allowed=%v, want %v", got, test.allowed)
+			}
+		})
+	}
+}

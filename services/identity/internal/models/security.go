@@ -5,12 +5,15 @@ import (
 	"time"
 )
 
+const ServiceRole = "lis"
+
 var (
 	ErrUnauthorized = errors.New("Неверный логин, пароль или одноразовый код")
 	ErrForbidden    = errors.New("Недостаточно прав")
 )
 
 type Account struct {
+	IsService      bool      `json:"-"`
 	SessionVersion int64     `json:"-"`
 	StaffRevision  int64     `json:"-"`
 	ID             string    `json:"id"`

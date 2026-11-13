@@ -20,9 +20,11 @@ jobs:
       - run: ./macos/build.sh
       - run: ditto -c -k --sequesterRsrc --keepParent macos/build/HIS.app macos/build/HIS-macos.zip
       - run: ditto -c -k --sequesterRsrc --keepParent macos/build/HISAdmin.app macos/build/HISAdmin-macos.zip
+      - run: ditto -c -k --sequesterRsrc --keepParent macos/build/LIS.app macos/build/LIS-macos.zip
       - uses: actions/upload-artifact@v4
         with:
           name: HIS-macos
           path: |
             macos/build/HIS-macos.zip
             macos/build/HISAdmin-macos.zip
+            macos/build/LIS-macos.zip

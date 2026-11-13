@@ -21,7 +21,7 @@ make demo-worker  # backend и HIS
 make demo-admin   # backend и HISAdmin
 ```
 
-Сборка использует две цели macOS Application — `HIS` и `HISAdmin` — в `HIS.xcodeproj`. API-клиент подключён как локальный Swift-пакет `Generated`; сетевых зависимостей нет. `build.sh` вызывает `xcodebuild` и копирует подписанную локальной ad hoc подписью `.app` в `build/HIS.app` и `build/HISAdmin.app`. Можно собрать одну цель: `./macos/build.sh release HISAdmin` (либо `HIS`). Для распространения за пределами учебного окружения нужны Developer ID и notarization; CI-артефакт не нотарифицирован.
+Сборка использует три цели macOS Application — `HIS` и `HISAdmin` — в `HIS.xcodeproj`. API-клиент подключён как локальный Swift-пакет `Generated`; сетевых зависимостей нет. `build.sh` вызывает `xcodebuild` и копирует подписанную локальной ad hoc подписью `.app` в `build/HIS.app` и `build/HISAdmin.app`. Можно собрать одну цель: `./macos/build.sh release HISAdmin` (либо `HIS`). Для распространения за пределами учебного окружения нужны Developer ID и notarization; CI-артефакт не нотарифицирован.
 
 ## Запуск из Xcode
 
@@ -57,6 +57,14 @@ make demo-admin   # backend и HISAdmin
 - `api` — объединённая OpenAPI-спецификация и конфигурация генератора.
 - `Generated` — Swift 6 HTTP-клиент и Codable DTO из общих контрактов; вручную не редактируется.
 - `Resources` — Info.plist и иконка.
-- `HIS.xcodeproj` — две цели macOS Application и общие схемы HIS / HISAdmin для запуска и отладки.
+- `HIS.xcodeproj` — три цели macOS Application и общие схемы HIS / HISAdmin / LIS для запуска и отладки.
 
 Генерация: `make generate-contracts` из корня. Workflow macOS компилирует оба приложения и публикует отдельные ZIP.
+
+## LIS (лабораторная 3)
+
+Схема Xcode **LIS** собирает отдельное приложение без пользовательского входа. `make demo-lis` запускает его сервер и приложение, `make demo-all` открывает весь набор. Адрес сервера LIS по умолчанию `https://localhost:8444`, служебный адрес HIS задан инфраструктурой. В разделе «Доступ к HIS» вводится только API-ключ, доступ проверяется автоматически. Результаты, история, настройки интеграции — `Sources/LIS/Features/`; используются те же сгенерированные DTO и наблюдение за сертификатами. Подробный сценарий: [лабораторная 3](../docs/lab3.md).
+
+## Иконки приложений
+
+HIS — синяя медицинская карта, HISAdmin — янтарный щит с ключом, LIS — зелёная колба. У каждой цели Xcode свой файл `AppIcon.icns` в `Resources/HIS`, `Resources/HISAdmin` или `Resources/LIS`. Иконки имеют прозрачные поля, размеры 16–1024 px и версии Retina. Исходные PNG находятся в `Resources/Icons/`; воспроизводимая отрисовка средствами AppKit — `swift macos/Tools/GenerateIcons.swift` из корня проекта. После изменения иконок выполните `./macos/build.sh` и перезапустите приложения.

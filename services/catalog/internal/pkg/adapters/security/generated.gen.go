@@ -22,6 +22,7 @@ const (
 	Admin                ClaimsRole = "admin"
 	Doctor               ClaimsRole = "doctor"
 	LaboratoryTechnician ClaimsRole = "laboratory-technician"
+	Lis                  ClaimsRole = "lis"
 	Nurse                ClaimsRole = "nurse"
 	Other                ClaimsRole = "other"
 )
@@ -34,6 +35,8 @@ func (e ClaimsRole) Valid() bool {
 	case Doctor:
 		return true
 	case LaboratoryTechnician:
+		return true
+	case Lis:
 		return true
 	case Nurse:
 		return true

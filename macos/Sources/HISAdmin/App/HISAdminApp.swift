@@ -9,6 +9,7 @@ struct HISAdminApp: App {
     Window("HIS — Администрирование", id: "main") {
       SessionView(address: address).id(address)
         .frame(minWidth: 850, minHeight: 560)
+        .onAppear { configureApplicationIcon() }
     }
     .defaultSize(width: 1100, height: 740)
     .commands { ServerCertificateCommands() }

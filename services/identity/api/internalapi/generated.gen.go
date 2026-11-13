@@ -26,6 +26,7 @@ const (
 	Admin                ClaimsRole = "admin"
 	Doctor               ClaimsRole = "doctor"
 	LaboratoryTechnician ClaimsRole = "laboratory-technician"
+	Lis                  ClaimsRole = "lis"
 	Nurse                ClaimsRole = "nurse"
 	Other                ClaimsRole = "other"
 )
@@ -38,6 +39,8 @@ func (e ClaimsRole) Valid() bool {
 	case Doctor:
 		return true
 	case LaboratoryTechnician:
+		return true
+	case Lis:
 		return true
 	case Nurse:
 		return true
@@ -546,16 +549,16 @@ var swaggerSpec = []string{
 	"bp++V7iCEL4LDnRBzRWMFovpb5Xn3oeCmY07yz6NUazty7tu70f3waASEMLfASsoeDgPwAezLRBC0EaR",
 	"WMN+74PCjyUp5BBePwZQo948ucu7e0yNpRtkjHL9xrxY6ZJ6xu0DfiqsfSVVzgyEQML80DsEScLgGpX1",
 	"JGZe66l1K9e9oSOEsiT+Ug8flMzQOqIocysJ4zkJ8IHL1EgFPohSaQQfMnYnFTNSbc8MphtBKTHrKM0G",
-	"VUO7A7Q2bLW6Jf6qOHR59wq/Z/Wzh+oUKiV8p32ldKVipURbaSOlpHpjZfHxzJca1gEP0TDKXkRcAXw2",
-	"nIHkR9WIkw/9cTy8nUW/L6P5AnxYJv3lYjSZxX9FQ/DhajK7jIfDKAEfksni9mqyTKx9MEmuxvHAnoiT",
-	"RTRL+mPwYRhNo2QYJYM/b5dJ/0M/Hvcvx1Fr8ZpJvE2jtM7hqxK5ZPc+5Kg1W2NLGz8TzyEf/NtUbAyL",
-	"hoy/RFaIUdS30kwnTsjp0v32F4ORU2YcLSLwYTJdxJNk3qKJbVJMS0VmO7dpVNnOUT1Qir/i1r6RnT8b",
-	"ZBzd1WG5BfjjrHY6s15PuKwg+763wCRW0uVPxl5HGMVzz15yJVjmseak9ZjgnrtZHieF9pJazAdUmqRl",
-	"P+90O10rhSxQsIIghItOt3NRTzkXdPCIHTxiO/ULWY1wW01HFnMInwY9OgTFcjSoNITXO+CoU0WFqZgn",
-	"itZkA75EplB5lQ4/ezlpTWLtSeWReGAZcc/If1Bojyn0FNraIff+JbPxet3zjr25bToebRzw62XU1jY3",
-	"Vd+gNpeSb6umFAZFtaCKIqPUgQT32ka+a0B9qWtbV97+uEuNKtEZdCGFrnrkXbf7zWKoF5JjPZZ/XqYp",
-	"am1L3/uGhNWYbOGrBfBWjDLkFe35aWgvTkPbOw3tT6egfX+alnp/ito6l8OMdNMWwt1LY7Ajvv/8l6D+",
-	"c9VcHW5uNpfG9c3+Zv9/AAAA//8=",
+	"rV9GuqHggUAbtlrdEn9VNLq8e4XfsyraQ3UilR6+q0Cld6VlpUdbgSOlpHpjffHxzJfa1gEP0TDKXkRc",
+	"AXw2nIHkRzWJkw/9cTy8nUW/L6P5AnxYJv3lYjSZxX9FQ/DhajK7jIfDKAEfksni9mqyTKx9MEmuxvHA",
+	"noiTRTRL+mPwYRhNo2QYJYM/b5dJ/0M/Hvcvx1Fr8ZpJvE2jtM7hqxK5ZPc+5Kg1W2NLMz8TzyEf/NtU",
+	"bIyMhoy/RFaIUdS30kwnTsjp0v32F4ORU2YcLSLwYTJdxJNk3qKJbVJMS0VmO7dpVNnOUT1Qir/i1r6R",
+	"nUIbZNxdDMFyC/DHWe10Zr2ecFlB9n1vgUmspMufjL2UMIrnnr3qSrDMY8156zHBPXezPE4K7VW1mA+o",
+	"NEnLft7pdrpWClmgYAVBCBedbueinnUu6OARO3jEduoXshrktpqOLOYQPo17dAiK5WhQaQivd8BRp4oK",
+	"UzFPFK3JBnyJTKHyKh1+9nLSmsTak8oj8cAy4p6R/6DQHlPoKbS1Q+79S2bj9brnHXtz23Q82jvg1yup",
+	"rW1uqr5BbS4l31ZNKQyKak0VRUapAwnutY1814D6Ute2Lr79cZcaVaIz6EIKXfXIu273m8VQryXHeiz/",
+	"vExT1NqWvvcNCasx2cJXC+CtGGXIK9rz09BenIa2dxran05B+/40LfX+FLV1LocZ6aYthLuXxmBHfP/5",
+	"L0H9F6u5OtzcbC6N65v9zf7/AAAA//8=",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

@@ -12,10 +12,12 @@ spec = {
     'components': {'schemas': {}, 'securitySchemes': {'BearerAuth': {'type': 'http', 'scheme': 'bearer', 'bearerFormat': 'JWT'}}},
     'security': [{'BearerAuth': []}],
 }
-for service in ('staff', 'catalog', 'clinical', 'identity/api/security'):
+for service in ('staff', 'catalog', 'clinical', 'laboratory', 'lis', 'identity/api/security'):
     source_path = root / 'services' / service / ('openapi.json' if service == 'identity/api/security' else 'api/openapi.json')
     source = json.loads(source_path.read_text())
     for path, value in source['paths'].items():
+        if path.startswith('/internal/'):
+            continue
         if path in spec['paths']:
             raise SystemExit(f'Duplicate route: {path}')
         spec['paths'][path] = value

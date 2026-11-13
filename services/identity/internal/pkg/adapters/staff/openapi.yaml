@@ -61,7 +61,8 @@ paths:
   "/internal/staff/{id}/role":
     put:
       operationId: updateStaffIdentityRole
-      description: Change the role owned by staff-service. Called synchronously by the account editor.
+      description: Change the role owned by staff-service. Called synchronously by
+        the account editor.
       parameters:
       - "$ref": "#/components/parameters/StaffID"
       requestBody:
@@ -124,7 +125,8 @@ paths:
   "/internal/staff":
     get:
       operationId: listStaffIdentities
-      description: Read current staff profiles, including deleted staff, for account display and search. No replication or delivery acknowledgement.
+      description: Read current staff profiles, including deleted staff, for account
+        display and search. No replication or delivery acknowledgement.
       responses:
         '200':
           description: Current staff profiles
@@ -273,7 +275,8 @@ components:
           format: date-time
           nullable: true
         role_revision:
-          description: Incremented on role changes to reject sessions issued for an earlier role, including a role changed back.
+          description: Incremented on role changes to reject sessions issued for an
+            earlier role, including a role changed back.
           type: integer
           format: int64
           minimum: 0
@@ -340,6 +343,7 @@ components:
           - nurse
           - laboratory-technician
           - other
+          - lis
         iss:
           type: string
         aud:

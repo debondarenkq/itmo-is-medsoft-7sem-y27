@@ -725,6 +725,330 @@ paths:
         schema:
           type: string
           format: date-time
+  "/api/v1/service-accounts":
+    get:
+      operationId: listServiceAccounts
+      tags:
+      - ServiceAccounts
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/ServiceAccount"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+      x-roles:
+      - admin
+    post:
+      operationId: createServiceAccount
+      tags:
+      - ServiceAccounts
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ServiceAccountKey"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ServiceAccountInput"
+      x-roles:
+      - admin
+      x-audit:
+        event_type: other
+        title: createServiceAccount
+  "/api/v1/service-accounts/{id}":
+    put:
+      operationId: updateServiceAccount
+      tags:
+      - ServiceAccounts
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ServiceAccount"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ServiceAccountUpdate"
+      x-roles:
+      - admin
+      x-audit:
+        event_type: other
+        title: updateServiceAccount
+  "/api/v1/service-accounts/{id}/key":
+    post:
+      operationId: rotateServiceAccountKey
+      tags:
+      - ServiceAccounts
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ServiceAccountKey"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      x-roles:
+      - admin
+      x-audit:
+        event_type: other
+        title: rotateServiceAccountKey
+  "/api/v1/auth/service":
+    post:
+      operationId: loginServiceAccount
+      tags:
+      - ServiceAccounts
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Session"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SecurityError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ServiceLoginInput"
+      security: []
+      x-audit:
+        event_type: other
+        title: loginServiceAccount
 components:
   schemas:
     LoginInput:
@@ -963,7 +1287,7 @@ components:
       - error
       additionalProperties: false
     AuditEventKind:
-      "$ref": "audit.yaml#/components/schemas/AuditEventKind"
+      "$ref": audit.yaml#/components/schemas/AuditEventKind
     SecurityErrorCode:
       type: string
       enum:
@@ -974,6 +1298,74 @@ components:
       - CONFLICT
       - INTERNAL
       - DEPENDENCY_UNAVAILABLE
+    ServiceAccount:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        role:
+          type: string
+          enum:
+          - lis
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - name
+      - role
+      - is_active
+      - created_at
+    ServiceAccountInput:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 16
+      required:
+      - name
+    ServiceAccountUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 16
+        is_active:
+          type: boolean
+      required:
+      - name
+      - is_active
+    ServiceAccountKey:
+      type: object
+      additionalProperties: false
+      properties:
+        account:
+          "$ref": "#/components/schemas/ServiceAccount"
+        api_key:
+          type: string
+      required:
+      - account
+      - api_key
+    ServiceLoginInput:
+      type: object
+      additionalProperties: false
+      properties:
+        api_key:
+          type: string
+          minLength: 32
+          maxLength: 256
+      required:
+      - api_key
   securitySchemes:
     BearerAuth:
       type: http

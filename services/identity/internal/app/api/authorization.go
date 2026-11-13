@@ -41,7 +41,8 @@ func (implementation *Implementation) protect(next http.Handler) http.Handler {
 			return
 		}
 		w.Header().Set("Cache-Control", "no-store")
-		if path == "/api/v1/auth/login" || path == "/api/v1/auth/setup" || path == "/api/v1/auth/refresh" {
+		route, _, routeError := implementation.auditRoutes.FindRoute(r)
+		if routeError == nil && route.Operation.Security != nil && len(*route.Operation.Security) == 0 {
 			w.Header().Set("Cache-Control", "no-store")
 			next.ServeHTTP(w, r)
 			return

@@ -1,0 +1,163 @@
+openapi: 3.0.3
+info:
+  title: HIS inter-service audit
+  version: 1.0.0
+security:
+- ServiceKey: []
+paths:
+  "/internal/audit":
+    post:
+      operationId: appendHTTPAudit
+      description: Identity records an HTTP mutation intent or outcome. Event type and title come from the caller operation metadata in OpenAPI. The audit must commit before the caller performs a mutation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/HTTPAudit"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Acknowledgement"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+components:
+  securitySchemes:
+    ServiceKey:
+      type: apiKey
+      in: header
+      name: X-Service-Key
+  schemas:
+    AuditEventKind:
+      type: string
+      enum:
+      - admin_setup
+      - login
+      - login_failed
+      - logout
+      - access_denied
+      - staff_created
+      - staff_updated
+      - staff_deleted
+      - patient_created
+      - patient_updated
+      - patient_deleted
+      - record_created
+      - record_updated
+      - account_created
+      - account_updated
+      - token_refreshed
+      - other
+    HTTPAudit:
+      type: object
+      additionalProperties: false
+      required:
+      - actor
+      - method
+      - path
+      - event_type
+      - title
+      properties:
+        actor:
+          type: string
+          minLength: 1
+        method:
+          type: string
+          enum: [POST, PUT, PATCH, DELETE]
+        path:
+          type: string
+          pattern: "^/api/v1/"
+          maxLength: 2048
+        event_type:
+          "$ref": "#/components/schemas/AuditEventKind"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 128
+        status:
+          type: integer
+          default: 0
+          oneOf:
+          - enum: [0]
+          - minimum: 100
+            maximum: 599
+    ErrorCode:
+      type: string
+      enum:
+      - INVALID_REQUEST
+      - UNAUTHORIZED
+      - FORBIDDEN
+      - NOT_FOUND
+      - CONFLICT
+      - INTERNAL
+      - DEPENDENCY_UNAVAILABLE
+    ErrorDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          "$ref": "#/components/schemas/ErrorCode"
+        message:
+          type: string
+    Error:
+      type: object
+      additionalProperties: false
+      required:
+      - error
+      properties:
+        error:
+          "$ref": "#/components/schemas/ErrorDetail"
+    Acknowledgement:
+      type: object
+      additionalProperties: false
+      required:
+      - ok
+      properties:
+        ok:
+          type: boolean

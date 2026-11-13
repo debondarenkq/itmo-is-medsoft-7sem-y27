@@ -6,24 +6,24 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/adapters/security"
 	"log/slog"
 	"net/http"
 	"strings"
 
+	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/api"
+	internalapi "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/api/internalapi"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/models"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/adapters/security"
+	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/modules"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
-
-	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/api"
-	internalapi "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/api/internalapi"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/models"
-	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/staff/internal/pkg/modules"
 )
 
 type Deps struct{ Module *modules.Module }
+
 type Implementation struct{ Deps }
 
 var _ contract.StrictServerInterface = (*Implementation)(nil)
@@ -177,48 +177,11 @@ func (i *Implementation) RegisterInternal(router *mux.Router, key string) {
 		})
 	})
 }
+
 func toStaffProfile(s models.Staff) (internalapi.ProfileJSONResponse, error) {
 	id, err := uuid.Parse(s.ID)
 	if err != nil {
 		return internalapi.ProfileJSONResponse{}, err
 	}
 	return internalapi.ProfileJSONResponse{ID: id, FirstName: s.FirstName, LastName: s.LastName, Position: &s.Position, Role: internalapi.Role(s.Role), CreatedAt: &s.CreatedAt, UpdatedAt: &s.UpdatedAt, DeletedAt: s.DeletedAt, RoleRevision: s.RoleRevision}, nil
-}
-func (i *Implementation) GetStaffIdentity(ctx context.Context, request internalapi.GetStaffIdentityRequestObject) (internalapi.GetStaffIdentityResponseObject, error) {
-	s, err := i.Module.Get(ctx, request.ID.String())
-	if err != nil {
-		return nil, err
-	}
-	response, err := toStaffProfile(s)
-	if err != nil {
-		return nil, err
-	}
-	return internalapi.GetStaffIdentity200JSONResponse{ProfileJSONResponse: response}, nil
-}
-func (i *Implementation) UpdateStaffIdentityRole(ctx context.Context, request internalapi.UpdateStaffIdentityRoleRequestObject) (internalapi.UpdateStaffIdentityRoleResponseObject, error) {
-	s, err := i.Module.UpdateRole(ctx, request.ID.String(), string(request.Body.Role))
-	if err != nil {
-		return nil, err
-	}
-	response, err := toStaffProfile(s)
-	if err != nil {
-		return nil, err
-	}
-	return internalapi.UpdateStaffIdentityRole200JSONResponse{ProfileJSONResponse: response}, nil
-}
-
-func (i *Implementation) ListStaffIdentities(ctx context.Context, _ internalapi.ListStaffIdentitiesRequestObject) (internalapi.ListStaffIdentitiesResponseObject, error) {
-	items, err := i.Module.ListIdentityProfiles(ctx)
-	if err != nil {
-		return nil, err
-	}
-	response := make(internalapi.ListStaffIdentities200JSONResponse, 0, len(items))
-	for _, item := range items {
-		profile, err := toStaffProfile(item)
-		if err != nil {
-			return nil, err
-		}
-		response = append(response, internalapi.StaffProfile(profile))
-	}
-	return response, nil
 }

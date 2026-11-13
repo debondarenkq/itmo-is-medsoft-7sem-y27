@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"time"
 
@@ -29,6 +30,7 @@ func (implementation *Implementation) limited(ctx context.Context) bool {
 	implementation.attempts[host] = window
 	return window.count > 20
 }
+
 func (implementation *Implementation) auditFailure(ctx context.Context, err error, kind models.AuditEventKind, message string) error {
 	address, _ := ctx.Value(remoteAddressKey).(string)
 	if auditErr := implementation.Module.Audit(ctx, "anonymous:"+address+":request:"+uuid.NewString(), message, kind); auditErr != nil {
@@ -36,6 +38,7 @@ func (implementation *Implementation) auditFailure(ctx context.Context, err erro
 	}
 	return err
 }
+
 func (implementation *Implementation) Login(ctx context.Context, request contract.LoginRequestObject) (contract.LoginResponseObject, error) {
 	if implementation.limited(ctx) {
 		return nil, implementation.auditFailure(ctx, models.ErrUnauthorized, models.AuditEventKindLoginFailed, "Превышен лимит попыток входа")
@@ -54,4 +57,27 @@ func (implementation *Implementation) Login(ctx context.Context, request contrac
 		return nil, err
 	}
 	return contract.Login200JSONResponse(response), nil
+}
+
+func toStaffID(id *string) (*uuid.UUID, error) {
+	if id == nil {
+		return nil, nil
+	}
+	value, err := uuid.Parse(*id)
+	if err != nil {
+		return nil, fmt.Errorf("map staff id: %w", err)
+	}
+	return &value, nil
+}
+
+func toSession(s models.Session) (contract.Session, error) {
+	id, err := uuid.Parse(s.AccountID)
+	if err != nil {
+		return contract.Session{}, err
+	}
+	staffID, err := toStaffID(s.StaffID)
+	if err != nil {
+		return contract.Session{}, err
+	}
+	return contract.Session{AccountID: id, StaffID: staffID, AccessToken: s.AccessToken, RefreshToken: s.RefreshToken, ExpiresAt: s.ExpiresAt, Role: s.Role}, nil
 }

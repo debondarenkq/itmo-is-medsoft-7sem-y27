@@ -29,7 +29,7 @@ fi
 
 work_dir=$(mktemp -d "${TMPDIR:-/tmp}/his-local-build.XXXXXX")
 trap 'rm -rf "$work_dir"' EXIT HUP INT TERM
-for service in identity staff catalog clinical; do
+for service in identity staff catalog clinical laboratory lis; do
     mkdir -p "$work_dir/$service"
     printf 'Локальная сборка %s для linux/%s\n' "$service" "$target_arch"
     if ! (

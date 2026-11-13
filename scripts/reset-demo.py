@@ -2,17 +2,14 @@
 import argparse
 from datetime import datetime, timedelta, timezone
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
 import uuid
 
 ROOT = Path(__file__).resolve().parent.parent
 COMPOSE = ROOT / 'scripts/compose.sh'
-DATABASES = ('identity', 'staff', 'catalog', 'clinical')
-APIS = ('identity-service', 'staff-service', 'catalog-service', 'clinical-service')
+APIS = ('identity-service', 'staff-service', 'catalog-service', 'clinical-service', 'laboratory-service')
 
 
 def compose(*args, **kwargs):
@@ -43,10 +40,6 @@ def insert(table, rows):
     columns = list(rows[0])
     items = ',\n'.join('(' + ','.join(value('null' if row[key] is None and key in ('before_data', 'after_data') else row[key]) for key in columns) + ')' for row in rows)
     return f"INSERT INTO {table} ({','.join(columns)}) VALUES {items};\n"
-
-
-def reset_database(database):
-    query(database, f'DROP SCHEMA public CASCADE; CREATE SCHEMA public AUTHORIZATION {database}_user;')
 
 
 def demo_data():
@@ -121,58 +114,58 @@ def demo_data():
     return staff, diagnoses, patients, records, events, audit
 
 
-def private_file(path, content):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as stream:
-        temporary = Path(stream.name)
-        try:
-            os.chmod(temporary, 0o600)
-            stream.write(content)
-            stream.flush()
-            os.replace(temporary, path)
-        finally:
-            temporary.unlink(missing_ok=True)
+def seed_lab_requests(staff, patients, records):
+    tests = json.loads(query('laboratory', "SELECT json_agg(t ORDER BY t.name,t.id) FROM lab_tests t WHERE active"))
+    doctor = next(person for person in staff if person['role'] == 'doctor' and person['deleted_at'] is None)
+    by_id = {patient['id']: patient for patient in patients}
+    now = datetime.now(timezone.utc).isoformat()
+    requests = []
+    for index, test in enumerate(tests):
+        patient = by_id[records[index % len(records)]['patient_id']]
+        patient_name = ' '.join(part for part in (patient['last_name'], patient['first_name'], patient['middle_name']) if part)
+        request_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f'his-demo/lab-request/{index}'))
+        resource = {
+            'resourceType': 'ServiceRequest', 'id': request_id,
+            'status': 'active', 'intent': 'order', 'authoredOn': now,
+            'code': {'concept': {'coding': [{'system': 'http://loinc.org', 'code': test['code'], 'display': test['name']}]}},
+            'subject': {'reference': 'Patient/' + patient['id'], 'display': patient_name},
+            'requester': {'reference': 'Practitioner/' + doctor['id'], 'display': doctor['last_name'] + ' ' + doctor['first_name']},
+            'note': [{'text': 'Демонстрационное назначение'}],
+        }
+        requests.append(dict(id=request_id, patient_id=patient['id'], created_at=now, resource=resource))
+    query('laboratory', 'BEGIN;\n' + insert('lab_requests', requests) + '\nCOMMIT;')
+    return len(requests)
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Reset local data and load demo fixtures without accounts.')
-    parser.parse_args()
-    staff, diagnoses, patients, records, events, audit = demo_data()
-    subprocess.run(['make', 'certs'], cwd=ROOT, check=True)
-    compose('up', '--no-build', '--pull', 'never', '-d', '--wait', 'postgres')
+    parser = argparse.ArgumentParser(description='Recreate HIS and LIS databases; optionally load demo data without accounts.')
+    parser.add_argument('--empty', action='store_true', help='Start with empty business data and initial administrator setup.')
+    args = parser.parse_args()
+    subprocess.run(['make', 'certs', 'gateway-network'], cwd=ROOT, check=True)
     configuration = json.loads(compose('config', '--format', 'json', text=True, capture_output=True).stdout)
-    mounts = configuration['services']['identity-service'].get('volumes', [])
-    keys = [mount['source'] for mount in mounts
-            if mount.get('type') == 'bind' and mount.get('target') == '/security/jwt/signing.key']
-    if len(keys) != 1:
-        raise RuntimeError('Нужен файловый bind mount ключа JWT в identity-service.')
-    signing_key = Path(keys[0])
     project = configuration['name']
     output = ROOT / 'build' if project == 'his' else ROOT / 'build' / project
-    print('Reset: очищаем данные четырёх сервисов и загружаем демонстрационный набор.', flush=True)
-    compose('stop', 'nginx', *APIS)
-    try:
-        for database in DATABASES:
-            reset_database(database)
-        key = subprocess.run(['openssl', 'genpkey', '-algorithm', 'ED25519'],
-                             check=True, capture_output=True).stdout
-        private_file(signing_key, key)
-        compose('up', '--no-build', '--pull', 'never', '--no-deps', '--force-recreate', '-d', '--wait', *APIS)
+    print('Полностью пересоздаём данные HIS и LIS.', flush=True)
+    compose('-f', 'deploy/lis.compose.yaml', 'down', '-v', '--remove-orphans')
+    compose('down', '-v', '--remove-orphans')
+    compose('up', '--no-build', '--pull', 'never', '-d', '--wait', *APIS)
+    if not args.empty:
+        staff, diagnoses, patients, records, events, audit = demo_data()
         query('staff', 'BEGIN;\n' + insert('staff', staff) + '\nCOMMIT;')
         query('identity', 'BEGIN;\n' + insert('audit_events', audit) + '\nCOMMIT;')
         query('catalog', 'BEGIN;\n' + insert('diagnoses', diagnoses) + '\nCOMMIT;')
         query('clinical', 'BEGIN;\n' + insert('patients', patients) + insert('records', records) + insert('record_events', events) + '\nCOMMIT;')
-        (output / 'demo-accounts.json').unlink(missing_ok=True)
-        if query('identity', 'SELECT count(*) FROM accounts WHERE is_admin') != '0':
-            raise RuntimeError('Reset не должен создавать администратора.')
-        compose('up', '--no-build', '--pull', 'never', '-d', '--wait', 'nginx')
-    except Exception:
-        print('Reset не завершён; gateway оставлен остановленным. Повторите make reset после устранения ошибки.', file=sys.stderr)
-        raise
-    print('Готово: 5 сотрудников (4 активных), 6 диагнозов, 6 пациентов, 3 ЭМК с историей.')
-    print('Администратор не создан. Настройте пароль и TOTP при первом входе.')
-    print('Демо-аккаунты: после настройки администратора запустите python3 scripts/create-demo-accounts.py.')
-    print('Предыдущие сеансы недействительны; в открытом клиенте выполните новый вход.')
+        count = seed_lab_requests(staff, patients, records)
+        print(f'Загружены 5 сотрудников, 6 диагнозов, 6 пациентов, 3 ЭМК и {count} назначений анализов.')
+    (output / 'demo-accounts.json').unlink(missing_ok=True)
+    if query('identity', 'SELECT count(*) FROM accounts') != '0':
+        raise RuntimeError('Начальное заполнение не должно создавать аккаунты.')
+    compose('up', '--no-build', '--pull', 'never', '-d', '--wait', 'nginx')
+    compose('-f', 'deploy/lis.compose.yaml', 'up', '--no-build', '--pull', 'never', '-d', '--wait')
+    print('HIS и LIS запущены. Настройте пароль и TOTP администратора в HISAdmin.')
+    if not args.empty:
+        print('После настройки администратора make demo-accounts создаст демо-аккаунты медработников через API.')
+    print('Для LIS создайте сервисный аккаунт и введите его API-ключ.')
 
 
 if __name__ == '__main__':

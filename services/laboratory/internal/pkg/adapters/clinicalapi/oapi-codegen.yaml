@@ -1,0 +1,9 @@
+package: clinicalapi
+output: generated.gen.go
+generate:
+  models: true
+  client: true
+  embedded-spec: true
+output-options:
+  skip-prune: true
+  name-normalizer: ToCamelCaseWithInitialisms

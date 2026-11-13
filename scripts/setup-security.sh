@@ -27,3 +27,11 @@ if ! openssl x509 -in deploy/security/tls/server/server.crt -checkend 0 -noout; 
     exit 1
 fi
 printf '%s\n' 'Учебные сертификаты и ключи готовы. При повторном запуске используются те же файлы.'
+
+for database in laboratory lis; do
+    password_file="$security_dir/services/database-$database.password"
+    if [ ! -f "$password_file" ]; then
+        openssl rand -hex 32 > "$password_file"
+    fi
+    chmod 644 "$password_file"
+done

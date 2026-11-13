@@ -1,3 +1,4 @@
+#if !LIS_APP
 import SwiftUI
 
 struct SessionView: View {
@@ -21,3 +22,5 @@ struct SessionView: View {
     }
   }
 }
+
+#endif

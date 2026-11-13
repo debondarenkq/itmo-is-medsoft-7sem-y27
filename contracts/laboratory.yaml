@@ -1,0 +1,960 @@
+---
+openapi: 3.0.3
+info:
+  title: HIS Laboratory and FHIR R5
+  version: 1.0.0
+paths:
+  "/api/v1/lab/tests":
+    get:
+      operationId: listLabTests
+      tags:
+      - Laboratory
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabTestList"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      parameters:
+      - name: include_inactive
+        in: query
+        required: false
+        schema:
+          type: boolean
+      x-roles:
+      - admin
+      - doctor
+      - nurse
+      - laboratory-technician
+      - other
+    post:
+      operationId: createLabTest
+      tags:
+      - Laboratory
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabTest"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LabTestInput"
+      x-roles:
+      - admin
+      x-audit:
+        event_type: other
+        title: createLabTest
+  "/api/v1/lab/tests/{id}":
+    put:
+      operationId: updateLabTest
+      tags:
+      - Laboratory
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabTest"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LabTestInput"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      x-roles:
+      - admin
+      x-audit:
+        event_type: other
+        title: updateLabTest
+    delete:
+      operationId: deactivateLabTest
+      tags:
+      - Laboratory
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabTest"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      x-roles:
+      - admin
+      x-audit:
+        event_type: other
+        title: deactivateLabTest
+  "/api/v1/lab/orders":
+    post:
+      operationId: createLabOrders
+      tags:
+      - Laboratory
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIRBundle"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LabOrderInput"
+      x-roles:
+      - doctor
+      x-audit:
+        event_type: other
+        title: createLabOrders
+  "/api/v1/lab/connection":
+    get:
+      operationId: testLabConnection
+      tags:
+      - FHIR
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabConnection"
+        '400':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '401':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '403':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '404':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '409':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '500':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+        '503':
+          description: Request failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LabError"
+      x-roles:
+      - lis
+  "/api/v1/fhir/Patient/{id}":
+    get:
+      operationId: getFHIRPatient
+      tags:
+      - FHIR
+      responses:
+        '200':
+          description: Success
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIRResource"
+        '400':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '401':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '403':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '404':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '409':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '500':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '503':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      x-roles:
+      - lis
+      - doctor
+      - nurse
+      - laboratory-technician
+      - other
+  "/api/v1/fhir/Practitioner/{id}":
+    get:
+      operationId: getFHIRPractitioner
+      tags:
+      - FHIR
+      responses:
+        '200':
+          description: Success
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIRResource"
+        '400':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '401':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '403':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '404':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '409':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '500':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '503':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      x-roles:
+      - lis
+      - doctor
+      - nurse
+      - laboratory-technician
+      - other
+  "/api/v1/fhir/ServiceRequest/{id}":
+    get:
+      operationId: getFHIRServiceRequest
+      tags:
+      - FHIR
+      responses:
+        '200':
+          description: Success
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIRServiceRequest"
+        '400':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '401':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '403':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '404':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '409':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '500':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '503':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      x-roles:
+      - lis
+      - doctor
+      - nurse
+      - laboratory-technician
+      - other
+  "/api/v1/fhir/ServiceRequest":
+    get:
+      operationId: searchFHIRServiceRequest
+      tags:
+      - FHIR
+      responses:
+        '200':
+          description: Success
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIRBundle"
+        '400':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '401':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '403':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '404':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '409':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '500':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '503':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+      parameters:
+      - name: patient
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: _id
+        in: query
+        required: false
+        schema:
+          type: string
+      x-roles:
+      - lis
+      - doctor
+      - nurse
+      - laboratory-technician
+      - other
+  "/api/v1/fhir/Observation/{id}":
+    get:
+      operationId: getFHIRObservation
+      tags:
+      - FHIR
+      responses:
+        '200':
+          description: Success
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIRObservation"
+        '400':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '401':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '403':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '404':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '409':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '500':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '503':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      x-roles:
+      - lis
+      - doctor
+      - nurse
+      - laboratory-technician
+      - other
+  "/api/v1/fhir/Observation":
+    get:
+      operationId: searchFHIRObservation
+      tags:
+      - FHIR
+      responses:
+        '200':
+          description: Success
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIRBundle"
+        '400':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '401':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '403':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '404':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '409':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '500':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '503':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+      parameters:
+      - name: patient
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: _id
+        in: query
+        required: false
+        schema:
+          type: string
+      x-roles:
+      - lis
+      - doctor
+      - nurse
+      - laboratory-technician
+      - other
+    post:
+      operationId: createFHIRObservation
+      tags:
+      - FHIR
+      responses:
+        '201':
+          description: Success
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIRObservation"
+        '400':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '401':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '403':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '404':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '409':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '500':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+        '503':
+          description: Request failed
+          content:
+            application/fhir+json:
+              schema:
+                "$ref": "./fhir.yaml#/components/schemas/FHIROperationOutcome"
+      requestBody:
+        required: true
+        content:
+          application/fhir+json:
+            schema:
+              "$ref": "./fhir.yaml#/components/schemas/FHIRObservation"
+      x-roles:
+      - lis
+      x-audit:
+        event_type: other
+        title: createFHIRObservation
+components:
+  schemas:
+    LabError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+          required:
+          - code
+          - message
+          additionalProperties: false
+      required:
+      - error
+      additionalProperties: false
+    LabTestInput:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: "^\\d{1,8}-\\d$"
+        name:
+          type: string
+          minLength: 3
+          maxLength: 160
+      required:
+      - code
+      - name
+      additionalProperties: false
+    LabTest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        active:
+          type: boolean
+      required:
+      - id
+      - code
+      - name
+      - active
+      additionalProperties: false
+    LabTestList:
+      type: array
+      items:
+        "$ref": "#/components/schemas/LabTest"
+    LabOrderInput:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        test_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
+          maxItems: 20
+        comment:
+          type: string
+          maxLength: 512
+      required:
+      - patient_id
+      - test_ids
+      additionalProperties: false
+    LabConnection:
+      type: object
+      properties:
+        online:
+          type: boolean
+        fhir_version:
+          type: string
+      required:
+      - online
+      - fhir_version
+      additionalProperties: false
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+security:
+- BearerAuth: []

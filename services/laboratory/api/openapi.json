@@ -1,0 +1,1904 @@
+{
+  "components": {
+    "schemas": {
+      "LabConnection": {
+        "additionalProperties": false,
+        "properties": {
+          "fhir_version": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "online",
+          "fhir_version"
+        ],
+        "type": "object"
+      },
+      "LabError": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "LabOrderInput": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "maxLength": 512,
+            "type": "string"
+          },
+          "patient_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "test_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "patient_id",
+          "test_ids"
+        ],
+        "type": "object"
+      },
+      "LabTest": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "active"
+        ],
+        "type": "object"
+      },
+      "LabTestInput": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "pattern": "^\\d{1,8}-\\d$",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "type": "object"
+      },
+      "LabTestList": {
+        "items": {
+          "$ref": "#/components/schemas/LabTest"
+        },
+        "type": "array"
+      },
+      "fhir_FHIRAnnotation": {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIRBundle": {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "items": {
+              "$ref": "#/components/schemas/fhir_FHIRBundleEntry"
+            },
+            "type": "array"
+          },
+          "resourceType": {
+            "enum": [
+              "Bundle"
+            ],
+            "type": "string"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "type": {
+            "enum": [
+              "searchset",
+              "collection"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "resourceType",
+          "type",
+          "total",
+          "entry"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIRBundleEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "fullUrl": {
+            "type": "string"
+          },
+          "resource": {
+            "additionalProperties": true,
+            "type": "object"
+          }
+        },
+        "required": [
+          "resource"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIRCodeableConcept": {
+        "additionalProperties": false,
+        "properties": {
+          "coding": {
+            "items": {
+              "$ref": "#/components/schemas/fhir_FHIRCoding"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "coding"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIRCodeableReference": {
+        "additionalProperties": false,
+        "properties": {
+          "concept": {
+            "$ref": "#/components/schemas/fhir_FHIRCodeableConcept"
+          }
+        },
+        "required": [
+          "concept"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIRCoding": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "display": {
+            "type": "string"
+          },
+          "system": {
+            "enum": [
+              "http://loinc.org"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "system",
+          "code",
+          "display"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIRHumanName": {
+        "additionalProperties": false,
+        "properties": {
+          "family": {
+            "type": "string"
+          },
+          "given": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "family",
+          "given"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIRObservation": {
+        "additionalProperties": false,
+        "properties": {
+          "basedOn": {
+            "items": {
+              "$ref": "#/components/schemas/fhir_FHIRReference"
+            },
+            "maxItems": 1,
+            "minItems": 1,
+            "type": "array"
+          },
+          "code": {
+            "$ref": "#/components/schemas/fhir_FHIRCodeableConcept"
+          },
+          "effectiveDateTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "issued": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "resourceType": {
+            "enum": [
+              "Observation"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "final"
+            ],
+            "type": "string"
+          },
+          "subject": {
+            "$ref": "#/components/schemas/fhir_FHIRReference"
+          },
+          "valueString": {
+            "maxLength": 512,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "resourceType",
+          "id",
+          "status",
+          "code",
+          "subject",
+          "basedOn",
+          "effectiveDateTime",
+          "issued",
+          "valueString"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIROperationOutcome": {
+        "additionalProperties": false,
+        "properties": {
+          "issue": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "code": {
+                  "enum": [
+                    "invalid",
+                    "not-found",
+                    "conflict",
+                    "forbidden",
+                    "login",
+                    "exception",
+                    "transient"
+                  ],
+                  "type": "string"
+                },
+                "diagnostics": {
+                  "type": "string"
+                },
+                "severity": {
+                  "enum": [
+                    "error"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "severity",
+                "code",
+                "diagnostics"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "resourceType": {
+            "enum": [
+              "OperationOutcome"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "resourceType",
+          "issue"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIRReference": {
+        "additionalProperties": false,
+        "properties": {
+          "display": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIRRequestStatus": {
+        "enum": [
+          "active",
+          "completed"
+        ],
+        "type": "string"
+      },
+      "fhir_FHIRResource": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "birthDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "gender": {
+            "enum": [
+              "male",
+              "female",
+              "other",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "items": {
+              "$ref": "#/components/schemas/fhir_FHIRHumanName"
+            },
+            "type": "array"
+          },
+          "resourceType": {
+            "$ref": "#/components/schemas/fhir_FHIRResourceType"
+          }
+        },
+        "required": [
+          "resourceType",
+          "id"
+        ],
+        "type": "object"
+      },
+      "fhir_FHIRResourceType": {
+        "enum": [
+          "Patient",
+          "Practitioner"
+        ],
+        "type": "string"
+      },
+      "fhir_FHIRServiceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "authoredOn": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "code": {
+            "$ref": "#/components/schemas/fhir_FHIRCodeableReference"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "intent": {
+            "enum": [
+              "order"
+            ],
+            "type": "string"
+          },
+          "note": {
+            "items": {
+              "$ref": "#/components/schemas/fhir_FHIRAnnotation"
+            },
+            "type": "array"
+          },
+          "requester": {
+            "$ref": "#/components/schemas/fhir_FHIRReference"
+          },
+          "resourceType": {
+            "enum": [
+              "ServiceRequest"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/fhir_FHIRRequestStatus"
+          },
+          "subject": {
+            "$ref": "#/components/schemas/fhir_FHIRReference"
+          }
+        },
+        "required": [
+          "resourceType",
+          "id",
+          "status",
+          "intent",
+          "code",
+          "subject",
+          "requester",
+          "authoredOn"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "HIS Laboratory and FHIR R5",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/api/v1/fhir/Observation": {
+      "get": {
+        "operationId": "SearchFHIRObservation",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "patient",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "_id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIRBundle"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "FHIR"
+        ],
+        "x-roles": [
+          "lis",
+          "doctor",
+          "nurse",
+          "laboratory-technician",
+          "other"
+        ]
+      },
+      "post": {
+        "operationId": "CreateFHIRObservation",
+        "requestBody": {
+          "content": {
+            "application/fhir+json": {
+              "schema": {
+                "$ref": "#/components/schemas/fhir_FHIRObservation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIRObservation"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "FHIR"
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "createFHIRObservation"
+        },
+        "x-roles": [
+          "lis"
+        ]
+      }
+    },
+    "/api/v1/fhir/Observation/{id}": {
+      "get": {
+        "operationId": "GetFHIRObservation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIRObservation"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "FHIR"
+        ],
+        "x-roles": [
+          "lis",
+          "doctor",
+          "nurse",
+          "laboratory-technician",
+          "other"
+        ]
+      }
+    },
+    "/api/v1/fhir/Patient/{id}": {
+      "get": {
+        "operationId": "GetFHIRPatient",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIRResource"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "FHIR"
+        ],
+        "x-roles": [
+          "lis",
+          "doctor",
+          "nurse",
+          "laboratory-technician",
+          "other"
+        ]
+      }
+    },
+    "/api/v1/fhir/Practitioner/{id}": {
+      "get": {
+        "operationId": "GetFHIRPractitioner",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIRResource"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "FHIR"
+        ],
+        "x-roles": [
+          "lis",
+          "doctor",
+          "nurse",
+          "laboratory-technician",
+          "other"
+        ]
+      }
+    },
+    "/api/v1/fhir/ServiceRequest": {
+      "get": {
+        "operationId": "SearchFHIRServiceRequest",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "patient",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "_id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIRBundle"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "FHIR"
+        ],
+        "x-roles": [
+          "lis",
+          "doctor",
+          "nurse",
+          "laboratory-technician",
+          "other"
+        ]
+      }
+    },
+    "/api/v1/fhir/ServiceRequest/{id}": {
+      "get": {
+        "operationId": "GetFHIRServiceRequest",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIRServiceRequest"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/fhir+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIROperationOutcome"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "FHIR"
+        ],
+        "x-roles": [
+          "lis",
+          "doctor",
+          "nurse",
+          "laboratory-technician",
+          "other"
+        ]
+      }
+    },
+    "/api/v1/lab/connection": {
+      "get": {
+        "operationId": "TestLabConnection",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabConnection"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "FHIR"
+        ],
+        "x-roles": [
+          "lis"
+        ]
+      }
+    },
+    "/api/v1/lab/orders": {
+      "post": {
+        "operationId": "CreateLabOrders",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabOrderInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fhir_FHIRBundle"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "Laboratory"
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "createLabOrders"
+        },
+        "x-roles": [
+          "doctor"
+        ]
+      }
+    },
+    "/api/v1/lab/tests": {
+      "get": {
+        "operationId": "ListLabTests",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "include_inactive",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabTestList"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "Laboratory"
+        ],
+        "x-roles": [
+          "admin",
+          "doctor",
+          "nurse",
+          "laboratory-technician",
+          "other"
+        ]
+      },
+      "post": {
+        "operationId": "CreateLabTest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabTestInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabTest"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "Laboratory"
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "createLabTest"
+        },
+        "x-roles": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/lab/tests/{id}": {
+      "delete": {
+        "operationId": "DeactivateLabTest",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabTest"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "Laboratory"
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "deactivateLabTest"
+        },
+        "x-roles": [
+          "admin"
+        ]
+      },
+      "put": {
+        "operationId": "UpdateLabTest",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabTestInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabTest"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabError"
+                }
+              }
+            },
+            "description": "Request failed"
+          }
+        },
+        "tags": [
+          "Laboratory"
+        ],
+        "x-audit": {
+          "event_type": "other",
+          "title": "updateLabTest"
+        },
+        "x-roles": [
+          "admin"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}

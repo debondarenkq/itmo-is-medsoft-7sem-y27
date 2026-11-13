@@ -1,0 +1,267 @@
+---
+openapi: 3.0.3
+info:
+  title: FHIR R5 laboratory subset
+  version: 5.0.0
+paths: {}
+components:
+  schemas:
+    FHIRReference:
+      type: object
+      properties:
+        reference:
+          type: string
+        display:
+          type: string
+      required:
+      - reference
+      additionalProperties: false
+    FHIRHumanName:
+      type: object
+      properties:
+        family:
+          type: string
+        given:
+          type: array
+          items:
+            type: string
+      required:
+      - family
+      - given
+      additionalProperties: false
+    FHIRCoding:
+      type: object
+      properties:
+        system:
+          type: string
+          enum:
+          - http://loinc.org
+        code:
+          type: string
+        display:
+          type: string
+      required:
+      - system
+      - code
+      - display
+      additionalProperties: false
+    FHIRCodeableConcept:
+      type: object
+      properties:
+        coding:
+          type: array
+          items:
+            "$ref": "#/components/schemas/FHIRCoding"
+      required:
+      - coding
+      additionalProperties: false
+    FHIRCodeableReference:
+      type: object
+      properties:
+        concept:
+          "$ref": "#/components/schemas/FHIRCodeableConcept"
+      required:
+      - concept
+      additionalProperties: false
+    FHIRAnnotation:
+      type: object
+      properties:
+        text:
+          type: string
+      required:
+      - text
+      additionalProperties: false
+    FHIRResourceType:
+      type: string
+      enum:
+      - Patient
+      - Practitioner
+    FHIRRequestStatus:
+      type: string
+      enum:
+      - active
+      - completed
+    FHIRResource:
+      type: object
+      properties:
+        resourceType:
+          "$ref": "#/components/schemas/FHIRResourceType"
+        id:
+          type: string
+          format: uuid
+        name:
+          type: array
+          items:
+            "$ref": "#/components/schemas/FHIRHumanName"
+        birthDate:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum:
+          - male
+          - female
+          - other
+          - unknown
+        active:
+          type: boolean
+      required:
+      - resourceType
+      - id
+      additionalProperties: false
+    FHIRServiceRequest:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          enum:
+          - ServiceRequest
+        id:
+          type: string
+          format: uuid
+        status:
+          "$ref": "#/components/schemas/FHIRRequestStatus"
+        intent:
+          type: string
+          enum:
+          - order
+        code:
+          "$ref": "#/components/schemas/FHIRCodeableReference"
+        subject:
+          "$ref": "#/components/schemas/FHIRReference"
+        requester:
+          "$ref": "#/components/schemas/FHIRReference"
+        authoredOn:
+          type: string
+          format: date-time
+        note:
+          type: array
+          items:
+            "$ref": "#/components/schemas/FHIRAnnotation"
+      required:
+      - resourceType
+      - id
+      - status
+      - intent
+      - code
+      - subject
+      - requester
+      - authoredOn
+      additionalProperties: false
+    FHIRObservation:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          enum:
+          - Observation
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - final
+        code:
+          "$ref": "#/components/schemas/FHIRCodeableConcept"
+        subject:
+          "$ref": "#/components/schemas/FHIRReference"
+        basedOn:
+          type: array
+          items:
+            "$ref": "#/components/schemas/FHIRReference"
+          minItems: 1
+          maxItems: 1
+        effectiveDateTime:
+          type: string
+          format: date-time
+        issued:
+          type: string
+          format: date-time
+        valueString:
+          type: string
+          minLength: 1
+          maxLength: 512
+      required:
+      - resourceType
+      - id
+      - status
+      - code
+      - subject
+      - basedOn
+      - effectiveDateTime
+      - issued
+      - valueString
+      additionalProperties: false
+    FHIRBundleEntry:
+      type: object
+      properties:
+        fullUrl:
+          type: string
+        resource:
+          type: object
+          additionalProperties: true
+      required:
+      - resource
+      additionalProperties: false
+    FHIRBundle:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          enum:
+          - Bundle
+        type:
+          type: string
+          enum:
+          - searchset
+          - collection
+        total:
+          type: integer
+        entry:
+          type: array
+          items:
+            "$ref": "#/components/schemas/FHIRBundleEntry"
+      required:
+      - resourceType
+      - type
+      - total
+      - entry
+      additionalProperties: false
+    FHIROperationOutcome:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          enum:
+          - OperationOutcome
+        issue:
+          type: array
+          items:
+            type: object
+            properties:
+              severity:
+                type: string
+                enum:
+                - error
+              code:
+                type: string
+                enum:
+                - invalid
+                - not-found
+                - conflict
+                - forbidden
+                - login
+                - exception
+                - transient
+              diagnostics:
+                type: string
+            required:
+            - severity
+            - code
+            - diagnostics
+            additionalProperties: false
+      required:
+      - resourceType
+      - issue
+      additionalProperties: false

@@ -3,9 +3,8 @@ package storage
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/catalog/internal/models"
+	"github.com/google/uuid"
 )
 
 func (repository *Repository) UpsertBatch(ctx context.Context, diagnoses []models.Diagnosis) ([]models.Diagnosis, error) {

@@ -94,3 +94,49 @@ func TestAccountPasswordAndActivityRevokeRefresh(t *testing.T) {
 		t.Fatalf("deactivated refresh: %v", err)
 	}
 }
+
+func TestServiceAccountRevocation(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		active bool
+		hash   string
+	}{{"deactivate", false, ""}, {"rotate key", true, "new-api-hash"}} {
+		t.Run(test.name, func(t *testing.T) {
+			r := testRepository(t)
+			ctx := context.Background()
+			a, err := r.SaveServiceAccount(ctx, models.Account{ID: uuid.NewString(), Username: "lab", PasswordHash: "api-hash", IsService: true, IsActive: true}, true, "system:test")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if a.Role != "lis" || !a.IsService {
+				t.Fatalf("service role: %+v", a)
+			}
+			if err = r.Issue(ctx, a, "", "service-refresh", -1); err != nil {
+				t.Fatal(err)
+			}
+			before := a
+			a.IsActive = test.active
+			a.PasswordHash = test.hash
+			updated, err := r.SaveServiceAccount(ctx, a, false, "system:test")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err = r.RefreshAccount(ctx, "service-refresh"); !errors.Is(err, models.ErrUnauthorized) {
+				t.Fatalf("refresh survived: %v", err)
+			}
+			if err = r.Issue(ctx, before, "", "late-refresh", -1); !errors.Is(err, models.ErrUnauthorized) {
+				t.Fatalf("stale login survived: %v", err)
+			}
+			if updated.SessionVersion != before.SessionVersion+1 {
+				t.Fatal("access tokens were not revoked")
+			}
+			accounts, total, err := r.SearchAccounts(ctx, models.AccountFilter{Limit: 50, StaffIDs: []string{}, DeletedStaffIDs: []string{}})
+			if err != nil || total != 0 || len(accounts) != 0 {
+				t.Fatalf("mixed account lists: %d %v", total, err)
+			}
+			if _, err = r.Account(ctx, "lab"); !errors.Is(err, models.ErrUnauthorized) {
+				t.Fatalf("service account accepted as user: %v", err)
+			}
+		})
+	}
+}

@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/api/security"
 	"github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/identity/internal/models"
 	"github.com/google/uuid"

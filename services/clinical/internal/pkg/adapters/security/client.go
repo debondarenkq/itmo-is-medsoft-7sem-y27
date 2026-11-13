@@ -2,6 +2,7 @@ package security
 
 import (
 	"context"
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	contract "github.com/debondarenkq/itmo-is-medsoft-7sem-y27/services/clinical/api"
@@ -33,6 +34,7 @@ func StaffID(ctx context.Context) string { value, _ := ctx.Value(staffKey).(stri
 const serviceRequestTimeout = 2 * time.Second
 
 type Authorizer struct {
+	internalKey string
 	client      *ClientWithResponses
 	auditClient *audit.ClientWithResponses
 	routes      routers.Router
@@ -69,7 +71,7 @@ func New() (*Authorizer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Authorizer{client: client, auditClient: auditClient, routes: routes}, nil
+	return &Authorizer{internalKey: key, client: client, auditClient: auditClient, routes: routes}, nil
 }
 func writeProblem(w http.ResponseWriter, status int, code ErrorCode, message string) {
 	w.Header().Set("Content-Type", "application/json")
@@ -128,6 +130,14 @@ func (a *Authorizer) auditEntry(r *http.Request, actor string) (audit.HTTPAudit,
 }
 func (a *Authorizer) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/internal/") {
+			if a.internalKey == "" || subtle.ConstantTimeCompare([]byte(r.Header.Get("X-Service-Key")), []byte(a.internalKey)) != 1 {
+				writeProblem(w, http.StatusForbidden, FORBIDDEN, "Недостаточно прав")
+				return
+			}
+			next.ServeHTTP(w, r)
+			return
+		}
 		if !strings.HasPrefix(r.URL.Path, "/api/") {
 			next.ServeHTTP(w, r)
 			return

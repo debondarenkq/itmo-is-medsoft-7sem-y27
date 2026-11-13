@@ -1,0 +1,7 @@
+package: laboratoryapi
+output: fhir.gen.go
+generate:
+  models: true
+output-options:
+  skip-prune: true
+  name-normalizer: ToCamelCaseWithInitialisms

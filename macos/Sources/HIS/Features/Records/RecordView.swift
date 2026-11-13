@@ -94,6 +94,8 @@ struct RecordView: View {
             restoreDiagnosis: { diagnosis in self.draft?.restoreDiagnosis(diagnosis) }
           )
           .tabItem { Text("Диагнозы") }
+          RecordLabTestsView(gateway: gateway, patient: patient, canOrder: isEditing && worker.role == .doctor)
+            .tabItem { Text("Анализы") }
           prescriptionsTab.tabItem { Text("Назначения") }
           RecordHistoryView(gateway: gateway, recordID: draft.base.id, version: draft.base.version)
             .tabItem { Text("История") }
